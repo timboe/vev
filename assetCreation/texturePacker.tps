@@ -28,7 +28,7 @@
             </struct>
         </array>
         <key>allowRotation</key>
-        <true/>
+        <false/>
         <key>shapeDebug</key>
         <false/>
         <key>dpi</key>
@@ -90,9 +90,9 @@
         <key>maxTextureSize</key>
         <QSize>
             <key>width</key>
-            <int>2048</int>
+            <int>300</int>
             <key>height</key>
-            <int>2048</int>
+            <int>300</int>
         </QSize>
         <key>fixedTextureSize</key>
         <QSize>
@@ -104,7 +104,7 @@
         <key>algorithmSettings</key>
         <struct type="AlgorithmSettings">
             <key>algorithm</key>
-            <enum type="AlgorithmSettings::AlgorithmId">MaxRects</enum>
+            <enum type="AlgorithmSettings::AlgorithmId">Basic</enum>
             <key>freeSizeMode</key>
             <enum type="AlgorithmSettings::AlgorithmFreeSizeMode">Best</enum>
             <key>sizeConstraints</key>
@@ -150,7 +150,7 @@
             <key>data</key>
             <struct type="DataFile">
                 <key>name</key>
-                <filename></filename>
+                <filename>../android/assets/sprites.txt</filename>
             </struct>
         </map>
         <key>multiPack</key>
@@ -173,7 +173,7 @@
         <key>prependSmartFolderName</key>
         <false/>
         <key>autodetectAnimations</key>
-        <true/>
+        <false/>
         <key>globalSpriteSettings</key>
         <struct type="SpriteSettings">
             <key>scale</key>
@@ -187,7 +187,7 @@
             <key>trimMargin</key>
             <uint>1</uint>
             <key>trimMode</key>
-            <enum type="SpriteSettings::TrimMode">Trim</enum>
+            <enum type="SpriteSettings::TrimMode">None</enum>
             <key>tracerTolerance</key>
             <int>200</int>
             <key>heuristicMask</key>
@@ -198,9 +198,162 @@
             <false/>
         </struct>
         <key>individualSpriteSettings</key>
-        <map type="IndividualSpriteSettingsMap"/>
+        <map type="IndividualSpriteSettingsMap">
+            <key type="filename">16/b.png</key>
+            <key type="filename">16/border_EW_1.png</key>
+            <key type="filename">16/border_EW_2.png</key>
+            <key type="filename">16/border_EW_3.png</key>
+            <key type="filename">16/border_EW_4.png</key>
+            <key type="filename">16/border_NE.png</key>
+            <key type="filename">16/border_NW.png</key>
+            <key type="filename">16/border_NW_SE.png</key>
+            <key type="filename">16/border_SE.png</key>
+            <key type="filename">16/border_SN_1.png</key>
+            <key type="filename">16/border_SN_2.png</key>
+            <key type="filename">16/border_SN_3.png</key>
+            <key type="filename">16/border_SN_4.png</key>
+            <key type="filename">16/border_SW.png</key>
+            <key type="filename">16/border_SW_NE.png</key>
+            <key type="filename">16/border_WE_1.png</key>
+            <key type="filename">16/border_WE_2.png</key>
+            <key type="filename">16/border_WE_3.png</key>
+            <key type="filename">16/border_WE_4.png</key>
+            <key type="filename">16/border_r_NE.png</key>
+            <key type="filename">16/border_r_NW.png</key>
+            <key type="filename">16/border_r_NW_SE.png</key>
+            <key type="filename">16/border_r_SE.png</key>
+            <key type="filename">16/border_r_SW.png</key>
+            <key type="filename">16/border_r_SW_NE.png</key>
+            <key type="filename">16/floor_g_0.png</key>
+            <key type="filename">16/floor_g_1.png</key>
+            <key type="filename">16/floor_g_10.png</key>
+            <key type="filename">16/floor_g_11.png</key>
+            <key type="filename">16/floor_g_12.png</key>
+            <key type="filename">16/floor_g_13.png</key>
+            <key type="filename">16/floor_g_2.png</key>
+            <key type="filename">16/floor_g_3.png</key>
+            <key type="filename">16/floor_g_4.png</key>
+            <key type="filename">16/floor_g_5.png</key>
+            <key type="filename">16/floor_g_6.png</key>
+            <key type="filename">16/floor_g_7.png</key>
+            <key type="filename">16/floor_g_8.png</key>
+            <key type="filename">16/floor_g_9.png</key>
+            <key type="filename">16/floor_r_0.png</key>
+            <key type="filename">16/floor_r_1.png</key>
+            <key type="filename">16/floor_r_10.png</key>
+            <key type="filename">16/floor_r_11.png</key>
+            <key type="filename">16/floor_r_12.png</key>
+            <key type="filename">16/floor_r_2.png</key>
+            <key type="filename">16/floor_r_3.png</key>
+            <key type="filename">16/floor_r_4.png</key>
+            <key type="filename">16/floor_r_5.png</key>
+            <key type="filename">16/floor_r_6.png</key>
+            <key type="filename">16/floor_r_7.png</key>
+            <key type="filename">16/floor_r_8.png</key>
+            <key type="filename">16/floor_r_9.png</key>
+            <key type="filename">16/h_g_E.png</key>
+            <key type="filename">16/h_g_N.png</key>
+            <key type="filename">16/h_g_NE.png</key>
+            <key type="filename">16/h_g_NW.png</key>
+            <key type="filename">16/h_g_SE_b1.png</key>
+            <key type="filename">16/h_g_SE_b2.png</key>
+            <key type="filename">16/h_g_SE_t.png</key>
+            <key type="filename">16/h_g_SW_b1.png</key>
+            <key type="filename">16/h_g_SW_b2.png</key>
+            <key type="filename">16/h_g_SW_t.png</key>
+            <key type="filename">16/h_g_S_b1.png</key>
+            <key type="filename">16/h_g_S_b2.png</key>
+            <key type="filename">16/h_g_S_t.png</key>
+            <key type="filename">16/h_g_W.png</key>
+            <key type="filename">16/h_r_E.png</key>
+            <key type="filename">16/h_r_N.png</key>
+            <key type="filename">16/h_r_NE.png</key>
+            <key type="filename">16/h_r_NW.png</key>
+            <key type="filename">16/h_r_SE_b1.png</key>
+            <key type="filename">16/h_r_SE_b2.png</key>
+            <key type="filename">16/h_r_SE_t.png</key>
+            <key type="filename">16/h_r_SW_b1.png</key>
+            <key type="filename">16/h_r_SW_b2.png</key>
+            <key type="filename">16/h_r_SW_t.png</key>
+            <key type="filename">16/h_r_S_b1.png</key>
+            <key type="filename">16/h_r_S_b2.png</key>
+            <key type="filename">16/h_r_S_t.png</key>
+            <key type="filename">16/h_r_W.png</key>
+            <key type="filename">16/s_g_E_b.png</key>
+            <key type="filename">16/s_g_E_c.png</key>
+            <key type="filename">16/s_g_E_t.png</key>
+            <key type="filename">16/s_g_N.png</key>
+            <key type="filename">16/s_g_N_c.png</key>
+            <key type="filename">16/s_g_N_l.png</key>
+            <key type="filename">16/s_g_N_r.png</key>
+            <key type="filename">16/s_g_S.png</key>
+            <key type="filename">16/s_g_S_c.png</key>
+            <key type="filename">16/s_g_S_l.png</key>
+            <key type="filename">16/s_g_S_r.png</key>
+            <key type="filename">16/s_g_W_b.png</key>
+            <key type="filename">16/s_g_W_c.png</key>
+            <key type="filename">16/s_g_W_t.png</key>
+            <key type="filename">16/s_r_E_b.png</key>
+            <key type="filename">16/s_r_E_c.png</key>
+            <key type="filename">16/s_r_E_t.png</key>
+            <key type="filename">16/s_r_N.png</key>
+            <key type="filename">16/s_r_N_c.png</key>
+            <key type="filename">16/s_r_N_l.png</key>
+            <key type="filename">16/s_r_N_r.png</key>
+            <key type="filename">16/s_r_S.png</key>
+            <key type="filename">16/s_r_S_C.png</key>
+            <key type="filename">16/s_r_S_L.png</key>
+            <key type="filename">16/s_r_S_R.png</key>
+            <key type="filename">16/s_r_W_b.png</key>
+            <key type="filename">16/s_r_W_c.png</key>
+            <key type="filename">16/s_r_W_t.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>4,4,8,8</rect>
+                <key>scale9Paddings</key>
+                <rect>4,4,8,8</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">large/building_0.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>12,16,24,32</rect>
+                <key>scale9Paddings</key>
+                <rect>12,16,24,32</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">large/building_1.png</key>
+            <key type="filename">large/building_2.png</key>
+            <key type="filename">large/building_3.png</key>
+            <key type="filename">large/building_4.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>12,12,24,24</rect>
+                <key>scale9Paddings</key>
+                <rect>12,12,24,24</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+        </map>
         <key>fileList</key>
-        <array/>
+        <array>
+            <filename>16</filename>
+            <filename>large</filename>
+        </array>
         <key>ignoreFileList</key>
         <array/>
         <key>replaceList</key>

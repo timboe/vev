@@ -1,11 +1,18 @@
 package timboe.destructor.manager;
 
 
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.utils.viewport.ExtendViewport;
+import com.badlogic.gdx.utils.viewport.FitViewport;
 import timboe.destructor.DestructorGame;
+import timboe.destructor.Param;
 import timboe.destructor.screen.GameScreen;
 import timboe.destructor.screen.TitleScreen;
 
 public class GameState {
+
+  Stage stage;
+  Stage uiStage;
 
   private static GameState ourInstance;
   public static GameState getInstance() {
@@ -18,12 +25,13 @@ public class GameState {
   private DestructorGame game;
 
   private GameState() {
-    theTitleScreen = new TitleScreen();
-    theGameScreen = new GameScreen();
+    reset();
   }
 
   public void setGame(DestructorGame theGame) {
     game = theGame;
+    theTitleScreen = new TitleScreen();
+    theGameScreen = new GameScreen();
   }
 
   public void setToTitleScreen() {
@@ -34,12 +42,24 @@ public class GameState {
     game.setScreen(theGameScreen);
   }
 
+  public Stage getStage() {
+    return stage;
+  }
+
+  public Stage getUIStage() {
+    return uiStage;
+  }
+
   public void reset() {
+    stage = new Stage(Camera.getInstance().getViewport());
+    uiStage = new Stage(Camera.getInstance().getViewport());
   }
 
   public void dispose() {
     theGameScreen.dispose();
     theTitleScreen.dispose();
+    stage.dispose();
+    uiStage.dispose();
     ourInstance = null;
   }
 

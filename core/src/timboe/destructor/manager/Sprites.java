@@ -1,5 +1,8 @@
 package timboe.destructor.manager;
 
+import timboe.destructor.Param;
+import timboe.destructor.entity.Tile;
+
 public class Sprites {
 
   private static Sprites ourInstance;
@@ -9,10 +12,13 @@ public class Sprites {
   public static void create() { ourInstance = new Sprites(); }
   public void dispose() { ourInstance = null; }
 
+
   private Sprites() {
+    reset();
   }
 
   public void reset() {
+
   }
 
 }
