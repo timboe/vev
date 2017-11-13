@@ -4,7 +4,7 @@
         <key>fileFormatVersion</key>
         <int>4</int>
         <key>texturePackerVersion</key>
-        <string>4.4.0</string>
+        <string>4.5.0</string>
         <key>fileName</key>
         <string>C:/Users/Tim/Dropbox/git/destructor/assetCreation/texturePacker.tps</string>
         <key>autoSDSettings</key>
@@ -66,9 +66,9 @@
             <key>filtering</key>
             <struct type="LibGDXFiltering">
                 <key>x</key>
-                <enum type="LibGDXFiltering::Filtering">Linear</enum>
+                <enum type="LibGDXFiltering::Filtering">Nearest</enum>
                 <key>y</key>
-                <enum type="LibGDXFiltering::Filtering">Linear</enum>
+                <enum type="LibGDXFiltering::Filtering">Nearest</enum>
             </struct>
         </struct>
         <key>shapePadding</key>
@@ -279,6 +279,7 @@
             <key type="filename">16/h_r_S_b2.png</key>
             <key type="filename">16/h_r_S_t.png</key>
             <key type="filename">16/h_r_W.png</key>
+            <key type="filename">16/missing.png</key>
             <key type="filename">16/s_g_E_b.png</key>
             <key type="filename">16/s_g_E_c.png</key>
             <key type="filename">16/s_g_E_t.png</key>

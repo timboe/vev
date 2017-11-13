@@ -5,8 +5,13 @@ import com.badlogic.gdx.math.Vector2;
 import timboe.destructor.Param;
 import timboe.destructor.Util;
 import timboe.destructor.entity.Tile;
+import timboe.destructor.enums.Cardinal;
+import timboe.destructor.enums.Colour;
 import timboe.destructor.enums.Edge;
+import timboe.destructor.enums.TileType;
 
+import java.util.EnumMap;
+import java.util.Map;
 import java.util.Random;
 
 public class World {
@@ -31,7 +36,6 @@ public class World {
       for (int y = 0; y < Param.TILES_Y; ++y) {
         tiles[x][y] = new Tile(x,y);
         //tiles[x][y].setDebug(true);
-        tiles[x][y].setTexture("floor_r_" + Util.rndInt( Param.N_GRASS_TILES ).toString(), 1);
         GameState.getInstance().getStage().addActor(tiles[x][y]);
       }
     }
@@ -43,20 +47,21 @@ public class World {
       reset();
       success = doEdges();
     }
+    applyTileGraphics();
   }
 
-  private boolean increaseStep(Vector2 v, int D, int end) {
+  private boolean increaseStep(Vector2 v, Cardinal D, int end) {
     switch (D) {
-      case 0: return (++v.y == Param.TILES_Y - end);
-      case 1: return (++v.x == Param.TILES_X - end);
-      case 2: return (--v.y == end);
-      case 3: return (--v.x == end);
-      default: Gdx.app.error("increaseStep","Unknown direction: " + Integer.toString(D));
+      case kN: return (++v.y == Param.TILES_Y - end);
+      case kE: return (++v.x == Param.TILES_X - end);
+      case kS: return (--v.y == end);
+      case kW: return (--v.x == end);
+      default: Gdx.app.error("increaseStep","Unknown direction");
     }
     return false;
   }
 
-  private boolean krinkle(Vector2 v, int D, Edge direction, int maxIncursion) {
+  private boolean krinkle(Vector2 v, Cardinal D, Edge direction, int maxIncursion) {
     final int MAX_KRINKLE = 3; // Must be ODD
     int dist = R.nextInt(MAX_KRINKLE);
     switch (direction) {
@@ -66,62 +71,62 @@ public class World {
       default: Gdx.app.error("krinkle","Unknown enum");
     }
     switch (D) {
-      case 0: v.x += dist; break;
-      case 1: v.y -= dist; break;
-      case 2: v.x -= dist; break;
-      case 3: v.y += dist; break;
-      default: Gdx.app.error("krinkle","Unknown direction: " + Integer.toString(D));
+      case kN: v.x += dist; break;
+      case kE: v.y -= dist; break;
+      case kS: v.x -= dist; break;
+      case kW: v.y += dist; break;
+      default: Gdx.app.error("krinkle","Unknown direction");
     }
-    if (D == 0 && Util.needsClamp((int)v.x, 1, maxIncursion)) {
+    if (D == Cardinal.kN && Util.needsClamp((int)v.x, 1, maxIncursion)) {
       v.x = (int)Util.clamp((int)v.x, 1, maxIncursion);
       return true;
-    } else if (D == 2 && Util.needsClamp((int)v.x, Param.TILES_X - maxIncursion, Param.TILES_X - 1)) {
+    } else if (D == Cardinal.kS && Util.needsClamp((int)v.x, Param.TILES_X - maxIncursion, Param.TILES_X - 1)) {
       v.x = (int) Util.clamp((int) v.x, Param.TILES_X - maxIncursion, Param.TILES_X - 1);
       return true;
-    } else if (D == 3 && Util.needsClamp((int)v.y, 1, maxIncursion)) {
+    } else if (D == Cardinal.kW && Util.needsClamp((int)v.y, 1, maxIncursion)) {
       v.y = (int)Util.clamp((int)v.y, 1, maxIncursion);
       return true;
-    } else if (D == 1 && Util.needsClamp((int)v.y, Param.TILES_Y - maxIncursion, Param.TILES_Y - 1)) {
+    } else if (D == Cardinal.kE && Util.needsClamp((int)v.y, Param.TILES_Y - maxIncursion, Param.TILES_Y - 1)) {
       v.y = (int) Util.clamp((int) v.y, Param.TILES_Y - maxIncursion, Param.TILES_Y - 1);
       return true;
     }
     return false;
   }
 
-  private void setToVoid(Vector2 v, int D) {
+  private void setToVoid(Vector2 v, Cardinal D) {
     switch (D) {
-      case 0: for (int x = (int)v.x; x >= 0; --x) tiles[x][(int)v.y].setTexture("b",1);
+      case kN: for (int x = (int)v.x; x >= 0; --x) tiles[x][(int)v.y].setType(TileType.kGROUND, Colour.kBLACK, 0);
         break;
-      case 1: for (int y = (int)v.y; y < Param.TILES_Y; ++y) tiles[(int)v.x][y].setTexture("b",1);
+      case kE: for (int y = (int)v.y; y < Param.TILES_Y; ++y) tiles[(int)v.x][y].setType(TileType.kGROUND, Colour.kBLACK, 0);
         break;
-      case 2: for (int x = (int)v.x; x < Param.TILES_X; ++x) tiles[x][(int)v.y].setTexture("b",1);
+      case kS: for (int x = (int)v.x; x < Param.TILES_X; ++x) tiles[x][(int)v.y].setType(TileType.kGROUND, Colour.kBLACK, 0);
         break;
-      case 3: for (int y = (int)v.y; y >= 0; --y) tiles[(int)v.x][y].setTexture("b",1);
+      case kW: for (int y = (int)v.y; y >= 0; --y) tiles[(int)v.x][y].setType(TileType.kGROUND, Colour.kBLACK, 0);
         break;
       default: Gdx.app.error("setToVoid","Unknown direction");
     }
   }
 
-  private void kornerKiller(Vector2 v, int D) {
+  private void kornerKiller(Vector2 v, Cardinal D) {
     switch (D) {
-      case 0:
+      case kN:
         for (int x = (int)v.x; x >= 0; --x) {
-          for (int y = (int)v.y; y < Param.TILES_Y; ++y) tiles[x][y].setTexture("b",1);
+          for (int y = (int)v.y; y < Param.TILES_Y; ++y) tiles[x][y].setType(TileType.kGROUND, Colour.kBLACK, 0);
         }
         break;
-      case 1:
+      case kE:
         for (int x = (int)v.x; x < Param.TILES_X; ++x) {
-          for (int y = (int)v.y; y < Param.TILES_Y; ++y) tiles[x][y].setTexture("b",1);
+          for (int y = (int)v.y; y < Param.TILES_Y; ++y) tiles[x][y].setType(TileType.kGROUND, Colour.kBLACK, 0);
         }
         break;
-      case 2:
+      case kS:
         for (int x = (int)v.x; x < Param.TILES_X; ++x) {
-          for (int y = (int)v.y; y >= 0; --y) tiles[x][y].setTexture("b",1);
+          for (int y = (int)v.y; y >= 0; --y) tiles[x][y].setType(TileType.kGROUND, Colour.kBLACK, 0);
         }
         break;
-      case 3:
+      case kW:
         for (int x = (int)v.x; x >= 0; --x) {
-          for (int y = (int)v.y; y >= 0; --y) tiles[x][y].setTexture("b",1);
+          for (int y = (int)v.y; y >= 0; --y) tiles[x][y].setType(TileType.kGROUND, Colour.kBLACK, 0);
         }
         break;
       default: Gdx.app.error("kornerKiller","Unknown direction");
@@ -134,10 +139,10 @@ public class World {
     final int MIN_DIST = 2;
     final int MAX_DIST = 7;
     Vector2 location = new Vector2(EDGE_OFFSET + R.nextInt(EDGE_OFFSET), EDGE_OFFSET + R.nextInt(EDGE_OFFSET));
-    kornerKiller(location, 3);
+    kornerKiller(location, Cardinal.kW);
     final int startingX = (int)location.x;
-    for (int D = 0; D < 4; ++D) { // Direction
-      final int end = (D == 3 ? startingX : EDGE_OFFSET + R.nextInt(EDGE_OFFSET));
+    for (Cardinal D = Cardinal.kN; /*noop*/; D = D.next90()) { // Direction
+      final int end = (D == Cardinal.kW ? startingX : EDGE_OFFSET + R.nextInt(EDGE_OFFSET));
       boolean reachedEnd = false;
       Edge direction = Edge.kOUT;
       while (!reachedEnd) {
@@ -153,8 +158,41 @@ public class World {
         direction = Edge.random();
       }
       kornerKiller(location, D);
+      if (D == Cardinal.kW) break; // Done
     }
     return true;
+  }
+
+  final Map<Cardinal, Tile> collateNeighbours(int x, int y) {
+    Map<Cardinal, Tile> map = new EnumMap<Cardinal, Tile>(Cardinal.class);
+    map.put(Cardinal.kN, tiles[x][y+1]);
+    map.put(Cardinal.kNE, tiles[x+1][y+1]);
+    map.put(Cardinal.kE, tiles[x+1][y]);
+    map.put(Cardinal.kSE, tiles[x+1][y-1]);
+    map.put(Cardinal.kS, tiles[x][y-1]);
+    map.put(Cardinal.kSW, tiles[x-1][y-1]);
+    map.put(Cardinal.kW, tiles[x-1][y]);
+    map.put(Cardinal.kNW, tiles[x-1][y+1]);
+    return map;
+  }
+
+  void applyTileGraphics() {
+    // Outer are forced to be void
+    // Do these first so we don't try and access outside of the tilespace
+    for (int x = 0; x < Param.TILES_X; ++x) {
+      tiles[x][0].setTexture( TileType.getTextureString(TileType.kGROUND, Colour.kBLACK), 1 );
+      tiles[x][Param.TILES_Y-1].setTexture( TileType.getTextureString(TileType.kGROUND, Colour.kBLACK), 1 );
+    }
+    for (int y = 0; y < Param.TILES_Y; ++y) {
+      tiles[0][y].setTexture( TileType.getTextureString(TileType.kGROUND, Colour.kBLACK), 1 );
+      tiles[Param.TILES_X-1][y].setTexture( TileType.getTextureString(TileType.kGROUND, Colour.kBLACK), 1 );
+    }
+    // Set the rest
+    for (int x = 1; x < Param.TILES_X-1; ++x) {
+      for (int y = 1; y < Param.TILES_Y-1; ++y) {
+        tiles[x][y].setTexture( TileType.getTextureString(tiles[x][y], collateNeighbours(x,y)), 1 );
+      }
+    }
   }
 
 

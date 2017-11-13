@@ -15,5 +15,5 @@ public class Util {
   }
 
   public static boolean needsClamp(float val, float min, float max) { return !(val == clamp(val,min,max)); }
-  
+
 }

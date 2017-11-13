@@ -17,6 +17,7 @@ public class Entity extends Actor {
 
   public void setTexture(String name, int frames) {
     textureRegion[0] = Textures.getInstance().getTexture(name);
+    if (textureRegion[0] == null) Gdx.app.error("setTexture", "Texture error " + name);
   }
 
   @Override

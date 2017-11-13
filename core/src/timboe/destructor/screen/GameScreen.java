@@ -15,6 +15,8 @@ import timboe.destructor.manager.Camera;
 import timboe.destructor.manager.GameState;
 import timboe.destructor.manager.UI;
 
+import static com.badlogic.gdx.graphics.GL20.*;
+
 public class GameScreen implements Screen {
 
   private InputMultiplexer multiplexer = new InputMultiplexer();
@@ -43,12 +45,15 @@ public class GameScreen implements Screen {
   @Override
   public void render(float delta) {
 
+
+
     renderClear();
 
     Camera.getInstance().update(delta);
 
 //    GameState.getInstance().getStage().getRoot().setCullingArea( Camera.getInstance().getCullBox() );
-
+//    Gdx.gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+//    Gdx.gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     GameState.getInstance().getStage().draw();
 
     Camera.getInstance().updateUI();
