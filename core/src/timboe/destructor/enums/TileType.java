@@ -9,7 +9,9 @@ import java.util.Random;
 
 public enum TileType {
   kGROUND,
+  kGROUND_CORNER,
   kCLIFF_EDGE,
+  kCLIFF_EDGE_2,
   kCLIFF_EDGE_3,
   kCLIFF,
   kCLIFF_3,
@@ -31,8 +33,12 @@ public enum TileType {
         if (c == Colour.kBLACK) return "b";
         else return "floor_" + c.getString() + "_" + (R.nextFloat() < .9f ? "2" : Util.rndInt(Param.N_GRASS_TILES).toString());
         // 90% chance of having "plain" ground
+      case kGROUND_CORNER:
+        return "floor_c_" + c.getString() + "_" + D.getString();
       case kCLIFF_EDGE:
         return "h_" + c.getString() + "_" + D.getString();
+      case kCLIFF_EDGE_2:
+        return "h2_" + c.getString() + "_" + D.getString();
       case kCLIFF_EDGE_3:
         return "h3_" + c.getString() + "_" + D.getString();
       case kCLIFF:
@@ -67,10 +73,16 @@ public enum TileType {
             && neighbours.get(Cardinal.kE).type == kGROUND && t.colour == neighbours.get(Cardinal.kE).colour
             && neighbours.get(Cardinal.kS).type == kGROUND && t.colour == neighbours.get(Cardinal.kS).colour
             && neighbours.get(Cardinal.kW).type == kGROUND && t.colour == neighbours.get(Cardinal.kW).colour) {
+      // Check cliff inner-edge
+      if (t.level - 1 == neighbours.get(Cardinal.kNE).level
+              && t.level - 1 == neighbours.get(Cardinal.kNW).level) return getTextureString(kGROUND_CORNER, t.colour, Cardinal.kN);
+      else if (t.level - 1 == neighbours.get(Cardinal.kNE).level) return getTextureString(kGROUND_CORNER, t.colour, Cardinal.kNE);
+      else if (t.level - 1 == neighbours.get(Cardinal.kNW).level) return getTextureString(kGROUND_CORNER, t.colour, Cardinal.kNW);
+      // Regular ground
       return getTextureString(kGROUND, t.colour);
     }
 
-    // Cliff Edges
+    // Cliff Edges (x8)
     if (testCliffEdge(t, neighbours, true,false,false,false)) return getTextureString(kCLIFF_EDGE, t.colour, Cardinal.kN);
     if (testCliffEdge(t, neighbours, true,true,false,false)) return getTextureString(kCLIFF_EDGE, t.colour, Cardinal.kNE);
     if (testCliffEdge(t, neighbours, false,true,false,false)) return getTextureString(kCLIFF_EDGE, t.colour, Cardinal.kE);
@@ -79,14 +91,21 @@ public enum TileType {
     if (testCliffEdge(t, neighbours, false,false,true,true)) return getTextureString(kCLIFF_EDGE, t.colour, Cardinal.kSW);
     if (testCliffEdge(t, neighbours, false,false,false,true)) return getTextureString(kCLIFF_EDGE, t.colour, Cardinal.kW);
     if (testCliffEdge(t, neighbours, true,false,false,true)) return getTextureString(kCLIFF_EDGE, t.colour, Cardinal.kNW);
-    // Three-sides
+    // Two-sides (x2)
+    if (testCliffEdge(t, neighbours, true,false,true,false)) return getTextureString(kCLIFF_EDGE_2, t.colour, Cardinal.kE);
+    if (testCliffEdge(t, neighbours, false,true,false,true)) return getTextureString(kCLIFF_EDGE_2, t.colour, Cardinal.kN);
+    // Three-sides (x4)
+    if (testCliffEdge(t, neighbours, true,true,false,true)) return getTextureString(kCLIFF_EDGE_3, t.colour, Cardinal.kN);
+    if (testCliffEdge(t, neighbours, true,true,true,false)) return getTextureString(kCLIFF_EDGE_3, t.colour, Cardinal.kE);
     if (testCliffEdge(t, neighbours, false,true,true,true)) return getTextureString(kCLIFF_EDGE_3, t.colour, Cardinal.kS);
-
+    if (testCliffEdge(t, neighbours, true,false,true,true)) return getTextureString(kCLIFF_EDGE_3, t.colour, Cardinal.kW);
 
     // Bottom of cliff. This colour block keeps the correct void fade around tight corners
     Colour lowerC = neighbours.get(Cardinal.kS).colour;
     if      (neighbours.get(Cardinal.kSE).level < neighbours.get(Cardinal.kS).level) lowerC = neighbours.get(Cardinal.kSE).colour;
     else if (neighbours.get(Cardinal.kSW).level < neighbours.get(Cardinal.kS).level) lowerC = neighbours.get(Cardinal.kSW).colour;
+    else if (neighbours.get(Cardinal.kE).level < neighbours.get(Cardinal.kS).level) lowerC = neighbours.get(Cardinal.kE).colour;
+    else if (neighbours.get(Cardinal.kW).level < neighbours.get(Cardinal.kS).level) lowerC = neighbours.get(Cardinal.kW).colour;
     if (testCliff(t, neighbours,true, true, true)) return getTextureString(kCLIFF, neighbours.get(Cardinal.kN).colour, Cardinal.kS, lowerC);
     if (testCliff(t, neighbours,false, true, true)) return getTextureString(kCLIFF, neighbours.get(Cardinal.kN).colour, Cardinal.kSE, lowerC);
     if (testCliff(t, neighbours,true, true, false)) return getTextureString(kCLIFF, neighbours.get(Cardinal.kN).colour, Cardinal.kSW, lowerC);
