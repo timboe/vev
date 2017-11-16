@@ -2,11 +2,15 @@ package timboe.destructor;
 
 public class Param {
 
+  public static final int ZONES_X = 3; // Constant... or not to constant
+  public static final int ZONES_Y = 3;
 
   public static final int TILES_X = 256;
   public static final int TILES_Y = 256;
 
   public static final int TILE_S = 16;
+
+  public static final int MIN_GREEN_ZONE = 4;
 
   public static final int DISPLAY_X = 1920;
   public static final int DISPLAY_Y = 1080;

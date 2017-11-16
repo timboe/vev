@@ -46,7 +46,7 @@ public enum TileType {
       case kCLIFF_3:
         return "h3_" + c.getString() + "_" + D.getString() + "_" + c2.getString();
     }
-    return "missing";
+    return "missing2";
   }
 
 
@@ -66,6 +66,9 @@ public enum TileType {
 
   // Large test case for all possible tiles
   public static String getTextureString(final Tile t, final Map<Cardinal, Tile> neighbours) {
+
+    // Temp
+    if (t.colour == Colour.kGREEN) getTextureString(kGROUND, t.colour);
 
     // Grass
     if (t.type == kGROUND
