@@ -7,12 +7,20 @@ import timboe.destructor.entity.Tile;
 import java.util.Map;
 import java.util.Random;
 
+import static timboe.destructor.enums.Colour.kGREEN;
+import static timboe.destructor.enums.Colour.kRED;
+
 public enum TileType {
   kGROUND,
   kGROUND_CORNER,
+  kGRASS_EDGE,
+  kGRASS_CORNER,
+  kGRASS_INNER_CORNER,
+  kGRASS_INNER_CORNER_DOUBLE,
   kCLIFF_EDGE,
   kCLIFF_EDGE_2,
   kCLIFF_EDGE_3,
+  kCLIFF_EDGE_4,
   kCLIFF,
   kCLIFF_3,
   kSTAIRS;
@@ -31,16 +39,26 @@ public enum TileType {
     switch (tt) {
       case kGROUND:
         if (c == Colour.kBLACK) return "b";
-        else return "floor_" + c.getString() + "_" + (R.nextFloat() < .9f ? "2" : Util.rndInt(Param.N_GRASS_TILES).toString());
+        else return "floor_" + c.getString() + "_" + (R.nextFloat() < .9f ? "2" : Util.rndInt(Param.N_GRASS_VARIANTS).toString());
         // 90% chance of having "plain" ground
       case kGROUND_CORNER:
         return "floor_c_" + c.getString() + "_" + D.getString();
+      case kGRASS_EDGE:
+        return "border_" + c.getString() + "_" + D.getString() + "_" + Util.rndInt(Param.N_BORDER_VARIANTS).toString();
+      case kGRASS_CORNER:
+        return "border_" + c.getString() + "_" + D.getString();
+      case kGRASS_INNER_CORNER:
+        return "border_inner_" + c.getString() + "_" + D.getString();
+      case kGRASS_INNER_CORNER_DOUBLE:
+        return "border_inner_double_" + c.getString() + "_" + D.getString();
       case kCLIFF_EDGE:
         return "h_" + c.getString() + "_" + D.getString();
       case kCLIFF_EDGE_2:
         return "h2_" + c.getString() + "_" + D.getString();
       case kCLIFF_EDGE_3:
         return "h3_" + c.getString() + "_" + D.getString();
+      case kCLIFF_EDGE_4:
+        return "h4_" + c.getString();
       case kCLIFF:
         return "h_" + c.getString() + "_" + D.getString() + "_" + c2.getString();
       case kCLIFF_3:
@@ -63,27 +81,21 @@ public enum TileType {
             && t.level + (W ? 1 : 0)  == neighbours.get(Cardinal.kNW).level);
   }
 
+  private static boolean testGrass(final Tile T, final Map<Cardinal, Tile> neighbours, boolean N, boolean E, boolean S, boolean W) {
+    if (T.colour != kGREEN) return false;
+    return (neighbours.get(Cardinal.kN).colour == (N ? kGREEN : kRED)
+            && neighbours.get(Cardinal.kE).colour == (E ? kGREEN : kRED)
+            && neighbours.get(Cardinal.kS).colour == (S ? kGREEN : kRED)
+            && neighbours.get(Cardinal.kW).colour == (W ? kGREEN : kRED));
+  }
+
 
   // Large test case for all possible tiles
   public static String getTextureString(final Tile t, final Map<Cardinal, Tile> neighbours) {
 
     // Temp
-    if (t.colour == Colour.kGREEN) getTextureString(kGROUND, t.colour);
-
-    // Grass
-    if (t.type == kGROUND
-            && neighbours.get(Cardinal.kN).type == kGROUND && t.colour == neighbours.get(Cardinal.kN).colour
-            && neighbours.get(Cardinal.kE).type == kGROUND && t.colour == neighbours.get(Cardinal.kE).colour
-            && neighbours.get(Cardinal.kS).type == kGROUND && t.colour == neighbours.get(Cardinal.kS).colour
-            && neighbours.get(Cardinal.kW).type == kGROUND && t.colour == neighbours.get(Cardinal.kW).colour) {
-      // Check cliff inner-edge
-      if (t.level - 1 == neighbours.get(Cardinal.kNE).level
-              && t.level - 1 == neighbours.get(Cardinal.kNW).level) return getTextureString(kGROUND_CORNER, t.colour, Cardinal.kN);
-      else if (t.level - 1 == neighbours.get(Cardinal.kNE).level) return getTextureString(kGROUND_CORNER, t.colour, Cardinal.kNE);
-      else if (t.level - 1 == neighbours.get(Cardinal.kNW).level) return getTextureString(kGROUND_CORNER, t.colour, Cardinal.kNW);
-      // Regular ground
-      return getTextureString(kGROUND, t.colour);
-    }
+//    if (t.mask) return "missing3";
+//    if (true) return getTextureString(kGROUND, t.colour);
 
     // Cliff Edges (x8)
     if (testCliffEdge(t, neighbours, true,false,false,false)) return getTextureString(kCLIFF_EDGE, t.colour, Cardinal.kN);
@@ -102,6 +114,33 @@ public enum TileType {
     if (testCliffEdge(t, neighbours, true,true,true,false)) return getTextureString(kCLIFF_EDGE_3, t.colour, Cardinal.kE);
     if (testCliffEdge(t, neighbours, false,true,true,true)) return getTextureString(kCLIFF_EDGE_3, t.colour, Cardinal.kS);
     if (testCliffEdge(t, neighbours, true,false,true,true)) return getTextureString(kCLIFF_EDGE_3, t.colour, Cardinal.kW);
+    // Four sides
+    if (testCliffEdge(t, neighbours, true,true,true,true)) return getTextureString(kCLIFF_EDGE_4, t.colour);
+
+    // Grass-Dirt boundary
+    // sides
+    if (testGrass(t, neighbours, false,true,true,true)) return getTextureString(kGRASS_EDGE, t.colour, Cardinal.kN);
+    if (testGrass(t, neighbours, true,false,true,true)) return getTextureString(kGRASS_EDGE, t.colour, Cardinal.kE);
+    if (testGrass(t, neighbours, true,true,false,true)) return getTextureString(kGRASS_EDGE, t.colour, Cardinal.kS);
+    if (testGrass(t, neighbours, true,true,true,false)) return getTextureString(kGRASS_EDGE, t.colour, Cardinal.kW);
+    // Corners
+    if (testGrass(t, neighbours, false,false,true,true)) return getTextureString(kGRASS_CORNER, t.colour, Cardinal.kNE);
+    if (testGrass(t, neighbours, true,false,false,true)) return getTextureString(kGRASS_CORNER, t.colour, Cardinal.kSE);
+    if (testGrass(t, neighbours, true,true,false,false)) return getTextureString(kGRASS_CORNER, t.colour, Cardinal.kSW);
+    if (testGrass(t, neighbours, false,true,true,false)) return getTextureString(kGRASS_CORNER, t.colour, Cardinal.kNW);
+    // Inner corners
+    if (testGrass(t, neighbours, true,true,true,true)) {
+      if (neighbours.get(Cardinal.kNE).colour == kRED && neighbours.get(Cardinal.kSW).colour == kRED)
+        return getTextureString(kGRASS_INNER_CORNER_DOUBLE, t.colour, Cardinal.kNE);
+      if (neighbours.get(Cardinal.kSE).colour == kRED && neighbours.get(Cardinal.kNW).colour == kRED)
+        return getTextureString(kGRASS_INNER_CORNER_DOUBLE, t.colour, Cardinal.kSE);
+      if (neighbours.get(Cardinal.kNE).colour == kRED) return getTextureString(kGRASS_INNER_CORNER, t.colour, Cardinal.kNE);
+      if (neighbours.get(Cardinal.kSE).colour == kRED) return getTextureString(kGRASS_INNER_CORNER, t.colour, Cardinal.kSE);
+      if (neighbours.get(Cardinal.kSW).colour == kRED) return getTextureString(kGRASS_INNER_CORNER, t.colour, Cardinal.kSW);
+      if (neighbours.get(Cardinal.kNW).colour == kRED) return getTextureString(kGRASS_INNER_CORNER, t.colour, Cardinal.kNW);
+    }
+
+
 
     // Bottom of cliff. This colour block keeps the correct void fade around tight corners
     Colour lowerC = neighbours.get(Cardinal.kS).colour;
@@ -115,10 +154,24 @@ public enum TileType {
     // Three sides
     if (testCliff(t, neighbours,false, true, false)) return getTextureString(kCLIFF_3, neighbours.get(Cardinal.kN).colour, Cardinal.kS, lowerC);
 
+    // Grass
+//    if (t.type == kGROUND
+//            && neighbours.get(Cardinal.kN).type == kGROUND && t.colour == neighbours.get(Cardinal.kN).colour
+//            && neighbours.get(Cardinal.kE).type == kGROUND && t.colour == neighbours.get(Cardinal.kE).colour
+//            && neighbours.get(Cardinal.kS).type == kGROUND && t.colour == neighbours.get(Cardinal.kS).colour
+//            && neighbours.get(Cardinal.kW).type == kGROUND && t.colour == neighbours.get(Cardinal.kW).colour) {
+      // Check cliff inner-edge
+      if (t.level - 1 == neighbours.get(Cardinal.kNE).level
+              && t.level - 1 == neighbours.get(Cardinal.kNW).level) return getTextureString(kGROUND_CORNER, t.colour, Cardinal.kN);
+      else if (t.level - 1 == neighbours.get(Cardinal.kNE).level) return getTextureString(kGROUND_CORNER, t.colour, Cardinal.kNE);
+      else if (t.level - 1 == neighbours.get(Cardinal.kNW).level) return getTextureString(kGROUND_CORNER, t.colour, Cardinal.kNW);
+      // Regular ground
+      return getTextureString(kGROUND, t.colour);
+//    }
 
     // Void
-    if (t.level == 0) return getTextureString(kGROUND, Colour.kBLACK);
+//    if (t.level == 0) return getTextureString(kGROUND, Colour.kBLACK);
 
-    return "missing";
+//    return "missing";
   }
 }

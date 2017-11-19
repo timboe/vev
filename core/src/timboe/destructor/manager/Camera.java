@@ -74,6 +74,7 @@ public class Camera {
 
   public void setZoom(float z) {
     desiredZoom = z;
+    desiredZoom = Util.clamp(desiredZoom, Param.ZOOM_MIN, Param.ZOOM_MAX);
   }
 
   public float getZoom() {

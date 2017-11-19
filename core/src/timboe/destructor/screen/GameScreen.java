@@ -14,6 +14,7 @@ import timboe.destructor.input.Handler;
 import timboe.destructor.manager.Camera;
 import timboe.destructor.manager.GameState;
 import timboe.destructor.manager.UI;
+import timboe.destructor.manager.World;
 
 import static com.badlogic.gdx.graphics.GL20.*;
 
@@ -37,7 +38,8 @@ public class GameScreen implements Screen {
   }
 
   protected void renderClear() {
-    Gdx.gl.glClearColor(.7f, .7f, .7f, 1);
+    Gdx.gl.glClearColor(.1529f, .1255f, .1922f, 1);
+//    Gdx.gl.glClearColor(.7f, .7f, .7f, 1);
     Gdx.graphics.getGL20().glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT | GL20.GL_STENCIL_BUFFER_BIT);
   }
 
@@ -52,13 +54,11 @@ public class GameScreen implements Screen {
     Camera.getInstance().update(delta);
 
 //    GameState.getInstance().getStage().getRoot().setCullingArea( Camera.getInstance().getCullBox() );
-//    Gdx.gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-//    Gdx.gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     GameState.getInstance().getStage().draw();
 
     Camera.getInstance().updateUI();
 
-    GameState.getInstance().getUIStage().draw();
+//    GameState.getInstance().getUIStage().draw();
 
   }
 

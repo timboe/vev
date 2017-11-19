@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.math.Vector2;
 import timboe.destructor.manager.Camera;
+import timboe.destructor.manager.World;
 
 public class Gesture implements GestureDetector.GestureListener {
 
@@ -16,6 +17,7 @@ public class Gesture implements GestureDetector.GestureListener {
 
   @Override
   public boolean tap(float x, float y, int count, int button) {
+    World.getInstance().generate();
     return false;
   }
 

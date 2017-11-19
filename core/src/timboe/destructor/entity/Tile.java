@@ -14,10 +14,12 @@ public class Tile extends Entity {
   public Colour colour;
   public TileType type;
   public int level;
+  public boolean mask;
 
   public Tile(int x, int y) {
     super(x, y);
-    setType(TileType.kGROUND, kBLACK, 10);
+    setType(TileType.kGROUND, kBLACK, 0);
+    mask = false;
   }
 
   public void setType(TileType t, Colour c, int l) {

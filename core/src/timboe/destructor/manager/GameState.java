@@ -51,6 +51,8 @@ public class GameState {
   }
 
   public void reset() {
+    if (stage != null) stage.dispose();
+    if (uiStage != null) uiStage.dispose();
     stage = new Stage(Camera.getInstance().getViewport());
     uiStage = new Stage(Camera.getInstance().getViewport());
   }
