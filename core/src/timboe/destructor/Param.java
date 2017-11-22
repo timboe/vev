@@ -16,6 +16,9 @@ public class Param {
   public static int NEAR_TO_EDGE = MAX_KRINKLE * 2; // Min close-able space. If one went +ve and the other -ve,
   public static int EDGE_ADJUSTMENT = 2;
 
+  public static final int MIN_DIST = 2; // Minimum number of steps to do for a feature
+  public static final int MAX_DIST = 7; // Maximum number of steps to do for a feature is MIN_DIST + MAX_DIST
+
   public static final int DISPLAY_X = 1920;
   public static final int DISPLAY_Y = 1080;
 

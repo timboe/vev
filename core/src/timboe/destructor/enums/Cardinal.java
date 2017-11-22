@@ -10,7 +10,8 @@ public enum Cardinal {
   kS,
   kSW,
   kW,
-  kNW;
+  kNW,
+  kINVALID;
 
   public Cardinal next90() {
     if (this == kW) return kN;

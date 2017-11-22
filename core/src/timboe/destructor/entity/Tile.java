@@ -11,10 +11,8 @@ import static timboe.destructor.enums.Colour.kRED;
 
 public class Tile extends Entity {
 
-  public Colour colour;
   public TileType type;
   public int level;
-  public boolean mask;
 
   public Tile(int x, int y) {
     super(x, y);

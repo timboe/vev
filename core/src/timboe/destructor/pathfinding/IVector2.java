@@ -29,4 +29,16 @@ public class IVector2 implements Comparable {
     IVector2 v = (IVector2)o;
     return  (x*x + y*y) - (v.x*v.x - v.y*v.y);
   }
+
+  @Override
+  public boolean equals(Object o) {
+    if (o == null || !(o instanceof IVector2)) return false;
+    IVector2 v = (IVector2)o;
+    return (x == v.x && y == v.y);
+  }
+
+  @Override
+  public String toString() {
+    return "(" + x + "," + y +")";
+  }
 }

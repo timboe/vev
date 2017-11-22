@@ -1,13 +1,15 @@
 package timboe.destructor.entity;
 
+import javafx.util.Pair;
 import timboe.destructor.Param;
 import timboe.destructor.enums.Colour;
 import timboe.destructor.pathfinding.IVector2;
 
-public class Zone {
+import java.util.Vector;
 
-  public Colour colour = Colour.kRED;
-  public boolean hill = false;
+public class Zone extends Entity {
+  public boolean merged;
+  public boolean hill;
   public IVector2 location = new IVector2();
   public IVector2 lowerLeft = new IVector2();
   public IVector2 upperRight = new IVector2();
@@ -15,6 +17,10 @@ public class Zone {
   public int h;
 
   public Zone(int x, int y) {
+    hill = false;
+    merged = false;
+    colour = Colour.kRED;
+    mask = false;
     location.set(x, y);
     w = (int) Math.round(Param.TILES_X / (double)Param.ZONES_X);
     h = (int) Math.round(Param.TILES_Y / (double)Param.ZONES_Y);
@@ -24,6 +30,14 @@ public class Zone {
     int yTop     = (y+1) * h;
     lowerLeft.set(xLeft, yBottom);
     upperRight.set(xRight, yTop);
+  }
+
+  public void addEdgePairs(Vector<Pair<IVector2,IVector2>> edgePairs) {
+    // Bottom left to top left, TL to TR, TR to BR, BR to BL
+    edgePairs.add(new Pair<IVector2, IVector2>(new IVector2(getLowerX(),getLowerY()), new IVector2(getLowerX(),getLowerY() + h)));
+    edgePairs.add(new Pair<IVector2, IVector2>(new IVector2(getLowerX(),getLowerY() + h), new IVector2(getUperX(),getUperY())));
+    edgePairs.add(new Pair<IVector2, IVector2>(new IVector2(getUperX(),getUperY()), new IVector2(getLowerX() + w, getLowerY())));
+    edgePairs.add(new Pair<IVector2, IVector2>(new IVector2(getLowerX() + w, getLowerY()), new IVector2(getLowerX(),getLowerY())));
   }
 
   public int getZoneX() { return location.x; }
