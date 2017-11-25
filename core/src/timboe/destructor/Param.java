@@ -34,4 +34,8 @@ public class Param {
 
   public static final float DESIRED_FPS = 60; // FPS ANIM_SPEED is tuned for
   public static final float FRAME_TIME = (1f/DESIRED_FPS);
+
+  //
+
+  public static int DEBUG = 1;
 }

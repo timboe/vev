@@ -12,15 +12,17 @@ public class Entity extends Actor {
 
   public boolean mask;
   public Colour colour;
+  public int level;
 
   protected TextureRegion[] textureRegion = new TextureRegion[Param.MAX_FRAMES];
 
   public Entity(int x, int y) {
+    textureRegion[0] = null;
     setBounds(x * Param.TILE_S, y * Param.TILE_S, Param.TILE_S, Param.TILE_S);
   }
 
   public Entity() {
-
+    textureRegion[0] = null;
   }
 
   public void setTexture(String name, int frames) {
@@ -33,6 +35,7 @@ public class Entity extends Actor {
 
   @Override
   public void draw(Batch batch, float alpha) {
+    if (textureRegion[0] == null) return;
     batch.draw(textureRegion[0], this.getX(), this.getY());
   }
 }

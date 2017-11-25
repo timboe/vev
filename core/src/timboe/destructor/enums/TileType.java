@@ -96,6 +96,7 @@ public enum TileType {
     // Temp
 //    if (t.mask) return "missing3";
 //    if (true) return getTextureString(kGROUND, t.colour);
+    if (t.mask) return "missing2";
 
     // Cliff Edges (x8)
     if (testCliffEdge(t, neighbours, true,false,false,false)) return getTextureString(kCLIFF_EDGE, t.colour, Cardinal.kN);

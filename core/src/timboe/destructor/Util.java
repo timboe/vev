@@ -1,5 +1,7 @@
 package timboe.destructor;
 
+import timboe.destructor.pathfinding.IVector2;
+
 import java.util.Random;
 
 public class Util {
@@ -15,5 +17,9 @@ public class Util {
   }
 
   public static boolean needsClamp(float val, float min, float max) { return !(val == clamp(val,min,max)); }
+
+  public static boolean inBounds(IVector2 v) {
+    return (!(needsClamp(v.x, 0, Param.TILES_X) || needsClamp(v.y, 0, Param.TILES_Y)));
+  }
 
 }

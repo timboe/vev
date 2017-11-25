@@ -9,7 +9,7 @@ import java.util.Vector;
 
 public class Zone extends Entity {
   public boolean merged;
-  public boolean hill;
+  public boolean hillWithinHill;
   public IVector2 location = new IVector2();
   public IVector2 lowerLeft = new IVector2();
   public IVector2 upperRight = new IVector2();
@@ -17,10 +17,11 @@ public class Zone extends Entity {
   public int h;
 
   public Zone(int x, int y) {
-    hill = false;
     merged = false;
     colour = Colour.kRED;
     mask = false;
+    hillWithinHill = false;
+    level = 1;
     location.set(x, y);
     w = (int) Math.round(Param.TILES_X / (double)Param.ZONES_X);
     h = (int) Math.round(Param.TILES_Y / (double)Param.ZONES_Y);
@@ -30,6 +31,7 @@ public class Zone extends Entity {
     int yTop     = (y+1) * h;
     lowerLeft.set(xLeft, yBottom);
     upperRight.set(xRight, yTop);
+    setBounds(xLeft * Param.TILE_S, yBottom * Param.TILE_S, w * Param.TILE_S, h * Param.TILE_S);
   }
 
   public void addEdgePairs(Vector<Pair<IVector2,IVector2>> edgePairs) {
