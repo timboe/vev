@@ -41,6 +41,15 @@ public class Camera {
     camera.update();
   }
 
+  public void updateSprite() {
+
+
+    camera.zoom *= (float)Param.SPRITE_SCALE;
+    camera.position.scl((float)Param.SPRITE_SCALE);
+    camera.update();
+
+  }
+
 
   public FitViewport getViewport() {
     return viewport;

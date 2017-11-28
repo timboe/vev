@@ -2,8 +2,7 @@ package timboe.destructor.enums;
 
 import com.badlogic.gdx.Gdx;
 
-import java.util.EnumSet;
-import java.util.HashSet;
+import java.util.*;
 
 public enum Cardinal {
   kN,
@@ -14,6 +13,8 @@ public enum Cardinal {
   kSW,
   kW,
   kNW;
+
+  public static final List<Cardinal> NESW = new ArrayList<Cardinal>(Arrays.asList(kN, kE, kS, kW));
 
   public Cardinal next90() {
     if (this == kW) return kN;

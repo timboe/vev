@@ -5,11 +5,13 @@ import javafx.util.Pair;
 import timboe.destructor.Param;
 import timboe.destructor.Util;
 import timboe.destructor.entity.Entity;
+import timboe.destructor.entity.Sprite;
 import timboe.destructor.entity.Tile;
 import timboe.destructor.entity.Zone;
 import timboe.destructor.enums.*;
 import timboe.destructor.pathfinding.IVector2;
 
+import javax.swing.*;
 import java.util.*;
 
 public class World {
@@ -67,7 +69,11 @@ public class World {
     edges.add(new IVector2(Param.TILES_X,0));
     edges.add(new IVector2(0,0));
     while (!success) {
-      ++worldTry;
+      if (++worldTry > 50) {
+        Gdx.app.error("generate", "Reached maximum number of wordlGen tries");
+        Gdx.app.exit();
+        System.exit(0);
+      }
       reset();
       success = doZones();
       Gdx.app.log("doWorld","let there be land");
@@ -75,6 +81,9 @@ public class World {
       if (success) success = doSpecialZones(true);
       if (success) success = removeGreenStubs();
       if (success) success = doSpecialZones(false);
+      if (success) success = removeEWSingleStairs();
+      if (success) success = markCliffs();
+      if (success) success = addFoliage();
     }
     applyTileGraphics();
     isReady = true;
@@ -83,19 +92,47 @@ public class World {
     for (int y = Param.ZONES_Y-1; y >= 0; --y) Gdx.app.log( "",zones[0][y].level + " " + zones[1][y].level + " " + zones[2][y].level);
   }
 
+
+  private String randomFoliage(Colour c) {
+    if (R.nextFloat() < Param.TREE_PROB) return "tree_" + c.getString() + "_" + R.nextInt(Param.N_TREE);
+    return "bush_" + c.getString() + "_" + R.nextInt(Param.N_BUSH);
+  }
+
+  private boolean addFoliage() {
+    for (int x = 1; x < Param.TILES_X-1; ++x) {
+      for (int y = 1; y < Param.TILES_Y-1; ++y) {
+        if (tiles[x][y].type != TileType.kGROUND || tiles[x][y].colour != Colour.kRED) continue;
+        if (R.nextFloat() < Param.FOLIAGE_PROB) {
+          Sprite s = new Sprite(x,y);
+          GameState.getInstance().getSpriteStage().addActor(s);
+          s.setTexture(randomFoliage(tiles[x][y].colour), 1);
+          if (R.nextBoolean()) s.flip();
+        }
+      }
+    }
+    return true;
+  }
+
+  private boolean markCliffs() {
+    for (int x = 1; x < Param.TILES_X-1; ++x) {
+      for (int y = 1; y < Param.TILES_Y-1; ++y) {
+        if (tiles[x][y].type != TileType.kGROUND) continue;
+        if (tiles[x][y+1].level > tiles[x][y].level) tiles[x][y].type = TileType.kCLIFF;
+      }
+    }
+    return true;
+  }
+
   private boolean removeGreenStubs() {
     boolean removed;
     do { //Iterative
       removed = false;
-      for (int x = 1; x < Param.TILES_X; ++x) {
-        for (int y = 0; y < Param.TILES_Y; ++y) {
+      for (int x = 1; x < Param.TILES_X-1; ++x) {
+        for (int y = 1; y < Param.TILES_Y-1; ++y) {
           if (tiles[x][y].colour != Colour.kGREEN) continue;
           Map<Cardinal, Tile> n = collateNeighbours(x, y);
           int c = 0;
-          if (n.get(Cardinal.kN).colour == Colour.kRED) ++c;
-          if (n.get(Cardinal.kE).colour == Colour.kRED) ++c;
-          if (n.get(Cardinal.kS).colour == Colour.kRED) ++c;
-          if (n.get(Cardinal.kW).colour == Colour.kRED) ++c;
+          for (Cardinal D : Cardinal.NESW) if (n.get(D).colour == Colour.kRED) ++c;
           if (c >= 3) {
             tiles[x][y].colour = Colour.kRED;
             removed = true;
@@ -106,31 +143,72 @@ public class World {
     return true;
   }
 
+  // The way stairs work, we cannot have a single stair tile in the E-W orientation
+  private boolean removeEWSingleStairs() {
+    for (int x = 1; x < Param.TILES_X-1; ++x) {
+      for (int y = 1; y < Param.TILES_Y-1; ++y) {
+        if (tiles[x][y].type != TileType.kSTAIRS) continue;
+        int count = 0;
+        Map<Cardinal, Tile> n = collateNeighbours(x, y);
+        for (Cardinal D : Cardinal.NESW) if (n.get(D).type == TileType.kSTAIRS) ++count;
+        if (count > 0) continue;
+        // Check if E-W or N-S
+        if (n.get(Cardinal.kE).level != n.get(Cardinal.kW).level) {
+          setGround(new IVector2(x, y), tiles[x][y].colour, tiles[x][y].level, Edge.kFLAT);
+          if (Param.DEBUG > 0) Gdx.app.log("removeEWSingleStairs", "Removed single stair at "+x+","+y);
+        }
+      }
+    }
+    return true;
+  }
+
   private boolean doZones() {
 //    zones[0][0].colour = Colour.kGREEN;
 //    zones[0][0].level = 2;
 //    zones[0][0].hillWithinHill = true;
+//
+//    zones[0][1].colour = Colour.kGREEN;
+//    zones[0][1].level = 2;
+//
+//    zones[1][1].colour = Colour.kGREEN;
+//    zones[1][1].level = 1;
+//
+//    zones[1][0].hillWithinHill = true;
+//    zones[1][0].level = 0;
+//
+//    zones[2][0].hillWithinHill = true;
+//    zones[2][0].level = 0;
+//
+//
 //    if (true) return true;
     int nGreen = 0;
-    int nHill = 0;
+    int nRed = 0;
+    int nRedHill = 0;
     int nGreenHill = 0;
     for (int x = 0; x < Param.ZONES_X; ++x) {
       for (int y = 0; y < Param.ZONES_Y; ++y) {
         zones[x][y].colour = (R.nextBoolean() ? Colour.kGREEN : Colour.kRED);
         final int heightMod = (zones[x][y].colour == Colour.kGREEN ? 1 : -1);
         boolean hill = R.nextBoolean();
-        zones[x][y].level = (hill ? 1 : 1 + heightMod);
-        if (hill && R.nextFloat() < 1f) zones[x][y].hillWithinHill = true;
+        zones[x][y].level = (hill ? 1 + heightMod : 1);
+        if (hill && R.nextFloat() < Param.HILL_IN_HILL_PROB) zones[x][y].hillWithinHill = true;
+
+        if (Param.DEBUG > 0) Gdx.app.log("doZones","x:" + x + " y:" + y + " C:" + zones[x][y].colour + " L:" +  zones[x][y].level + " HWH:"+zones[x][y].hillWithinHill);
+
         if (zones[x][y].colour == Colour.kGREEN) ++nGreen;
-        if (zones[x][y].level == 2) ++nHill;
-        if (zones[x][y].colour == Colour.kGREEN && zones[x][y].level == 2) ++nGreenHill;
+        else ++nRed;
+        if (zones[x][y].level != 1) {
+          if (zones[x][y].colour == Colour.kGREEN) ++nGreenHill;
+          else ++nRedHill;
+        }
       }
     }
-    return (nGreen >= Param.MIN_GREEN_ZONE);
+    if (Util.needsClamp(nGreen, Param.MIN_GREEN_ZONE, Param.MAX_GREEN_ZONE)) return false;
+    if (Util.needsClamp(nGreenHill, Param.MIN_GREEN_HILL, nGreen - 1)) return false;
+    return !(Util.needsClamp(nRedHill, Param.MIN_RED_HILL, nRed - 1));
   }
 
   private void increaseStep(IVector2 v, Cardinal D, Colour c, int level) {
-    setGround(v, c, level);
     switch (D) {
       case kN: ++v.y; break;
       case kE: ++v.x; break;
@@ -138,20 +216,20 @@ public class World {
       case kW: --v.x; break;
       default: Gdx.app.error("increaseStep","Unknown direction");
     }
-    if (Util.inBounds(v)) setGround(v, c, level);
+    if (Util.inBounds(v)) setGround(v, c, level, Edge.kFLAT);
   }
 
-  private boolean reachedDestination(final IVector2 v, final Cardinal D, final int endOffset,
-                                     final IVector2 destination, final boolean rightTurnNext) {
+  private int distanceToDestination(final IVector2 v, final Cardinal D, final int endOffset,
+                                    final IVector2 destination, final boolean rightTurnNext) {
     final int flip = (rightTurnNext ? 1 : -1);
     switch (D) {
-      case kN: return (v.y == destination.y - (endOffset * flip));
-      case kE: return (v.x == destination.x - (endOffset * flip));
-      case kS: return (v.y == destination.y + (endOffset * flip));
-      case kW: return (v.x == destination.x + (endOffset * flip));
+      case kN: return Math.abs(v.y - (destination.y - (endOffset * flip)));
+      case kE: return Math.abs(v.x - (destination.x - (endOffset * flip)));
+      case kS: return Math.abs(v.y - (destination.y + (endOffset * flip)));
+      case kW: return Math.abs(v.x - (destination.x + (endOffset * flip)));
       default: Gdx.app.error("increaseStep","Unknown direction");
     }
-    return false;
+    return 0;
   }
 
   private boolean sameColourAndLevel(final IVector2 start, final int offX, final int offY,
@@ -164,7 +242,8 @@ public class World {
             || (tiles[test.x][test.y].colour == toC && tiles[test.x][test.y].level == toLevel));
   }
 
-  private Edge krinkle(IVector2 v, final Cardinal D, final Edge direction, final int maxIncursion, final IVector2 destination,
+  private Edge krinkle(IVector2 v, final Cardinal D, Edge direction, final int distanceToDest,
+                       final int maxIncursion, final IVector2 destination,
                        final Colour fromC, final Colour toC,
                        final int fromLevel, final int toLevel) {
     int dist = R.nextInt(Param.MAX_KRINKLE);
@@ -172,6 +251,7 @@ public class World {
       case kFLAT: dist -= Math.floor(Param.MAX_KRINKLE/2.); break;
       case kOUT: dist *= -1; break;
       case kIN: break;
+      case kSTAIRS: case kSTAIRS_IN: case kSTAIRS_OUT: dist = 0; break;
       default: Gdx.app.error("krinkle","Unknown enum");
     }
     do {
@@ -179,9 +259,13 @@ public class World {
       if      (dist > 0) { step = +1; --dist; }
       else if (dist < 0) { step = -1; ++dist; }
 
-      int inTest = 0, inThreshold = 0, outTest = 0, outThreshold = 0, outModX = 0, outModY = 0;
-      int outOfBoundX = 0, outOfBoundY = 0, outOfBoundModX = 0, outOfBoundModY = 0;
-      int modX = 0, modY = 0;
+      int inTest = 0, inThreshold = 0; // Proposed krinkle vs. outermost allowed value
+      int outTest = 0, outThreshold = 0; // Proposed krinkle vs. innermost allowed value
+      int outModX = 0, outModY = 0; // X and Y needed to force us outwards if innermost criteria met
+      int outOfBoundX = 0, outOfBoundY = 0; // Distance to check for out-of-bounds due to meeting another krinkle
+      int outOfBoundModX = 0, outOfBoundModY = 0; // X and Y needed to force us inwards away from the OOB
+      int lookAheadOutOfBoundsX = 0, lookAheadOutOfBoundsY = 0; // Looking ahead to make sure we don't hit a right-angle we cannot krinkle around
+      int modX = 0, modY = 0; // The krinkle to apply - if all is good
 
       boolean testInvert = false;
       switch (D) {
@@ -189,24 +273,28 @@ public class World {
           inTest  = v.x + step; inThreshold  = destination.x + 1;
           outTest = v.x + step; outThreshold = destination.x + maxIncursion; outModX = -1;
           outOfBoundX = -Param.NEAR_TO_EDGE; outOfBoundModX = +1;
+          lookAheadOutOfBoundsY = 6; // TODO set tot a parameter
           modX = step;
           break;
         case kS:
           inTest  = v.x - step; inThreshold  = destination.x - 2; testInvert = true;
           outTest = v.x - step; outThreshold = destination.x - maxIncursion; outModX = +1;
           outOfBoundX = Param.NEAR_TO_EDGE; outOfBoundModX = -1;
+          lookAheadOutOfBoundsY = -6;
           modX = -step;
           break;
         case kW:
           inTest  = v.y + step; inThreshold  = destination.y + 2; // Space for cliff bottom
           outTest = v.y + step; outThreshold = destination.y + maxIncursion; outModY = -1;
-          outOfBoundY = -Param.NEAR_TO_EDGE; outOfBoundModY = +1;
+          outOfBoundY = -(Param.NEAR_TO_EDGE+1); outOfBoundModY = +1; // Space for cliff bottom
+          lookAheadOutOfBoundsX = 6;
           modY = step;
           break;
         case kE:
           inTest  = v.y - step; inThreshold  = destination.y - 2; testInvert = true;
           outTest = v.y - step; outThreshold = destination.y - maxIncursion; outModY = +1;
           outOfBoundY = Param.NEAR_TO_EDGE; outOfBoundModY = -1;
+          lookAheadOutOfBoundsX = -6;
           modY = -step;
           break;
       }
@@ -224,28 +312,42 @@ public class World {
         if (Param.DEBUG > 0) Gdx.app.log("      krinkle",v.toString() + " Too close to outer edge (" + inTest + " < " + inThreshold + ") -> kIN");
         return Edge.kIN; // Too close to edge of map
       } else if (outTest > outThreshold) { // Too close to centre
-        v.x += outModX; v.y += outModY; setGround(v, toC, toLevel); // Correct now
+        v.x += outModX; v.y += outModY; setGround(v, toC, toLevel, Edge.kFLAT); // Correct now
         if (Param.DEBUG > 0) Gdx.app.log("      krinkle",v.toString() + " Too close to centre -> kOUT");
         return Edge.kOUT;
-      } else if(!sameColourAndLevel(v, outOfBoundX, outOfBoundY, fromC, toC, fromLevel, toLevel)) {
+      } else if (!sameColourAndLevel(v, outOfBoundX, outOfBoundY, fromC, toC, fromLevel, toLevel)
+              || (distanceToDest > Param.MAX_DIST && !sameColourAndLevel(v, lookAheadOutOfBoundsX, lookAheadOutOfBoundsY, fromC, toC, fromLevel, toLevel)) ) {
         for (int i = 0; i < Param.EDGE_ADJUSTMENT; ++i) {
           v.x += outOfBoundModX; v.y += outOfBoundModY;
-          setGround(v, toC, toLevel);
+          setGround(v, toC, toLevel, Edge.kFLAT);
         }
+        if (direction == Edge.kSTAIRS || direction == Edge.kSTAIRS_IN || direction == Edge.kSTAIRS_OUT) direction = Edge.kIN;// Kill any on-going stairs at this point
         if (Param.DEBUG > 0) Gdx.app.log("      krinkle",v.toString() + " Too close to other krinkle -> CORRECT");
       } else {
         if (Param.DEBUG > 1) Gdx.app.log("      krinkle",v.toString() + " Krinkle by x:" + modX + ", y:" + modY);
         v.x += modX; v.y += modY;
       }
 
-      setGround(v, toC, toLevel);
+      IVector2 v2 = v.clone();
+      if (direction == Edge.kSTAIRS && toLevel > fromLevel) { // We are going UPHILL. Need to tweak stair placement
+        setGround(v, toC, toLevel, Edge.kFLAT);
+        switch (D) {
+          case kN: v2.x--; break;
+          case kS: v2.x++; break;
+          case kE: v2.y++; break;
+          case kW: v2.y--; break;
+          default: Gdx.app.error("krinkle","Unknown direction " + D);
+        }
+      }
+      setGround(v2, toC, toLevel, direction);
+
     } while (dist != 0);
     return direction;
   }
 
 
-  private void setGround(IVector2 v, Colour c, int level) {
-    tiles[v.x][v.y].setType(TileType.kGROUND, c, level);
+  private void setGround(IVector2 v, Colour c, int level, Edge direction) {
+    tiles[v.x][v.y].setType(direction == Edge.kSTAIRS ? TileType.kSTAIRS : TileType.kGROUND, c, level);
   }
 
   private void collateFloodFill(Vector<Pair<IVector2,IVector2>> edgePairs, Vector<Zone> zone) {
@@ -324,12 +426,14 @@ public class World {
     for (int x = 0; x < Param.ZONES_X; ++x) {
       for (int y = 0; y < Param.ZONES_Y; ++y) {
         if (doGreenZones && zones[x][y].colour != Colour.kGREEN) continue;
-        if (doHills      && zones[x][y].level == 1)
+        if (doHills      && zones[x][y].level == 1) continue;
         if (zones[x][y].merged) continue;
         final boolean hwh = zones[x][y].hillWithinHill;
-        final int hwh_level = (zones[x][y].level > 1 ? 3 : 0);
+        final int hwh_level = zones[x][y].level + (zones[x][y].level > 1 ? 1 : -1);
 
-        Gdx.app.log("doSpecialZones","Start " + (doGreenZones ? "GreenZone" : "Hill")   + " z("+x+","+y+") L("+zones[x][y].getLowerX()+","+zones[x][y].getLowerY()+")");
+        Gdx.app.log("doSpecialZones - " + (doGreenZones ? "GreenZone" : "Hill"),
+                "Start z("+x+","+y+") L("+zones[x][y].getLowerX()+","+zones[x][y].getLowerY()+
+                        ") HWH:" + zones[x][y].hillWithinHill);
 
         // Do a flood-fill
         final IVector2 floodStart = new IVector2(x,y);
@@ -351,13 +455,16 @@ public class World {
         boolean success = true;
         if (doGreenZones) success = doEdges(edges, zone, Colour.kRED, Colour.kGREEN, 1, 1, 11, 15);
         if (doHills)      success = doEdges(edges, zone, zones[x][y].colour, zones[x][y].colour, 1, zones[x][y].level, 17, 21);
-//        if (doHills && success && hwh) success = doEdges(edges, zone, zones[x][y].colour, zones[x][y].colour, zones[x][y].level, hwh_level, 23, 26);
+        if (doHills && success && hwh) {
+          Gdx.app.log("doSpecialZones - HillWithinHill",
+                  "Start z("+x+","+y+") L("+zones[x][y].getLowerX()+","+zones[x][y].getLowerY()+")");
+          success = doEdges(edges, zone, zones[x][y].colour, zones[x][y].colour, zones[x][y].level, hwh_level, 35, 38);
+        }
         if (!success) return success;
       }
     }
     return true;
   }
-
 
   private void floodFillMask(final IVector2 start, final boolean onTiles, final boolean compareLevel) {
     Queue<IVector2> queue = new PriorityQueue<IVector2>();
@@ -411,7 +518,7 @@ public class World {
     for (int x = z.lowerLeft.x; x < z.upperRight.x; ++x) {
       for (int y = z.lowerLeft.y; y < z.upperRight.y; ++y) {
         if (!tiles[x][y].mask && tiles[x][y].colour == fromC && tiles[x][y].level == fromLevel) {
-          setGround(new IVector2(x,y), toC, toLevel);
+          setGround(new IVector2(x,y), toC, toLevel, Edge.kFLAT);
         }
       }
     }
@@ -428,10 +535,10 @@ public class World {
 
     Gdx.app.log("  doEdges", "FromC " + fromC + " toC " + toC + ", fromL " + fromLevel + " toL " + toLevel);
 
-
     IVector2 location = new IVector2(edges.firstElement().x + offset, edges.firstElement().y + offset);
-    final int startX = location.x;
-    final int startY = location.y;
+    final IVector2 start = new IVector2(location);
+    final boolean doingHill = (fromLevel != toLevel && fromC != Colour.kBLACK);
+    int stairCount = 0;
 
     for (int section = 1; section < edges.size(); ++section) {
       final IVector2 current = edges.elementAt(section - 1).clone();
@@ -439,32 +546,52 @@ public class World {
       final IVector2 next = (section < edges.size() - 1 ? edges.elementAt(section + 1).clone() : null);
       final Cardinal D = getDirection(current, destination);
       final boolean rightTurnNext = (next == null || getDirection(destination, next) == D.next90());
-      Gdx.app.log("    Edge", "From " + edges.elementAt(section - 1).toString() + " to " + destination.toString() + ", D: " + D + ", RightTurnNext:" + rightTurnNext);
-      boolean reachedDest = false;
+      Gdx.app.log("    Edge",
+              "From " + edges.elementAt(section - 1).toString() +
+                      " to " + destination.toString() +
+                      ", D: " + D + ", RightTurnNext:" + rightTurnNext);
+      int distanceToDest = 999;
       Edge direction = Edge.kOUT;
-      while (!reachedDest) {
-        int duration = Param.MIN_DIST + R.nextInt(Param.MAX_DIST);
+      while (distanceToDest > 0) {
+        int duration = Param.MIN_DIST + R.nextInt(Param.MAX_DIST - Param.MIN_DIST + 1);
+        if (direction == Edge.kSTAIRS_IN || direction == Edge.kSTAIRS_OUT) duration = 1 + R.nextInt(Param.MIN_DIST); // Keep flat buffers shorter
         for (int step = 0; step < duration; ++step) {
           // Special block: to try and match up at the end
-          if (section == edges.size() - 1 && location.x - startX < maxIncursion) { // TODO maxIncursions - offset?
-            direction = (location.y > startY ? Edge.kOUT : Edge.kIN);
+          if (section == edges.size() - 1 && location.x - start.x < maxIncursion) { // TODO maxIncursions - offset?
+            direction = (location.y > start.y ? Edge.kOUT : Edge.kIN);
           }
           increaseStep(location, D, toC, toLevel);
-          direction = krinkle(location, D, direction, maxIncursion, destination, fromC, toC, fromLevel, toLevel);
-          if (!Util.inBounds(location)) return true; // TODO make this an error, return false
-          reachedDest = reachedDestination(location, D, offset, destination, rightTurnNext);
-          if (reachedDest) break;
+          distanceToDest = distanceToDestination(location, D, offset, destination, rightTurnNext);
+          direction = krinkle(location, D, direction, distanceToDest, maxIncursion, destination, fromC, toC, fromLevel, toLevel);
+          if (!Util.inBounds(location)) {
+            Gdx.app.error("doEdges", "Serious krinkle error, gone out-of-bounds");
+            return true; // TODO make this an error, return false
+          }
+          if (distanceToDest == 0) break;
         }
-        direction = Edge.random();
+        if (direction == Edge.kSTAIRS_IN) {
+          direction = Edge.kSTAIRS;
+        } else if (direction == Edge.kSTAIRS) {
+          direction = Edge.kSTAIRS_OUT;
+          ++stairCount;
+        } else {
+          direction = Edge.random(doingHill
+                  && direction != Edge.kSTAIRS_OUT
+                  && distanceToDest > Param.MAX_DIST*2);
+        }
       }
     }
 
-    // Connect back up to the start
-    while (location.y != startY) {
-      location.y += (startY > location.y ? 1 : -1);
-      setGround(location, toC, toLevel);
+    if (doingHill && stairCount < Param.MIN_STAIRCASES) {
+      Gdx.app.error("doEdges", "Staircases " + stairCount + " smaller than min " + Param.MIN_STAIRCASES);
+      return false;
     }
 
+    // Connect back up to the start
+    while (location.y != start.y) {
+      location.y += (start.y > location.y ? 1 : -1);
+      setGround(location, toC, toLevel, Edge.kFLAT);
+    }
 
     IVector2 floodStart = edges.firstElement().clone();
     while (tiles[floodStart.x][floodStart.y].colour != fromC || tiles[floodStart.x][floodStart.y].level != fromLevel) {

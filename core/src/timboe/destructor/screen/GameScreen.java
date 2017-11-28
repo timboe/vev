@@ -56,6 +56,12 @@ public class GameScreen implements Screen {
 //    GameState.getInstance().getStage().getRoot().setCullingArea( Camera.getInstance().getCullBox() );
     GameState.getInstance().getStage().draw();
 
+    Camera.getInstance().updateSprite();
+
+
+    GameState.getInstance().getSpriteStage().draw();
+
+
     Camera.getInstance().updateUI();
 
 //    GameState.getInstance().getUIStage().draw();
@@ -65,6 +71,7 @@ public class GameScreen implements Screen {
   @Override
   public void resize(int width, int height) {
     GameState.getInstance().getStage().getViewport().update(width, height, true);
+    GameState.getInstance().getSpriteStage().getViewport().update(width, height, true);
   }
 
   @Override

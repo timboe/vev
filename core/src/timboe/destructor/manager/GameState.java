@@ -11,8 +11,9 @@ import timboe.destructor.screen.TitleScreen;
 
 public class GameState {
 
-  Stage stage;
-  Stage uiStage;
+  private Stage stage;
+  private Stage spriteStage;
+  private Stage uiStage;
 
   private static GameState ourInstance;
   public static GameState getInstance() {
@@ -50,10 +51,16 @@ public class GameState {
     return uiStage;
   }
 
+  public Stage getSpriteStage() {
+    return spriteStage;
+  }
+
   public void reset() {
     if (stage != null) stage.dispose();
+    if (spriteStage != null) spriteStage.dispose();
     if (uiStage != null) uiStage.dispose();
     stage = new Stage(Camera.getInstance().getViewport());
+    spriteStage = new Stage(Camera.getInstance().getViewport());
     uiStage = new Stage(Camera.getInstance().getViewport());
   }
 
@@ -61,6 +68,7 @@ public class GameState {
     theGameScreen.dispose();
     theTitleScreen.dispose();
     stage.dispose();
+    spriteStage.dispose();
     uiStage.dispose();
     ourInstance = null;
   }
