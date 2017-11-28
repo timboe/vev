@@ -101,12 +101,16 @@ public class World {
   private boolean addFoliage() {
     for (int x = 1; x < Param.TILES_X-1; ++x) {
       for (int y = 1; y < Param.TILES_Y-1; ++y) {
-        if (tiles[x][y].type != TileType.kGROUND || tiles[x][y].colour != Colour.kRED) continue;
+        if (tiles[x][y].type != TileType.kGROUND) continue;
         if (R.nextFloat() < Param.FOLIAGE_PROB) {
           Sprite s = new Sprite(x,y);
           GameState.getInstance().getSpriteStage().addActor(s);
           s.setTexture(randomFoliage(tiles[x][y].colour), 1);
-          if (R.nextBoolean()) s.flip();
+//          if (R.nextBoolean()) s.flip(); //TODO not working
+        } else if (tiles[x][y].colour == Colour.kGREEN && R.nextFloat() < 0.01) {
+          Tile s = new Tile(x,y);
+          GameState.getInstance().getStage().addActor(s);
+          s.setTexture("building_" + R.nextInt(5), 1);
         }
       }
     }
@@ -117,7 +121,17 @@ public class World {
     for (int x = 1; x < Param.TILES_X-1; ++x) {
       for (int y = 1; y < Param.TILES_Y-1; ++y) {
         if (tiles[x][y].type != TileType.kGROUND) continue;
-        if (tiles[x][y+1].level > tiles[x][y].level) tiles[x][y].type = TileType.kCLIFF;
+        Map<Cardinal, Tile> n = collateNeighbours(x, y);
+        if (n.get(Cardinal.kN).level > tiles[x][y].level) {
+          tiles[x][y].type = TileType.kCLIFF;
+        } else {
+          for (Cardinal D : Cardinal.NESW) {
+            if (n.get(D).level < tiles[x][y].level) {
+              tiles[x][y].type = TileType.kCLIFF_EDGE;
+              break;
+            }
+          }
+        }
       }
     }
     return true;

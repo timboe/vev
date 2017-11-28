@@ -41,10 +41,10 @@ public class Entity extends Actor {
       textureRegion[0] = Textures.getInstance().getTexture("missing3");
     }
   }
-
-  public void flip() {
-    textureRegion[0].flip(true,true);
-  }
+//
+//  public void flip() {
+//    textureRegion[0].flip(true,false);
+//  }
 
   @Override
   public void draw(Batch batch, float alpha) {
