@@ -23,8 +23,8 @@ public class Zone extends Entity {
     hillWithinHill = false;
     level = 1;
     location.set(x, y);
-    w = (int) Math.round(Param.TILES_X / (double)Param.ZONES_X);
-    h = (int) Math.round(Param.TILES_Y / (double)Param.ZONES_Y);
+    w = (int) Math.floor(Param.TILES_X / (double)Param.ZONES_X);
+    h = (int) Math.floor(Param.TILES_Y / (double)Param.ZONES_Y);
     int xLeft  = x     * w;
     int xRight = (x+1) * w;
     int yBottom  = y     * h;

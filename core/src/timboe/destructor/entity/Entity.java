@@ -2,10 +2,10 @@ package timboe.destructor.entity;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.Batch;
-import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import timboe.destructor.Param;
+import timboe.destructor.Util;
 import timboe.destructor.enums.Colour;
 import timboe.destructor.manager.Textures;
 
@@ -15,17 +15,23 @@ public class Entity extends Actor {
   public Colour colour;
   public int level;
   private int scale;
+  public int x, y;
 
   protected TextureRegion[] textureRegion = new TextureRegion[Param.MAX_FRAMES];
 
-  public Entity(int x, int y, int scale) {
+  public Entity(int x, int y, int scale, int wiggle) {
     this.scale = scale;
+    this.x = x;
+    this.y = y;
     textureRegion[0] = null;
     setBounds(x * scale, y * scale, scale, scale);
+    moveBy((-wiggle) + Util.R.nextInt(wiggle*2), (-wiggle) + Util.R.nextInt(wiggle*2));
   }
 
   public Entity(int x, int y) {
     this.scale = Param.TILE_S;
+    this.x = x;
+    this.y = y;
     textureRegion[0] = null;
     setBounds(x * scale, y * scale, scale, scale);
   }

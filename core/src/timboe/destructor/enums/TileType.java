@@ -11,19 +11,22 @@ import static timboe.destructor.enums.Colour.kGREEN;
 import static timboe.destructor.enums.Colour.kRED;
 
 public enum TileType {
+  // Main types - assigned to the Tile
   kGROUND,
   kSTAIRS,
+  kGRASS_EDGE,
+  kCLIFF,
+  kCLIFF_EDGE,
+  kFOILAGE,
+  // Specialisation - used only when assigning texture
   kSTAIRS_1, // single-width stairs
   kGROUND_CORNER,
-  kGRASS_EDGE,
   kGRASS_CORNER,
   kGRASS_INNER_CORNER,
   kGRASS_INNER_CORNER_DOUBLE,
-  kCLIFF_EDGE,
   kCLIFF_EDGE_2,
   kCLIFF_EDGE_3,
   kCLIFF_EDGE_4,
-  kCLIFF,
   kCLIFF_3;
 
   private static Random R = new Random();
@@ -48,12 +51,12 @@ public enum TileType {
     switch (tt) {
       case kGROUND:
         if (c == Colour.kBLACK) return "b";
-        else return "floor_" + c.getString() + "_" + (R.nextFloat() < .9f ? "2" : Util.rndInt(Param.N_GRASS_VARIANTS).toString());
+        else return "floor_" + c.getString() + "_" + (R.nextFloat() < .9f ? "2" : Util.R.nextInt(Param.N_GRASS_VARIANTS));
         // 90% chance of having "plain" ground
       case kGROUND_CORNER:
         return "floor_c_" + c.getString() + "_" + D.getString();
       case kGRASS_EDGE:
-        return "border_" + c.getString() + "_" + D.getString() + "_" + Util.rndInt(Param.N_BORDER_VARIANTS).toString();
+        return "border_" + c.getString() + "_" + D.getString() + "_" + Util.R.nextInt(Param.N_BORDER_VARIANTS);
       case kGRASS_CORNER:
         return "border_" + c.getString() + "_" + D.getString();
       case kGRASS_INNER_CORNER:
@@ -174,8 +177,16 @@ public enum TileType {
     if (testStairs(t, neighbours, 9, 1, 9, -1)) return getTextureString(kSTAIRS_1, t.colour, Cardinal.kW);
 
     // Two special cases with clif edges reaching stairs
-    if (neighbours.get(Cardinal.kE).type == kSTAIRS && neighbours.get(Cardinal.kSE).type == kGROUND && neighbours.get(Cardinal.kSE).level < t.level) return getTextureString(kCLIFF_EDGE, t.colour, Cardinal.kE);
-    if (neighbours.get(Cardinal.kW).type == kSTAIRS && neighbours.get(Cardinal.kSW).type == kGROUND && neighbours.get(Cardinal.kSW).level < t.level) return getTextureString(kCLIFF_EDGE, t.colour, Cardinal.kW);
+    if (neighbours.get(Cardinal.kE).type == kSTAIRS
+            && neighbours.get(Cardinal.kSE).type == kGROUND
+            && neighbours.get(Cardinal.kSE).level < t.level) {
+      return getTextureString(kCLIFF_EDGE, t.colour, Cardinal.kE);
+    }
+    if (neighbours.get(Cardinal.kW).type == kSTAIRS
+            && neighbours.get(Cardinal.kSW).type == kGROUND
+            && neighbours.get(Cardinal.kSW).level < t.level) {
+      return getTextureString(kCLIFF_EDGE, t.colour, Cardinal.kW);
+    }
     // TODO could also do kSE and kSW cases here
 
     // Cliff Edges (x8)

@@ -2,21 +2,17 @@ package timboe.destructor.screen;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
-import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.input.GestureDetector;
-import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import timboe.destructor.Param;
+import timboe.destructor.entity.Tile;
 import timboe.destructor.input.Gesture;
 import timboe.destructor.input.Handler;
 import timboe.destructor.manager.Camera;
 import timboe.destructor.manager.GameState;
-import timboe.destructor.manager.UI;
-import timboe.destructor.manager.World;
-
-import static com.badlogic.gdx.graphics.GL20.*;
 
 public class GameScreen implements Screen {
 
@@ -24,6 +20,7 @@ public class GameScreen implements Screen {
   private Handler handler = new Handler();
   private Gesture gesture = new Gesture();
   private GestureDetector gestureDetector = new GestureDetector(gesture);
+  private ShapeRenderer sr = new ShapeRenderer();
 
   public GameScreen() {
     multiplexer.addProcessor(GameState.getInstance().getUIStage());
@@ -46,24 +43,32 @@ public class GameScreen implements Screen {
 
   @Override
   public void render(float delta) {
-
-
-
     renderClear();
-
     Camera.getInstance().update(delta);
 
 //    GameState.getInstance().getStage().getRoot().setCullingArea( Camera.getInstance().getCullBox() );
     GameState.getInstance().getStage().draw();
 
+
+    if (Param.DEBUG > 2) {
+      sr.setProjectionMatrix(Camera.getInstance().getCamera().combined);
+      sr.begin(ShapeRenderer.ShapeType.Line);
+      Gdx.gl.glLineWidth(3);
+      sr.setColor(1, 1, 1, 1);
+      for (Actor A : GameState.getInstance().getStage().getActors()) {
+        try {
+          Tile T = (Tile) A;
+          T.renderDebug(sr);
+        } catch (Exception e) {
+        }
+      }
+      sr.end();
+    }
+
     Camera.getInstance().updateSprite();
-
-
     GameState.getInstance().getSpriteStage().draw();
 
-
     Camera.getInstance().updateUI();
-
 //    GameState.getInstance().getUIStage().draw();
 
   }
@@ -91,7 +96,7 @@ public class GameScreen implements Screen {
 
   @Override
   public void dispose() {
-
+    sr.dispose();
   }
 
 

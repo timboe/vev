@@ -7,11 +7,7 @@ import java.util.Random;
 
 public class Util {
 
-  public static Random r = new Random();
-
-  public static Integer rndInt(int max) {
-    return r.nextInt(max);
-  }
+  public static Random R = new Random();
 
   public static float clamp(float val, float min, float max) {
     return Math.max(min, Math.min(max, val));

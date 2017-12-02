@@ -16,6 +16,9 @@ public enum Cardinal {
 
   public static final List<Cardinal> NESW = new ArrayList<Cardinal>(Arrays.asList(kN, kE, kS, kW));
 
+  public static final List<Cardinal> n8 = new ArrayList<Cardinal>(Arrays.asList(kN, kNE, kE, kSE, kS, kSW, kW, kNW));
+
+
   public Cardinal next90() {
     if (this == kW) return kN;
     if (this == kNW) return kNE;
