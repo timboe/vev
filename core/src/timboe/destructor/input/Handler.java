@@ -1,5 +1,6 @@
 package timboe.destructor.input;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 import timboe.destructor.Param;
@@ -16,9 +17,9 @@ public class Handler extends InputAdapter {
   }
 
   public boolean touchUp (int screenX, int screenY, int pointer, int button) {
-    if (button == Input.Buttons.LEFT) {
-      GameState.getInstance().selectStartWorld.setZero();
-      GameState.getInstance().selectEndScreen.setZero();
+    if (button == Input.Buttons.LEFT && GameState.getInstance().isSelecting()) {
+      Gdx.app.log("touchUp", "End selecting");
+      GameState.getInstance().doParticleSelect();
       return true; // Consume
     }
     return false;

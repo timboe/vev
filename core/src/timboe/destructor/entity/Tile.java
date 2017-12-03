@@ -1,6 +1,8 @@
 package timboe.destructor.entity;
 
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Vector3;
+import timboe.destructor.Param;
 import timboe.destructor.enums.Cardinal;
 import timboe.destructor.enums.Colour;
 import timboe.destructor.enums.TileType;
@@ -19,11 +21,17 @@ public class Tile extends Entity implements Node {
   public Cardinal direction;
   public List<Cardinal> pathFindDebug = new ArrayList<Cardinal>();
   public Set<Tile> pathFindNeighbours = new HashSet<Tile>();
+  public Vector3 centreScaleTile = new Vector3();
+  public Vector3 centreScaleSprite = new Vector3();
+
 
   public Tile(int x, int y) {
     super(x, y);
     setType(TileType.kGROUND, kBLACK, 0);
     mask = false;
+    centreScaleTile.set(getX() + getHeight()/2, getY() + getHeight()/2, 0); // Tile scale
+    centreScaleSprite.set(centreScaleTile);
+    centreScaleSprite.scl(Param.SPRITE_SCALE); // Sprite scale
   }
 
   public void setType(TileType t, Colour c, int l) {

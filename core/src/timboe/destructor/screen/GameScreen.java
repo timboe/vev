@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import timboe.destructor.Param;
+import timboe.destructor.entity.Sprite;
 import timboe.destructor.entity.Tile;
 import timboe.destructor.input.Gesture;
 import timboe.destructor.input.Handler;
@@ -80,23 +81,35 @@ public class GameScreen implements Screen {
     GameState.getInstance().getSpriteStage().act(delta);
     GameState.getInstance().getSpriteStage().draw();
 
+    sr.setProjectionMatrix(Camera.getInstance().getCamera().combined);
+    sr.begin(ShapeRenderer.ShapeType.Line);
+    sr.setColor(0, 1, 0, 1);
+    // Draw selected particles
+    for (Sprite s : state.particleSet) {
+      s.draw(sr);
+    }
+    sr.end();
+
+    ////////////////////////////////////////////////
+
+
+
     camera.updateUI();
 //    GameState.getInstance().getUIStage().draw();
 
+    ///////////////////////////////////////////////
 
     camera.update(); // Reset shenanigans
-    if (!state.selectStartWorld.isZero()) {
-
-      sr.setProjectionMatrix(Camera.getInstance().getCamera().combined);
-      sr.begin(ShapeRenderer.ShapeType.Line);
-      sr.setColor(0, 1, 0, 1);
-//      sr.line(state.selectStartWorld, state.selectEndWorld);
+    sr.setProjectionMatrix(Camera.getInstance().getCamera().combined);
+    sr.begin(ShapeRenderer.ShapeType.Line);
+    sr.setColor(0, 1, 0, 1);
+    if (!state.selectStartWorld.isZero()) { // Draw select box
       sr.rect(state.selectStartWorld.x, state.selectStartWorld.y,
               state.selectEndWorld.x - state.selectStartWorld.x,
               state.selectEndWorld.y - state.selectStartWorld.y);
-      sr.end();
-    }
 
+    }
+    sr.end();
 
   }
 

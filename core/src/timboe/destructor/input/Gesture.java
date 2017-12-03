@@ -4,30 +4,35 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
 import timboe.destructor.manager.Camera;
 import timboe.destructor.manager.GameState;
-import timboe.destructor.manager.World;
 
 public class Gesture implements GestureDetector.GestureListener {
 
   private float initialZoom = Camera.getInstance().getZoom();
+  private Vector3 v3temp = new Vector3();
 
   @Override
   public boolean touchDown(float x, float y, int pointer, int button) {
     if (button == Input.Buttons.LEFT) { // Start a SELECT action
+      GameState.getInstance().selectStartScreen.set(x, y, 0);
       GameState.getInstance().selectStartWorld.set(x, y, 0);
       GameState.getInstance().selectStartWorld = Camera.getInstance().unproject(GameState.getInstance().selectStartWorld);
-      GameState.getInstance().selectStartScreen.set(x, y, 0);
 
+      GameState.getInstance().selectEndScreen.set(x, y, 0);
       GameState.getInstance().selectEndWorld.set(x, y, 0);
       GameState.getInstance().selectEndWorld = Camera.getInstance().unproject(GameState.getInstance().selectEndWorld);
-      GameState.getInstance().selectEndScreen.set(x, y, 0);
     }
     return false;
   }
 
   @Override
   public boolean tap(float x, float y, int count, int button) {
+    Gdx.app.log("tap","tap "+x+","+"y");
+    v3temp.set(x, y, 0);
+    v3temp = Camera.getInstance().unproject(v3temp);
+    GameState.getInstance().doParticleMoveOrder((int)v3temp.x, (int)v3temp.y);
     return false;
   }
 

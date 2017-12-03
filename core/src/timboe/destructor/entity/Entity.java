@@ -14,10 +14,11 @@ public class Entity extends Actor {
   public boolean mask;
   public Colour colour;
   public int level;
-  private int scale;
+  protected int scale;
   public int x, y;
   private int frames, frame;
   private float time;
+  public boolean selected;
 
   private TextureRegion[] textureRegion = new TextureRegion[Param.MAX_FRAMES];
 
@@ -37,6 +38,7 @@ public class Entity extends Actor {
     this.frame = 0;
     this.time = 0;
     textureRegion[0] = null;
+    selected = false;
     setBounds(x * scale, y * scale, scale, scale);
   }
 

@@ -37,6 +37,11 @@ public class World {
     generate();
   }
 
+  public Tile getTile(int x, int y) {
+    if (x < 0 || y < 0 || x >= Param.TILES_X-1 || y >= Param.TILES_Y-1) return null;
+    return tiles[x][y];
+  }
+
   private void reset() {
     GameState.getInstance().reset();
     Sprites.getInstance().reset();
