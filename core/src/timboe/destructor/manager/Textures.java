@@ -6,11 +6,14 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
 public class Textures {
 
+  public TextureRegion[] theVoid;
+
   private static Textures ourInstance;
   public static Textures getInstance() {
     return ourInstance;
   }
   public static void create() { ourInstance = new Textures(); }
+
   public void dispose() {
     atlas.dispose();
     ui.dispose();
@@ -21,6 +24,10 @@ public class Textures {
   private TextureAtlas ui = new TextureAtlas(Gdx.files.internal("uiskin.atlas"));
 
   private Textures() {
+    theVoid = new TextureRegion[2];
+    theVoid[0] = new TextureRegion(atlas.findRegion("void"));
+    theVoid[1] = new TextureRegion(atlas.findRegion("void"));
+    theVoid[0].flip(true, false);
   }
 
   public TextureAtlas getUIAtlas() {

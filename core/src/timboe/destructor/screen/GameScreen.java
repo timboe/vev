@@ -47,15 +47,20 @@ public class GameScreen implements Screen {
     Camera.getInstance().update(delta);
 
 //    GameState.getInstance().getStage().getRoot().setCullingArea( Camera.getInstance().getCullBox() );
-    GameState.getInstance().getStage().draw();
+    GameState.getInstance().getTileStage().draw();
 
+
+    for (Actor A : GameState.getInstance().getWarpStage().getRoot().getChildren()) {
+      A.rotateBy((Float)A.getUserObject() * delta);
+    }
+    GameState.getInstance().getWarpStage().draw();
 
     if (Param.DEBUG > 2) {
       sr.setProjectionMatrix(Camera.getInstance().getCamera().combined);
       sr.begin(ShapeRenderer.ShapeType.Line);
       Gdx.gl.glLineWidth(3);
       sr.setColor(1, 1, 1, 1);
-      for (Actor A : GameState.getInstance().getStage().getActors()) {
+      for (Actor A : GameState.getInstance().getTileStage().getActors()) {
         try {
           Tile T = (Tile) A;
           T.renderDebug(sr);
@@ -75,7 +80,7 @@ public class GameScreen implements Screen {
 
   @Override
   public void resize(int width, int height) {
-    GameState.getInstance().getStage().getViewport().update(width, height, true);
+    GameState.getInstance().getTileStage().getViewport().update(width, height, true);
     GameState.getInstance().getSpriteStage().getViewport().update(width, height, true);
   }
 

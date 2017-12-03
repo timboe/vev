@@ -8,7 +8,10 @@ import timboe.destructor.entity.Entity;
 import timboe.destructor.entity.Sprite;
 import timboe.destructor.entity.Tile;
 import timboe.destructor.entity.Zone;
-import timboe.destructor.enums.*;
+import timboe.destructor.enums.Cardinal;
+import timboe.destructor.enums.Colour;
+import timboe.destructor.enums.Edge;
+import timboe.destructor.enums.TileType;
 import timboe.destructor.pathfinding.IVector2;
 
 import java.util.*;
@@ -35,11 +38,12 @@ public class World {
   private void reset() {
     isReady = false;
     GameState.getInstance().reset();
+    Sprites.getInstance().reset();
     tiles = new Tile[Param.TILES_X][Param.TILES_Y];
     for (int x = 0; x < Param.TILES_X; ++x) {
       for (int y = 0; y < Param.TILES_Y; ++y) {
         tiles[x][y] = new Tile(x,y);
-        GameState.getInstance().getStage().addActor(tiles[x][y]);
+        GameState.getInstance().getTileStage().addActor(tiles[x][y]);
       }
     }
     zones = new Zone[Param.ZONES_X][Param.ZONES_Y];
@@ -48,7 +52,7 @@ public class World {
       for (int y = 0; y < Param.ZONES_Y; ++y) {
         zones[x][y] = new Zone(x,y);
         allZones.add(zones[x][y]);
-        GameState.getInstance().getStage().addActor(zones[x][y]);
+        GameState.getInstance().getTileStage().addActor(zones[x][y]);
       }
     }
   }
@@ -74,15 +78,16 @@ public class World {
       }
       reset();
       success = doZones();
-      Gdx.app.log("doWorld","let there be land");
       if (success) success = doEdges(edges, allZones, Colour.kBLACK, Colour.kRED, 0, 1, Param.KRINKLE_OFFSET, (2*Param.KRINKLE_OFFSET)-Param.KRINKLE_GAP);
       if (success) success = doSpecialZones(true);
       if (success) success = removeGreenStubs();
       if (success) success = doSpecialZones(false);
       if (success) success = removeEWSingleStairs();
+      if (success) success = addWarp();
       if (success) success = markCliffs();
+      if (success) success = addPatch(false, Param.TIBERIUM_SIZE, Param.MIN_TIBERIUM_PATCH, Param.MAX_TIBERIUM_PATCH);
+      if (success) success = addPatch(true, Param.FOREST_SIZE, Param.MIN_FORESTS, Param.MAX_FORESTS);
       if (success) success = addFoliage();
-      if (success) success = addForests();
       if (success) success = doPathGrid();
     }
     applyTileGraphics();
@@ -138,48 +143,132 @@ public class World {
     return "bush_" + c.getString() + "_" + R.nextInt(Param.N_BUSH);
   }
 
-  private void newSprite(int x, int y, String name) {
+  private Sprite newSprite(int x, int y, String name) {
     Sprite s = new Sprite(x,y);
     GameState.getInstance().getSpriteStage().addActor(s);
     s.setTexture(name, 1);
-    //          if (R.nextBoolean()) s.flip(); //TODO not working
+    return s;
   }
 
-  private boolean tryPatchOfStuff(int _x, int _y, String stuff) {
-    for (int x = _x - Param.FOREST_SIZE; x < _x + Param.FOREST_SIZE; ++x) {
+  private boolean addWarp() {
+    int fTry = 0, fPlaced = 0;
+    do {
+      final int _x = Param.WARP_SIZE + R.nextInt(Param.TILES_X - Param.WARP_SIZE*2); // Twice as far from edge
+      final int _y = Param.WARP_SIZE + R.nextInt(Param.TILES_Y - Param.WARP_SIZE*2);
+      final int level = tiles[_x][_y].level;
+      boolean tooClose = false; // Check whole area is clear
+      for (int x = _x - Param.WARP_SIZE/2 - Param.KRINKLE_GAP; x < _x + Param.WARP_SIZE/2 + Param.KRINKLE_GAP; ++x) {
+        for (int y = _y - Param.WARP_SIZE/2 - Param.KRINKLE_GAP; y < _y + Param.WARP_SIZE/2 + Param.KRINKLE_GAP; ++y) {
+          if (Param.WARP_SIZE/2 + Param.KRINKLE_GAP <= Math.hypot(x - _x, y - _y)) continue;
+          if (tiles[x][y].type != TileType.kGROUND
+                  || tiles[x][y].colour != Colour.kRED
+                  || tiles[x][y].level != level) tooClose = true;
+        }
+      }
+      for (Zone z : allZones) {
+        if (tooClose) break;
+        if (z.inZone(_x, _y)) {
+          if (z.hasWarp) tooClose = true;
+          else z.hasWarp = true;
+          break;
+        }
+      }
+      if (tooClose) continue;
+      // Apply the area
+      ++fPlaced;
+      if (Param.DEBUG > 0) Gdx.app.log("addWarp", "Adding WARP at ("+_x+","+_y+")");
+      for (int x = _x - Param.WARP_SIZE/2; x < _x + Param.WARP_SIZE/2; ++x) {
+        for (int y = _y - Param.WARP_SIZE/2; y < _y + Param.WARP_SIZE/2; ++y) {
+          if (Param.WARP_SIZE/2 <= Math.hypot(x - _x, y - _y)) continue;
+          tiles[x][y].level = level-1;
+          tiles[x][y].colour = Colour.kBLACK;
+        }
+      }
+
+      addWarpGfx(_x, _y, 0, -Param.WARP_ROTATE_SPEED * 1, 0);
+      addWarpGfx(_x, _y, 0, -Param.WARP_ROTATE_SPEED * 2, -45);
+      addWarpGfx(_x, _y, 1, +Param.WARP_ROTATE_SPEED * 1, 0);
+      addWarpGfx(_x, _y, 1, +Param.WARP_ROTATE_SPEED * 2, +45);
+
+    } while (++fTry < Param.N_PATCH_TRIES && fPlaced < Param.MAX_WARP);
+    if (fPlaced < Param.MIN_WARP) {
+      Gdx.app.error("addPatch","Could not add warp. N:" + fPlaced);
+      return false;
+    }
+    return true;
+  }
+
+  private void addWarpGfx(final int x, final int y, final int textureID, final float speed, final float initialR) {
+    Tile warp = new Tile(x - Param.WARP_SIZE/2 + 2, y - Param.WARP_SIZE/2 + 2);
+    warp.setTexture(Textures.getInstance().theVoid[textureID]);
+    warp.setUserObject(speed);
+    warp.rotateBy(initialR);
+    warp.moveBy(0, -Param.TILE_S/2);
+    GameState.getInstance().getWarpStage().addActor(warp);
+  }
+
+  private boolean tryPatchOfStuff(final int _x, final int _y, final boolean isForest, final int patchSize) { // Otherwise, is Tiberium
+    String forestTexture = "tree_" + tiles[_x][_y].colour.getString() + "_" + R.nextInt(Param.N_TREE);
+    for (int x = _x - patchSize; x < _x + patchSize; ++x) {
       if (tiles[x][_y].type != TileType.kGROUND || tiles[x][_y].colour != tiles[_x][_y].colour) return false;
     }
-    for (int y = _y - Param.FOREST_SIZE; y < _y + Param.FOREST_SIZE; ++y) {
+    for (int y = _y - patchSize; y < _y + patchSize; ++y) {
       if (tiles[_x][y].type != TileType.kGROUND || tiles[_x][y].colour != tiles[_x][_y].colour) return false;
     }
-    final double maxD = Math.sqrt(2*Math.pow(Param.FOREST_SIZE,2));
-    for (int x = _x - Param.FOREST_SIZE; x < _x + Param.FOREST_SIZE; ++x) {
-      for (int y = _y + Param.FOREST_SIZE - 1; y >= _y - Param.FOREST_SIZE; --y) {
-        double d = Math.sqrt( Math.pow(x - _x, 2) + Math.pow(y - _y, 2) );
-        if (tiles[x][y].colour != tiles[_x][_y].colour
-                || tiles[x][y].type != TileType.kGROUND
-                || d > Math.abs(R.nextGaussian() * Param.FOREST_DENSITY * maxD)) continue;
-        newSprite(x, y, stuff);
-        tiles[x][y].type = TileType.kFOILAGE;
+    if (!isForest) { // One tiberium patch per zone
+      for (Zone z : allZones) {
+        if (z.inZone(_x, _y)) {
+          if (z.hasTiberium) return false;
+          z.hasTiberium = true;
+          break;
+        }
+      }
+    }
+
+    final double maxD = Math.sqrt(2*Math.pow(patchSize,2));
+    for (int x = _x - patchSize; x < _x + patchSize; ++x) {
+      for (int y = _y + patchSize - 1; y >= _y - patchSize; --y) {
+        if (tiles[x][y].colour != tiles[_x][_y].colour || tiles[x][y].type != TileType.kGROUND) continue;
+        final double d = Math.hypot(x - _x, y - _y);
+
+        if (isForest) {
+
+          if (d > Math.abs(R.nextGaussian() * Param.PATCH_DENSITY * maxD)) continue;
+          Sprite s = newSprite(x, y, forestTexture);
+          s.moveBy((-Param.WIGGLE) + Util.R.nextInt(Param.WIGGLE*2), (-Param.WIGGLE) + Util.R.nextInt(Param.WIGGLE*2));
+          tiles[x][y].type = TileType.kFOILAGE;
+
+        } else { // Is Tiberium
+
+          for (int subX = 0; subX < 2; ++subX) {
+            for (int subY = 0; subY < 2; ++subY) {
+              if (d > Math.abs(R.nextGaussian() * Param.PATCH_DENSITY * maxD)) continue;
+              Sprite s = newSprite(x, y, "tiberium_" + R.nextInt(Param.N_TIBERIUM));
+              s.moveBy(subX * Param.TILE_S, subY * Param.TILE_S);
+              s.moveBy((-Param.WIGGLE/2) + Util.R.nextInt(Param.WIGGLE), (-Param.WIGGLE/2) + Util.R.nextInt(Param.WIGGLE));
+            }
+          }
+
+        }
       }
     }
     return true;
   }
 
-  private boolean addForests() {
-    int fTry = 0;
-    int fPlaced = 0;
+  private boolean addPatch(final boolean isForest, final int patchSize, final int min, final int max) { // Otherwise, is tiberium
+    int fTry = 0, fPlaced = 0;
     do {
-      final int xExtent = (Param.FOREST_SIZE/2) + R.nextInt(Param.FOREST_SIZE);
-      final int yExtent = (Param.FOREST_SIZE/2) + R.nextInt(Param.FOREST_SIZE);
-      final int x = xExtent + R.nextInt(Param.TILES_X - (2*xExtent));
-      final int y = yExtent + R.nextInt(Param.TILES_Y - (2*yExtent));
-      if (tiles[x][y].type != TileType.kGROUND || tiles[x][y].colour != Colour.kGREEN) continue;
-      if (tryPatchOfStuff(x, y, "tree_" + tiles[x][y].colour.getString() + "_" + R.nextInt(Param.N_TREE))) ++fPlaced;
-    } while (++fTry < Param.N_FOREST_TRIES && fPlaced < Param.N_FOREST);
+      final int x = patchSize + R.nextInt(Param.TILES_X - (2*patchSize));
+      final int y = patchSize + R.nextInt(Param.TILES_Y - (2*patchSize));
+      if (tiles[x][y].type != TileType.kGROUND || tiles[x][y].colour != (isForest ? Colour.kGREEN : Colour.kRED)) continue;
+      if (tryPatchOfStuff(x, y, isForest, patchSize)) ++fPlaced;
+    } while (++fTry < Param.N_PATCH_TRIES && fPlaced < max);
+    if (fPlaced < min) {
+      Gdx.app.error("addPatch","Could not add enough. isForest:" + isForest + " placed:" + fPlaced);
+      return false;
+    }
     return true;
   }
-
 
   private boolean addFoliage() {
     for (int x = 1; x < Param.TILES_X-1; ++x) {
@@ -188,7 +277,7 @@ public class World {
         if (R.nextFloat() < Param.FOLIAGE_PROB) {
           newSprite(x, y, randomFoliage(tiles[x][y].colour));
           tiles[x][y].type = TileType.kFOILAGE;
-        } else if (tiles[x][y].colour == Colour.kGREEN && R.nextFloat() < 0.01) {
+//        } else if (tiles[x][y].colour == Colour.kGREEN && R.nextFloat() < 0.01) {
 //          Tile s = new Tile(x,y);
 //          GameState.getInstance().getStage().addActor(s);
 //          s.setTexture("building_" + R.nextInt(5), 1);
@@ -283,9 +372,19 @@ public class World {
         }
       }
     }
-    if (Util.needsClamp(nGreen, Param.MIN_GREEN_ZONE, Param.MAX_GREEN_ZONE)) return false;
-    if (Util.needsClamp(nGreenHill, Param.MIN_GREEN_HILL, nGreen - 1)) return false;
-    return !(Util.needsClamp(nRedHill, Param.MIN_RED_HILL, nRed - 1));
+    if (Util.needsClamp(nGreen, Param.MIN_GREEN_ZONE, Param.MAX_GREEN_ZONE)) {
+      Gdx.app.error("doZones", "Incorrect green zones N:" + nGreen);
+      return false;
+    }
+    if (Util.needsClamp(nGreenHill, Param.MIN_GREEN_HILL, nGreen - 1)) {
+      Gdx.app.error("doZones", "Incorrect green hill zones N:" + nGreenHill);
+      return false;
+    }
+    if (Util.needsClamp(nRedHill, Param.MIN_RED_HILL, nRed - 1)) {
+      Gdx.app.error("doZones", "Incorrect red hill zones N:" + nGreenHill);
+      return false;
+    }
+    return true;
   }
 
   private void increaseStep(IVector2 v, Cardinal D, Colour c, int level) {
@@ -512,7 +611,7 @@ public class World {
         final boolean hwh = zones[x][y].hillWithinHill;
         final int hwh_level = zones[x][y].level + (zones[x][y].level > 1 ? 1 : -1);
 
-        Gdx.app.log("doSpecialZones - " + (doGreenZones ? "GreenZone" : "Hill"),
+        if (Param.DEBUG > 0) Gdx.app.log("doSpecialZones - " + (doGreenZones ? "GreenZone" : "Hill"),
                 "Start z("+x+","+y+") L("+zones[x][y].getLowerX()+","+zones[x][y].getLowerY()+
                         ") HWH:" + zones[x][y].hillWithinHill);
 
@@ -526,22 +625,23 @@ public class World {
         collateFloodFill(edgePairs, zone);
 
         final Vector<IVector2> edges = edgePairsToEdges(edgePairs);
-        if (edges == null) return false;
-
-//        for (Pair<IVector2,IVector2> e : edgePairs) Gdx.app.log("Edges Size " +edgePairs.size(),e.getKey().toString() + " -> " + e.getValue().toString());
-//        for (Pair<IVector2,IVector2> e : edgePairsReduced) Gdx.app.log("EdgesReduced Size " + edgePairsReduced.size(),e.getKey().toString() + " -> " + e.getValue().toString());
-//        for (IVector2 e : edges) Gdx.app.log("Edges Size " + edges.size(),e.toString());
-//        for (IVector2 e : edgesReduced) Gdx.app.log("EdgesReduced Size " + edgesReduced.size(),e.toString());
+        if (edges == null) {
+          Gdx.app.error("doSpecialZone","Failed edgePairsToEdges doGreen:" + doGreenZones + " doHill:" + doHills + " doHWH:" + hwh);
+          return false;
+        }
 
         boolean success = true;
         if (doGreenZones) success = doEdges(edges, zone, Colour.kRED, Colour.kGREEN, 1, 1, 2*Param.KRINKLE_OFFSET, (3*Param.KRINKLE_OFFSET)-Param.KRINKLE_GAP);
         if (doHills)      success = doEdges(edges, zone, zones[x][y].colour, zones[x][y].colour, 1, zones[x][y].level, 3*Param.KRINKLE_OFFSET, (4*Param.KRINKLE_OFFSET)-Param.KRINKLE_GAP);
         if (doHills && success && hwh) {
-          Gdx.app.log("doSpecialZones - HillWithinHill",
+          if (Param.DEBUG > 0) Gdx.app.log("doSpecialZones - HillWithinHill",
                   "Start z("+x+","+y+") L("+zones[x][y].getLowerX()+","+zones[x][y].getLowerY()+")");
           success = doEdges(edges, zone, zones[x][y].colour, zones[x][y].colour, zones[x][y].level, hwh_level, 4*Param.KRINKLE_OFFSET, (5*Param.KRINKLE_OFFSET)-Param.KRINKLE_GAP);
         }
-        if (!success) return success;
+        if (!success) {
+          Gdx.app.error("  doSpecialZone","Failed doEdges doGreen:" + doGreenZones + " doHill:" + doHills + " doHWH:" + hwh);
+          return false;
+        }
       }
     }
     return true;
@@ -615,7 +715,7 @@ public class World {
                           final Colour fromC, final Colour toC, final int fromLevel, final int toLevel,
                           final int offset, final int maxIncursion) {
 
-    Gdx.app.log("  doEdges", "FromC " + fromC + " toC " + toC + ", fromL " + fromLevel + " toL " + toLevel);
+    if (Param.DEBUG > 0) Gdx.app.log("  doEdges", "FromC " + fromC + " toC " + toC + ", fromL " + fromLevel + " toL " + toLevel);
 
     IVector2 location = new IVector2(edges.firstElement().x + offset, edges.firstElement().y + offset);
     final IVector2 start = new IVector2(location);
@@ -628,7 +728,7 @@ public class World {
       final IVector2 next = (section < edges.size() - 1 ? edges.elementAt(section + 1).clone() : null);
       final Cardinal D = getDirection(current, destination);
       final boolean rightTurnNext = (next == null || getDirection(destination, next) == D.next90());
-      Gdx.app.log("    Edge",
+      if (Param.DEBUG > 0) Gdx.app.log("    Edge",
               "From " + edges.elementAt(section - 1).toString() +
                       " to " + destination.toString() +
                       ", D: " + D + ", RightTurnNext:" + rightTurnNext);

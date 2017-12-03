@@ -18,7 +18,7 @@ public class Handler extends InputAdapter {
   public boolean keyUp (int keycode) {
     if (keycode == Input.Keys.D) {
       if (++Param.DEBUG == 4) Param.DEBUG = 0;
-      GameState.getInstance().getStage().setDebugAll( Param.DEBUG > 1 );
+      GameState.getInstance().getTileStage().setDebugAll( Param.DEBUG > 1 );
     }
     return false;
   }

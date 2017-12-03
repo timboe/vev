@@ -27,11 +27,25 @@ public class Param {
   public static final int NEAR_TO_EDGE = (MAX_KRINKLE * 2) + 1; // Min close-able space. If one went +ve and the other -ve,
   public static final int EDGE_ADJUSTMENT = (MAX_KRINKLE/2)+1;
 
-  public static final int FOREST_SIZE = 7;
-  public static final float FOREST_DENSITY = 0.5f;
-  public static final int N_FOREST = 5;
-  public static final int N_FOREST_TRIES = 50;
+  public static final int N_PATCH_TRIES = 10;
   public static final int WIGGLE = 8; // Random pixel offset for foliage
+  public static final float PATCH_DENSITY = 0.5f;
+
+  public static final int FOREST_SIZE = 7;
+  public static final int MIN_FORESTS = 2;
+  public static final int MAX_FORESTS = 5;
+
+  public static final int TIBERIUM_SIZE = 5;
+  public static final int MIN_TIBERIUM_PATCH = 2;
+  public static final int MAX_TIBERIUM_PATCH = 3;
+
+  public static final int WARP_SIZE = 10;
+  public static final int MIN_WARP = 2;
+  public static final int MAX_WARP = 3;
+  public static final float WARP_TRANSPARENCY = 0.5f;
+  public static final float WARP_ROTATE_SPEED = 3f;
+
+  public static final int N_TIBERIUM = 4; // Number of sprites
 
   public static final float HILL_IN_HILL_PROB = .2f;
   public static final float STAIRS_PROB = .4f;

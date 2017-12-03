@@ -90,9 +90,9 @@
         <key>maxTextureSize</key>
         <QSize>
             <key>width</key>
-            <int>300</int>
+            <int>512</int>
             <key>height</key>
-            <int>300</int>
+            <int>512</int>
         </QSize>
         <key>fixedTextureSize</key>
         <QSize>
@@ -200,30 +200,41 @@
         <key>individualSpriteSettings</key>
         <map type="IndividualSpriteSettingsMap">
             <key type="filename">16/b.png</key>
-            <key type="filename">16/border_EW_1.png</key>
-            <key type="filename">16/border_EW_2.png</key>
-            <key type="filename">16/border_EW_3.png</key>
-            <key type="filename">16/border_EW_4.png</key>
-            <key type="filename">16/border_NE.png</key>
-            <key type="filename">16/border_NW.png</key>
-            <key type="filename">16/border_NW_SE.png</key>
-            <key type="filename">16/border_SE.png</key>
-            <key type="filename">16/border_SN_1.png</key>
-            <key type="filename">16/border_SN_2.png</key>
-            <key type="filename">16/border_SN_3.png</key>
-            <key type="filename">16/border_SN_4.png</key>
-            <key type="filename">16/border_SW.png</key>
-            <key type="filename">16/border_SW_NE.png</key>
-            <key type="filename">16/border_WE_1.png</key>
-            <key type="filename">16/border_WE_2.png</key>
-            <key type="filename">16/border_WE_3.png</key>
-            <key type="filename">16/border_WE_4.png</key>
-            <key type="filename">16/border_r_NE.png</key>
-            <key type="filename">16/border_r_NW.png</key>
+            <key type="filename">16/border_cap_g_N.png</key>
+            <key type="filename">16/border_g_E_0.png</key>
+            <key type="filename">16/border_g_E_1.png</key>
+            <key type="filename">16/border_g_E_2.png</key>
+            <key type="filename">16/border_g_E_3.png</key>
+            <key type="filename">16/border_g_NE.png</key>
+            <key type="filename">16/border_g_NW.png</key>
+            <key type="filename">16/border_g_N_0.png</key>
+            <key type="filename">16/border_g_N_1.png</key>
+            <key type="filename">16/border_g_N_2.png</key>
+            <key type="filename">16/border_g_N_3.png</key>
+            <key type="filename">16/border_g_SE.png</key>
+            <key type="filename">16/border_g_SW.png</key>
+            <key type="filename">16/border_g_S_0.png</key>
+            <key type="filename">16/border_g_S_1.png</key>
+            <key type="filename">16/border_g_S_2.png</key>
+            <key type="filename">16/border_g_S_3.png</key>
+            <key type="filename">16/border_g_W_0.png</key>
+            <key type="filename">16/border_g_W_1.png</key>
+            <key type="filename">16/border_g_W_2.png</key>
+            <key type="filename">16/border_g_W_3.png</key>
+            <key type="filename">16/border_inner_double_g_NE.png</key>
+            <key type="filename">16/border_inner_double_g_SE.png</key>
+            <key type="filename">16/border_inner_g_NE.png</key>
+            <key type="filename">16/border_inner_g_NW.png</key>
+            <key type="filename">16/border_inner_g_SE.png</key>
+            <key type="filename">16/border_inner_g_SW.png</key>
             <key type="filename">16/border_r_NW_SE.png</key>
-            <key type="filename">16/border_r_SE.png</key>
-            <key type="filename">16/border_r_SW.png</key>
             <key type="filename">16/border_r_SW_NE.png</key>
+            <key type="filename">16/floor_c_g_N.png</key>
+            <key type="filename">16/floor_c_g_NE.png</key>
+            <key type="filename">16/floor_c_g_NW.png</key>
+            <key type="filename">16/floor_c_r_N.png</key>
+            <key type="filename">16/floor_c_r_NE.png</key>
+            <key type="filename">16/floor_c_r_NW.png</key>
             <key type="filename">16/floor_g_0.png</key>
             <key type="filename">16/floor_g_1.png</key>
             <key type="filename">16/floor_g_10.png</key>
@@ -251,63 +262,91 @@
             <key type="filename">16/floor_r_7.png</key>
             <key type="filename">16/floor_r_8.png</key>
             <key type="filename">16/floor_r_9.png</key>
+            <key type="filename">16/h2_g_E.png</key>
+            <key type="filename">16/h2_g_N.png</key>
+            <key type="filename">16/h2_g_S.png</key>
+            <key type="filename">16/h2_g_W.png</key>
+            <key type="filename">16/h2_r_E.png</key>
+            <key type="filename">16/h2_r_N.png</key>
+            <key type="filename">16/h2_r_S.png</key>
+            <key type="filename">16/h2_r_W.png</key>
+            <key type="filename">16/h3_g_E.png</key>
+            <key type="filename">16/h3_g_N.png</key>
+            <key type="filename">16/h3_g_S.png</key>
+            <key type="filename">16/h3_g_S_b.png</key>
+            <key type="filename">16/h3_g_S_g.png</key>
+            <key type="filename">16/h3_g_W.png</key>
+            <key type="filename">16/h3_r_E.png</key>
+            <key type="filename">16/h3_r_N.png</key>
+            <key type="filename">16/h3_r_S.png</key>
+            <key type="filename">16/h3_r_S_b.png</key>
+            <key type="filename">16/h3_r_S_r.png</key>
+            <key type="filename">16/h3_r_W.png</key>
+            <key type="filename">16/h4_g.png</key>
+            <key type="filename">16/h4_r.png</key>
             <key type="filename">16/h_g_E.png</key>
             <key type="filename">16/h_g_N.png</key>
             <key type="filename">16/h_g_NE.png</key>
             <key type="filename">16/h_g_NW.png</key>
-            <key type="filename">16/h_g_SE_b1.png</key>
-            <key type="filename">16/h_g_SE_b2.png</key>
-            <key type="filename">16/h_g_SE_t.png</key>
-            <key type="filename">16/h_g_SW_b1.png</key>
-            <key type="filename">16/h_g_SW_b2.png</key>
-            <key type="filename">16/h_g_SW_t.png</key>
-            <key type="filename">16/h_g_S_b1.png</key>
-            <key type="filename">16/h_g_S_b2.png</key>
-            <key type="filename">16/h_g_S_t.png</key>
+            <key type="filename">16/h_g_S.png</key>
+            <key type="filename">16/h_g_SE.png</key>
+            <key type="filename">16/h_g_SE_b.png</key>
+            <key type="filename">16/h_g_SE_g.png</key>
+            <key type="filename">16/h_g_SW.png</key>
+            <key type="filename">16/h_g_SW_b.png</key>
+            <key type="filename">16/h_g_SW_g.png</key>
+            <key type="filename">16/h_g_S_b.png</key>
+            <key type="filename">16/h_g_S_g.png</key>
             <key type="filename">16/h_g_W.png</key>
             <key type="filename">16/h_r_E.png</key>
             <key type="filename">16/h_r_N.png</key>
             <key type="filename">16/h_r_NE.png</key>
             <key type="filename">16/h_r_NW.png</key>
-            <key type="filename">16/h_r_SE_b1.png</key>
-            <key type="filename">16/h_r_SE_b2.png</key>
-            <key type="filename">16/h_r_SE_t.png</key>
-            <key type="filename">16/h_r_SW_b1.png</key>
-            <key type="filename">16/h_r_SW_b2.png</key>
-            <key type="filename">16/h_r_SW_t.png</key>
-            <key type="filename">16/h_r_S_b1.png</key>
-            <key type="filename">16/h_r_S_b2.png</key>
-            <key type="filename">16/h_r_S_t.png</key>
+            <key type="filename">16/h_r_S.png</key>
+            <key type="filename">16/h_r_SE.png</key>
+            <key type="filename">16/h_r_SE_b.png</key>
+            <key type="filename">16/h_r_SE_r.png</key>
+            <key type="filename">16/h_r_SW.png</key>
+            <key type="filename">16/h_r_SW_b.png</key>
+            <key type="filename">16/h_r_SW_r.png</key>
+            <key type="filename">16/h_r_S_b.png</key>
+            <key type="filename">16/h_r_S_r.png</key>
             <key type="filename">16/h_r_W.png</key>
             <key type="filename">16/missing.png</key>
-            <key type="filename">16/s_g_E_b.png</key>
-            <key type="filename">16/s_g_E_c.png</key>
-            <key type="filename">16/s_g_E_t.png</key>
+            <key type="filename">16/missing2.png</key>
+            <key type="filename">16/missing3.png</key>
+            <key type="filename">16/s_g_E_E.png</key>
+            <key type="filename">16/s_g_E_N.png</key>
+            <key type="filename">16/s_g_E_S.png</key>
             <key type="filename">16/s_g_N.png</key>
-            <key type="filename">16/s_g_N_c.png</key>
-            <key type="filename">16/s_g_N_l.png</key>
-            <key type="filename">16/s_g_N_r.png</key>
+            <key type="filename">16/s_g_N_E.png</key>
+            <key type="filename">16/s_g_N_N.png</key>
+            <key type="filename">16/s_g_N_W.png</key>
             <key type="filename">16/s_g_S.png</key>
-            <key type="filename">16/s_g_S_c.png</key>
-            <key type="filename">16/s_g_S_l.png</key>
-            <key type="filename">16/s_g_S_r.png</key>
-            <key type="filename">16/s_g_W_b.png</key>
-            <key type="filename">16/s_g_W_c.png</key>
-            <key type="filename">16/s_g_W_t.png</key>
-            <key type="filename">16/s_r_E_b.png</key>
-            <key type="filename">16/s_r_E_c.png</key>
-            <key type="filename">16/s_r_E_t.png</key>
+            <key type="filename">16/s_g_S_E.png</key>
+            <key type="filename">16/s_g_S_S.png</key>
+            <key type="filename">16/s_g_S_W.png</key>
+            <key type="filename">16/s_g_W_N.png</key>
+            <key type="filename">16/s_g_W_S.png</key>
+            <key type="filename">16/s_g_W_W.png</key>
+            <key type="filename">16/s_r_E_E.png</key>
+            <key type="filename">16/s_r_E_N.png</key>
+            <key type="filename">16/s_r_E_S.png</key>
             <key type="filename">16/s_r_N.png</key>
-            <key type="filename">16/s_r_N_c.png</key>
-            <key type="filename">16/s_r_N_l.png</key>
-            <key type="filename">16/s_r_N_r.png</key>
+            <key type="filename">16/s_r_N_E.png</key>
+            <key type="filename">16/s_r_N_N.png</key>
+            <key type="filename">16/s_r_N_W.png</key>
             <key type="filename">16/s_r_S.png</key>
-            <key type="filename">16/s_r_S_C.png</key>
-            <key type="filename">16/s_r_S_L.png</key>
-            <key type="filename">16/s_r_S_R.png</key>
-            <key type="filename">16/s_r_W_b.png</key>
-            <key type="filename">16/s_r_W_c.png</key>
-            <key type="filename">16/s_r_W_t.png</key>
+            <key type="filename">16/s_r_S_E.png</key>
+            <key type="filename">16/s_r_S_S.png</key>
+            <key type="filename">16/s_r_S_W.png</key>
+            <key type="filename">16/s_r_W_N.png</key>
+            <key type="filename">16/s_r_W_S.png</key>
+            <key type="filename">16/s_r_W_W.png</key>
+            <key type="filename">large/tiberium_0.png</key>
+            <key type="filename">large/tiberium_1.png</key>
+            <key type="filename">large/tiberium_2.png</key>
+            <key type="filename">large/tiberium_3.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
                 <point_f>0.5,0.5</point_f>
@@ -346,6 +385,84 @@
                 <rect>12,12,24,24</rect>
                 <key>scale9Paddings</key>
                 <rect>12,12,24,24</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">large/bush_g_0.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>10,8,20,16</rect>
+                <key>scale9Paddings</key>
+                <rect>10,8,20,16</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">large/bush_g_1.png</key>
+            <key type="filename">large/bush_g_2.png</key>
+            <key type="filename">large/bush_g_3.png</key>
+            <key type="filename">large/bush_g_4.png</key>
+            <key type="filename">large/bush_g_5.png</key>
+            <key type="filename">large/bush_r_0.png</key>
+            <key type="filename">large/bush_r_1.png</key>
+            <key type="filename">large/bush_r_2.png</key>
+            <key type="filename">large/bush_r_3.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>8,8,16,16</rect>
+                <key>scale9Paddings</key>
+                <rect>8,8,16,16</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">large/tree_g_0.png</key>
+            <key type="filename">large/tree_g_2.png</key>
+            <key type="filename">large/tree_r_0.png</key>
+            <key type="filename">large/tree_r_1.png</key>
+            <key type="filename">large/tree_r_2.png</key>
+            <key type="filename">large/tree_r_3.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>8,16,16,32</rect>
+                <key>scale9Paddings</key>
+                <rect>8,16,16,32</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">large/tree_g_1.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>9,16,17,32</rect>
+                <key>scale9Paddings</key>
+                <rect>9,16,17,32</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">large/tree_g_3.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>8,16,17,32</rect>
+                <key>scale9Paddings</key>
+                <rect>8,16,17,32</rect>
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
