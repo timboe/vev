@@ -26,7 +26,9 @@ public class World {
   public void dispose() { ourInstance = null; }
   private Random R = new Random();
   private Vector<Zone> allZones = new Vector<Zone>();
-  public boolean isReady;
+  public Vector<IVector2> warps = new Vector<IVector2>();
+  public Vector<IVector2> tiberium = new Vector<IVector2>();
+
 
   private Tile[][] tiles;
   private Zone[][] zones;
@@ -36,9 +38,10 @@ public class World {
   }
 
   private void reset() {
-    isReady = false;
     GameState.getInstance().reset();
     Sprites.getInstance().reset();
+    warps.clear();
+    tiberium.clear();
     tiles = new Tile[Param.TILES_X][Param.TILES_Y];
     for (int x = 0; x < Param.TILES_X; ++x) {
       for (int y = 0; y < Param.TILES_Y; ++y) {
@@ -91,7 +94,6 @@ public class World {
       if (success) success = doPathGrid();
     }
     applyTileGraphics();
-    isReady = true;
     Gdx.app.log("World","Generation finished, try " + worldTry);
     for (int y = Param.ZONES_Y-1; y >= 0; --y) Gdx.app.log( "",(zones[0][y].colour == Colour.kRED ? "R " : "G ") + (zones[1][y].colour == Colour.kRED ? "R " : "G ") + (zones[2][y].colour == Colour.kRED ? "R " : "G ") );
     for (int y = Param.ZONES_Y-1; y >= 0; --y) Gdx.app.log( "",zones[0][y].level + " " + zones[1][y].level + " " + zones[2][y].level);
@@ -146,7 +148,7 @@ public class World {
   private Sprite newSprite(int x, int y, String name) {
     Sprite s = new Sprite(x,y);
     GameState.getInstance().getSpriteStage().addActor(s);
-    s.setTexture(name, 1);
+    s.setTexture(name, 1, R.nextBoolean());
     return s;
   }
 
@@ -166,7 +168,6 @@ public class World {
         }
       }
       for (Zone z : allZones) {
-        if (tooClose) break;
         if (z.inZone(_x, _y)) {
           if (z.hasWarp) tooClose = true;
           else z.hasWarp = true;
@@ -175,6 +176,7 @@ public class World {
       }
       if (tooClose) continue;
       // Apply the area
+      warps.add(new IVector2(_x,_y));
       ++fPlaced;
       if (Param.DEBUG > 0) Gdx.app.log("addWarp", "Adding WARP at ("+_x+","+_y+")");
       for (int x = _x - Param.WARP_SIZE/2; x < _x + Param.WARP_SIZE/2; ++x) {
@@ -185,10 +187,10 @@ public class World {
         }
       }
 
-      addWarpGfx(_x, _y, 0, -Param.WARP_ROTATE_SPEED * 1, 0);
-      addWarpGfx(_x, _y, 0, -Param.WARP_ROTATE_SPEED * 2, -45);
-      addWarpGfx(_x, _y, 1, +Param.WARP_ROTATE_SPEED * 1, 0);
-      addWarpGfx(_x, _y, 1, +Param.WARP_ROTATE_SPEED * 2, +45);
+      addWarpGfx(_x, _y, false, Param.WARP_ROTATE_SPEED * 1, 0);
+      addWarpGfx(_x, _y, false, Param.WARP_ROTATE_SPEED * 2, 90);
+      addWarpGfx(_x, _y, true, -Param.WARP_ROTATE_SPEED * 1, 0);
+      addWarpGfx(_x, _y, true, -Param.WARP_ROTATE_SPEED * 2, -90);
 
     } while (++fTry < Param.N_PATCH_TRIES && fPlaced < Param.MAX_WARP);
     if (fPlaced < Param.MIN_WARP) {
@@ -198,9 +200,9 @@ public class World {
     return true;
   }
 
-  private void addWarpGfx(final int x, final int y, final int textureID, final float speed, final float initialR) {
+  private void addWarpGfx(final int x, final int y, final boolean flipped, final float speed, final float initialR) {
     Tile warp = new Tile(x - Param.WARP_SIZE/2 + 2, y - Param.WARP_SIZE/2 + 2);
-    warp.setTexture(Textures.getInstance().theVoid[textureID]);
+    warp.setTexture("void", 1, flipped);
     warp.setUserObject(speed);
     warp.rotateBy(initialR);
     warp.moveBy(0, -Param.TILE_S/2);
@@ -208,7 +210,6 @@ public class World {
   }
 
   private boolean tryPatchOfStuff(final int _x, final int _y, final boolean isForest, final int patchSize) { // Otherwise, is Tiberium
-    String forestTexture = "tree_" + tiles[_x][_y].colour.getString() + "_" + R.nextInt(Param.N_TREE);
     for (int x = _x - patchSize; x < _x + patchSize; ++x) {
       if (tiles[x][_y].type != TileType.kGROUND || tiles[x][_y].colour != tiles[_x][_y].colour) return false;
     }
@@ -224,35 +225,35 @@ public class World {
         }
       }
     }
-
+    final String forestTexture = "tree_" + tiles[_x][_y].colour.getString() + "_" + R.nextInt(Param.N_TREE);
     final double maxD = Math.sqrt(2*Math.pow(patchSize,2));
     for (int x = _x - patchSize; x < _x + patchSize; ++x) {
       for (int y = _y + patchSize - 1; y >= _y - patchSize; --y) {
         if (tiles[x][y].colour != tiles[_x][_y].colour || tiles[x][y].type != TileType.kGROUND) continue;
         final double d = Math.hypot(x - _x, y - _y);
-
-        if (isForest) {
-
-          if (d > Math.abs(R.nextGaussian() * Param.PATCH_DENSITY * maxD)) continue;
-          Sprite s = newSprite(x, y, forestTexture);
-          s.moveBy((-Param.WIGGLE) + Util.R.nextInt(Param.WIGGLE*2), (-Param.WIGGLE) + Util.R.nextInt(Param.WIGGLE*2));
-          tiles[x][y].type = TileType.kFOILAGE;
-
-        } else { // Is Tiberium
-
-          for (int subX = 0; subX < 2; ++subX) {
-            for (int subY = 0; subY < 2; ++subY) {
-              if (d > Math.abs(R.nextGaussian() * Param.PATCH_DENSITY * maxD)) continue;
-              Sprite s = newSprite(x, y, "tiberium_" + R.nextInt(Param.N_TIBERIUM));
-              s.moveBy(subX * Param.TILE_S, subY * Param.TILE_S);
-              s.moveBy((-Param.WIGGLE/2) + Util.R.nextInt(Param.WIGGLE), (-Param.WIGGLE/2) + Util.R.nextInt(Param.WIGGLE));
-            }
-          }
-
-        }
+        if (isForest) tryTree(d, maxD, x, y, forestTexture);
+        else          tryTiberium(d, maxD, x, y);
       }
     }
     return true;
+  }
+
+  private void tryTree(final double distance, final double maxDistance, final int x, final int y, final String forestTexture) {
+    if (distance > Math.abs(R.nextGaussian() * Param.PATCH_DENSITY * maxDistance)) return;
+    Sprite s = newSprite(x, y, forestTexture);
+    s.moveBy((-Param.WIGGLE) + Util.R.nextInt(Param.WIGGLE*2), (-Param.WIGGLE) + Util.R.nextInt(Param.WIGGLE*2));
+    tiles[x][y].type = TileType.kFOILAGE;
+  }
+
+  private void tryTiberium(final double distance, final double maxDistance, final int x, final int y) {
+    for (int subX = 0; subX < 2; ++subX) {
+      for (int subY = 0; subY < 2; ++subY) {
+        if (distance > Math.abs(R.nextGaussian() * Param.PATCH_DENSITY * maxDistance)) continue;
+        Sprite s = newSprite(x, y, "tiberium_" + R.nextInt(Param.N_TIBERIUM));
+        s.moveBy(subX * Param.TILE_S, subY * Param.TILE_S);
+        s.moveBy((-Param.WIGGLE/2) + Util.R.nextInt(Param.WIGGLE), (-Param.WIGGLE/2) + Util.R.nextInt(Param.WIGGLE));
+      }
+    }
   }
 
   private boolean addPatch(final boolean isForest, final int patchSize, final int min, final int max) { // Otherwise, is tiberium
@@ -261,10 +262,13 @@ public class World {
       final int x = patchSize + R.nextInt(Param.TILES_X - (2*patchSize));
       final int y = patchSize + R.nextInt(Param.TILES_Y - (2*patchSize));
       if (tiles[x][y].type != TileType.kGROUND || tiles[x][y].colour != (isForest ? Colour.kGREEN : Colour.kRED)) continue;
-      if (tryPatchOfStuff(x, y, isForest, patchSize)) ++fPlaced;
+      if (tryPatchOfStuff(x, y, isForest, patchSize)) {
+        ++fPlaced;
+        if (!isForest) tiberium.add(new IVector2(x,y));
+      }
     } while (++fTry < Param.N_PATCH_TRIES && fPlaced < max);
     if (fPlaced < min) {
-      Gdx.app.error("addPatch","Could not add enough. isForest:" + isForest + " placed:" + fPlaced);
+      Gdx.app.error("addPatch","Could not add enough. " + (isForest ? "forest" : "tiberium") + ", placed:" + fPlaced);
       return false;
     }
     return true;
@@ -335,53 +339,59 @@ public class World {
     for (int x = 1; x < Param.TILES_X-1; ++x) {
       for (int y = 1; y < Param.TILES_Y-1; ++y) {
         if (tiles[x][y].type != TileType.kSTAIRS) continue;
+        if (tiles[x][y].direction == Cardinal.kE || tiles[x][y].direction == Cardinal.kW) continue; // Only applies to E-W
         int count = 0;
         Map<Cardinal, Tile> n = collateNeighbours(x, y);
         for (Cardinal D : Cardinal.NESW) if (n.get(D).type == TileType.kSTAIRS) ++count;
         if (count > 0) continue;
-        // Check if E-W or N-S
-        if (n.get(Cardinal.kE).level != n.get(Cardinal.kW).level) {
-          setGround(new IVector2(x, y), tiles[x][y].colour, tiles[x][y].level, Edge.kFLAT);
-          if (Param.DEBUG > 0) Gdx.app.log("removeEWSingleStairs", "Removed single stair at "+x+","+y);
-        }
+        setGround(new IVector2(x, y), tiles[x][y].colour, tiles[x][y].level, Edge.kFLAT);
+        if (Param.DEBUG > 0) Gdx.app.log("removeEWSingleStairs", "Removed single stair at "+x+","+y);
       }
     }
     return true;
   }
 
   private boolean doZones() {
-    int nGreen = 0;
-    int nRed = 0;
-    int nRedHill = 0;
-    int nGreenHill = 0;
-    for (int x = 0; x < Param.ZONES_X; ++x) {
-      for (int y = 0; y < Param.ZONES_Y; ++y) {
-        zones[x][y].colour = (R.nextBoolean() ? Colour.kGREEN : Colour.kRED);
-        final int heightMod = (zones[x][y].colour == Colour.kGREEN ? 1 : -1);
-        boolean hill = R.nextBoolean();
-        zones[x][y].level = (hill ? 1 + heightMod : 1);
-        if (hill && R.nextFloat() < Param.HILL_IN_HILL_PROB) zones[x][y].hillWithinHill = true;
-
-        if (Param.DEBUG > 0) Gdx.app.log("doZones","x:" + x + " y:" + y + " C:" + zones[x][y].colour + " L:" +  zones[x][y].level + " HWH:"+zones[x][y].hillWithinHill);
-
-        if (zones[x][y].colour == Colour.kGREEN) ++nGreen;
-        else ++nRed;
-        if (zones[x][y].level != 1) {
-          if (zones[x][y].colour == Colour.kGREEN) ++nGreenHill;
-          else ++nRedHill;
-        }
-      }
-    }
-    if (Util.needsClamp(nGreen, Param.MIN_GREEN_ZONE, Param.MAX_GREEN_ZONE)) {
-      Gdx.app.error("doZones", "Incorrect green zones N:" + nGreen);
+    final int nGreen     = Param.MIN_GREEN_ZONE + R.nextInt(Param.MAX_GREEN_ZONE - Param.MIN_GREEN_ZONE + 1);
+    final int nGreenHill = Param.MIN_GREEN_HILL + R.nextInt(nGreen - Param.MIN_GREEN_HILL + 1);
+    final int nRed       = (Param.ZONES_X * Param.ZONES_Y) - nGreen;
+    final int nRedHill   = Param.MIN_RED_HILL + R.nextInt(nRed - Param.MIN_RED_HILL + 1);
+    if (nGreenHill > nGreen || nRedHill > nRed) {
+      Gdx.app.error("doZones", "Logic issue, more coloured zones than types of that colour");
       return false;
     }
-    if (Util.needsClamp(nGreenHill, Param.MIN_GREEN_HILL, nGreen - 1)) {
-      Gdx.app.error("doZones", "Incorrect green hill zones N:" + nGreenHill);
+
+    int fPlacedGreen = 0, fPlacedGreenHill = 0, fTry = 0;
+    do {
+      final int x = R.nextInt(Param.ZONES_X);
+      final int y = R.nextInt(Param.ZONES_Y);
+      if (zones[x][y].colour == Colour.kGREEN) continue;
+      zones[x][y].colour = Colour.kGREEN;
+      ++fPlacedGreen;
+      if (fPlacedGreenHill >= nGreenHill) continue;
+      zones[x][y].level++;
+      ++fPlacedGreenHill;
+      if (R.nextFloat() >= Param.HILL_IN_HILL_PROB) continue;
+      zones[x][y].hillWithinHill = true;
+    } while (++fTry < Param.N_PATCH_TRIES && fPlacedGreen < nGreen);
+    if (fPlacedGreen < nGreen) {
+      Gdx.app.error("doZones", "Could not place green zones");
       return false;
     }
-    if (Util.needsClamp(nRedHill, Param.MIN_RED_HILL, nRed - 1)) {
-      Gdx.app.error("doZones", "Incorrect red hill zones N:" + nGreenHill);
+
+    int fPlacedRedHill = 0;
+    fTry = 0;
+    do {
+      final int x = R.nextInt(Param.ZONES_X);
+      final int y = R.nextInt(Param.ZONES_Y);
+      if (zones[x][y].colour == Colour.kGREEN || zones[x][y].level != 1) continue;
+      zones[x][y].level--;
+      ++fPlacedRedHill;
+      if ( R.nextFloat() >= Param.HILL_IN_HILL_PROB) continue;
+      zones[x][y].hillWithinHill = true;
+    } while (++fTry < Param.N_PATCH_TRIES && fPlacedRedHill < nRedHill);
+    if (fPlacedRedHill < nRedHill) {
+      Gdx.app.error("doZones", "Could not place red hills");
       return false;
     }
     return true;
@@ -411,14 +421,14 @@ public class World {
     return 0;
   }
 
-  private boolean sameColourAndLevel(final IVector2 start, final int offX, final int offY,
-                                     final Colour fromC, final Colour toC,
-                                     final int fromLevel, final int toLevel) {
+  private boolean notSameColourAndLevel(final IVector2 start, final int offX, final int offY,
+                                        final Colour fromC, final Colour toC,
+                                        final int fromLevel, final int toLevel) {
     //if (true) return true;
     IVector2 test = new IVector2(start.x + offX, start.y + offY);
-    if (test.x < 0 || test.y < 0 || test.x >= Param.TILES_X || test.y >= Param.TILES_Y) return true;
-    return ((tiles[test.x][test.y].colour == fromC && tiles[test.x][test.y].level == fromLevel)
-            || (tiles[test.x][test.y].colour == toC && tiles[test.x][test.y].level == toLevel));
+    return (test.x >= 0 && test.y >= 0 && test.x < Param.TILES_X && test.y < Param.TILES_Y
+            && ((tiles[test.x][test.y].colour != fromC || tiles[test.x][test.y].level != fromLevel)
+            && (tiles[test.x][test.y].colour != toC || tiles[test.x][test.y].level != toLevel)));
   }
 
   private Edge krinkle(IVector2 v, final Cardinal D, Edge direction, final int distanceToDest,
@@ -494,8 +504,8 @@ public class World {
         v.x += outModX; v.y += outModY; setGround(v, toC, toLevel, Edge.kFLAT); // Correct now
         if (Param.DEBUG > 0) Gdx.app.log("      krinkle",v.toString() + " Too close to centre -> kOUT");
         return Edge.kOUT;
-      } else if (!sameColourAndLevel(v, outOfBoundX, outOfBoundY, fromC, toC, fromLevel, toLevel)
-              || (distanceToDest > Param.MAX_DIST && !sameColourAndLevel(v, lookAheadOutOfBoundsX, lookAheadOutOfBoundsY, fromC, toC, fromLevel, toLevel)) ) {
+      } else if (notSameColourAndLevel(v, outOfBoundX, outOfBoundY, fromC, toC, fromLevel, toLevel)
+              || (distanceToDest > Param.MAX_DIST && notSameColourAndLevel(v, lookAheadOutOfBoundsX, lookAheadOutOfBoundsY, fromC, toC, fromLevel, toLevel)) ) {
         for (int i = 0; i < Param.EDGE_ADJUSTMENT; ++i) {
           v.x += outOfBoundModX; v.y += outOfBoundModY;
           setGround(v, toC, toLevel, Edge.kFLAT);
@@ -639,7 +649,7 @@ public class World {
           success = doEdges(edges, zone, zones[x][y].colour, zones[x][y].colour, zones[x][y].level, hwh_level, 4*Param.KRINKLE_OFFSET, (5*Param.KRINKLE_OFFSET)-Param.KRINKLE_GAP);
         }
         if (!success) {
-          Gdx.app.error("  doSpecialZone","Failed doEdges doGreen:" + doGreenZones + " doHill:" + doHills + " doHWH:" + hwh);
+          if (Param.DEBUG > 0) Gdx.app.error("  doSpecialZone","Failed doEdges doGreen:" + doGreenZones + " doHill:" + doHills + " doHWH:" + hwh);
           return false;
         }
       }
@@ -759,7 +769,7 @@ public class World {
         } else {
           direction = Edge.random(doingHill
                   && direction != Edge.kSTAIRS_OUT
-                  && distanceToDest > Param.MAX_DIST*2);
+                  && distanceToDest > Param.MAX_DIST*2, zones.size());
         }
       }
     }
@@ -809,17 +819,17 @@ public class World {
     // Outer are forced to be void
     // Do these first so we don't try and access outside of the tilespace
     for (int x = 0; x < Param.TILES_X; ++x) {
-      tiles[x][0].setTexture( TileType.getTextureString(TileType.kGROUND, Colour.kBLACK), 1 );
-      tiles[x][Param.TILES_Y-1].setTexture( TileType.getTextureString(TileType.kGROUND, Colour.kBLACK), 1 );
+      tiles[x][0].setTexture( TileType.getTextureString(TileType.kGROUND, Colour.kBLACK), 1, false );
+      tiles[x][Param.TILES_Y-1].setTexture( TileType.getTextureString(TileType.kGROUND, Colour.kBLACK), 1 , false);
     }
     for (int y = 0; y < Param.TILES_Y; ++y) {
-      tiles[0][y].setTexture( TileType.getTextureString(TileType.kGROUND, Colour.kBLACK), 1 );
-      tiles[Param.TILES_X-1][y].setTexture( TileType.getTextureString(TileType.kGROUND, Colour.kBLACK), 1 );
+      tiles[0][y].setTexture( TileType.getTextureString(TileType.kGROUND, Colour.kBLACK), 1, false );
+      tiles[Param.TILES_X-1][y].setTexture( TileType.getTextureString(TileType.kGROUND, Colour.kBLACK), 1, false );
     }
     // Set the rest
     for (int x = 1; x < Param.TILES_X-1; ++x) {
       for (int y = 1; y < Param.TILES_Y-1; ++y) {
-        tiles[x][y].setTexture( TileType.getTextureString(tiles[x][y], collateNeighbours(x,y)), 1 );
+        tiles[x][y].setTexture( TileType.getTextureString(tiles[x][y], collateNeighbours(x,y)), 1, false );
       }
     }
   }

@@ -27,7 +27,7 @@ public class Param {
   public static final int NEAR_TO_EDGE = (MAX_KRINKLE * 2) + 1; // Min close-able space. If one went +ve and the other -ve,
   public static final int EDGE_ADJUSTMENT = (MAX_KRINKLE/2)+1;
 
-  public static final int N_PATCH_TRIES = 10;
+  public static final int N_PATCH_TRIES = 25;
   public static final int WIGGLE = 8; // Random pixel offset for foliage
   public static final float PATCH_DENSITY = 0.5f;
 
@@ -48,9 +48,9 @@ public class Param {
   public static final int N_TIBERIUM = 4; // Number of sprites
 
   public static final float HILL_IN_HILL_PROB = .2f;
-  public static final float STAIRS_PROB = .4f;
-  public static final float FOLIAGE_PROB = .004f;
-  public static final float TREE_PROB = .3f;
+  public static final float STAIRS_PROB = .8f;
+  public static final float FOLIAGE_PROB = .008f;
+  public static final float TREE_PROB = .3f; // Given foliage, % of it being a tree
 
   public static final int MIN_STAIRCASES = 1;
 
@@ -60,7 +60,7 @@ public class Param {
   public static final int DISPLAY_X = 1920;
   public static final int DISPLAY_Y = 1080;
 
-  public static final int MAX_FRAMES = 1;
+  public static final int MAX_FRAMES = 6;
 
   public static final int N_GRASS_VARIANTS = 13;
   public static final int N_BORDER_VARIANTS = 4;
@@ -75,6 +75,8 @@ public class Param {
 
   public static final float DESIRED_FPS = 60; // FPS ANIM_SPEED is tuned for
   public static final float FRAME_TIME = (1f/DESIRED_FPS);
+
+  public static final float ANIM_TIME = 1/12f; // I.e. 12 frames per second
 
   //
 

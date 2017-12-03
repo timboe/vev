@@ -16,58 +16,66 @@ public class Entity extends Actor {
   public int level;
   private int scale;
   public int x, y;
+  private int frames, frame;
+  private float time;
 
-  protected TextureRegion[] textureRegion = new TextureRegion[Param.MAX_FRAMES];
-
-  public TextureRegion[] getTextureRegion() {
-    return textureRegion;
-  }
+  private TextureRegion[] textureRegion = new TextureRegion[Param.MAX_FRAMES];
 
   public Entity(int x, int y, int scale) {
-    this.scale = scale;
-    this.x = x;
-    this.y = y;
-    textureRegion[0] = null;
-    setBounds(x * scale, y * scale, scale, scale);
+    construct(x, y, scale);
   }
 
   public Entity(int x, int y) {
-    this.scale = Param.TILE_S;
+    construct(x ,y, Param.TILE_S);
+  }
+
+  private void construct(int x, int y, int scale) {
+    this.scale = scale;
     this.x = x;
     this.y = y;
+    this.frames = 1;
+    this.frame = 0;
+    this.time = 0;
     textureRegion[0] = null;
     setBounds(x * scale, y * scale, scale, scale);
   }
 
-  public Entity() {
+  protected Entity() {
     textureRegion[0] = null;
   }
 
-  public void originToCentre() {
-//    setOrigin(getX() + getWidth()/2, getY() + getHeight()/2);
-  }
-
-  public void setTexture(String name, int frames) {
-    TextureRegion r = Textures.getInstance().getTexture(name);
-    if (r == null) {
-      Gdx.app.error("setTexture", "Texture error " + name);
-      r = Textures.getInstance().getTexture("missing3");
-    } else {
-     setTexture(r);
+  public void setTexture(final String name, final int frames, boolean flipped) {
+    for (int frame = 0; frame < frames; ++frame) {
+      final String texName = name + (frames > 1 ? "_" + frame : "");
+      TextureRegion r = Textures.getInstance().getTexture(texName, flipped);
+      if (r == null) {
+        Gdx.app.error("setTexture", "Texture error " + texName);
+        r = Textures.getInstance().getTexture("missing3", false);
+      }
+      setTexture(r, frame);
     }
+    this.frames = frames;
   }
 
-  public void setTexture(TextureRegion r) {
-    textureRegion[0] = r;
-    setWidth(textureRegion[0].getRegionWidth());
-    setHeight(textureRegion[0].getRegionHeight());
+  private void setTexture(TextureRegion r, int frame) {
+    textureRegion[frame] = r;
+    setWidth(textureRegion[frame].getRegionWidth());
+    setHeight(textureRegion[frame].getRegionHeight());
     setOrigin(Align.center);
   }
 
   @Override
+  public void act(float delta) {
+    time += delta;
+    if (frames == 1 || time < Param.ANIM_TIME) return;
+    time -= Param.ANIM_TIME;
+    if (++frame == frames) frame = 0;
+  }
+
+  @Override
   public void draw(Batch batch, float alpha) {
-    if (textureRegion[0] == null) return;
-    batch.draw(textureRegion[0], this.getX(), this.getY(), this.getOriginX(), this.getOriginY(), this.getWidth(), this.getHeight(), this.getScaleX(), this.getScaleY(), this.getRotation());
+    if (textureRegion[frame] == null) return;
+    batch.draw(textureRegion[frame], this.getX(), this.getY(), this.getOriginX(), this.getOriginY(), this.getWidth(), this.getHeight(), this.getScaleX(), this.getScaleY(), this.getRotation());
 //    draw(TextureRegion region, float x, float y, float originX, float originY, float width, float height, float scaleX, float scaleY, float rotation)
   }
 }

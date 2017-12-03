@@ -24,6 +24,11 @@ public class IVector2 implements Comparable {
     this.y = y;
   }
 
+  public void set(IVector2 v) {
+    this.x = v.x;
+    this.y = v.y;
+  }
+
   @Override
   public int compareTo(Object o) {
     IVector2 v = (IVector2) o;

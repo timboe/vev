@@ -1,23 +1,33 @@
 package timboe.destructor.input;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.math.Vector2;
 import timboe.destructor.manager.Camera;
+import timboe.destructor.manager.GameState;
 import timboe.destructor.manager.World;
 
 public class Gesture implements GestureDetector.GestureListener {
 
-  float initialZoom = Camera.getInstance().getZoom();
+  private float initialZoom = Camera.getInstance().getZoom();
 
   @Override
   public boolean touchDown(float x, float y, int pointer, int button) {
+    if (button == Input.Buttons.LEFT) { // Start a SELECT action
+      GameState.getInstance().selectStartWorld.set(x, y, 0);
+      GameState.getInstance().selectStartWorld = Camera.getInstance().unproject(GameState.getInstance().selectStartWorld);
+      GameState.getInstance().selectStartScreen.set(x, y, 0);
+
+      GameState.getInstance().selectEndWorld.set(x, y, 0);
+      GameState.getInstance().selectEndWorld = Camera.getInstance().unproject(GameState.getInstance().selectEndWorld);
+      GameState.getInstance().selectEndScreen.set(x, y, 0);
+    }
     return false;
   }
 
   @Override
   public boolean tap(float x, float y, int count, int button) {
-    World.getInstance().generate();
     return false;
   }
 
@@ -34,7 +44,15 @@ public class Gesture implements GestureDetector.GestureListener {
 
   @Override
   public boolean pan(float x, float y, float deltaX, float deltaY) {
-    Camera.getInstance().translate(-deltaX, deltaY);
+    // Are we panning the screen or the select box?
+    if (Gdx.input.isButtonPressed(Input.Buttons.RIGHT)) { // Screen
+      Camera.getInstance().translate(-deltaX, deltaY);
+    }
+    if (Gdx.input.isButtonPressed(Input.Buttons.LEFT)) { // Select box
+      GameState.getInstance().selectEndScreen.set(x, y, 0);
+      GameState.getInstance().selectEndWorld.set( GameState.getInstance().selectEndScreen );
+      GameState.getInstance().selectEndWorld = Camera.getInstance().unproject(GameState.getInstance().selectEndWorld);
+    }
     return false;
   }
 

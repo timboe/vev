@@ -22,10 +22,13 @@ public class GameScreen implements Screen {
   private GestureDetector gestureDetector = new GestureDetector(gesture);
   private ShapeRenderer sr = new ShapeRenderer();
 
+  private final Camera camera = Camera.getInstance();
+  private final GameState state = GameState.getInstance();
+
   public GameScreen() {
     multiplexer.addProcessor(GameState.getInstance().getUIStage());
-    multiplexer.addProcessor(gestureDetector);
     multiplexer.addProcessor(handler);
+    multiplexer.addProcessor(gestureDetector);
   }
 
   @Override
@@ -34,9 +37,10 @@ public class GameScreen implements Screen {
     Gdx.app.log("GameScreen", "Show");
   }
 
-  protected void renderClear() {
+  private void renderClear() {
     Gdx.gl.glClearColor(.1529f, .1255f, .1922f, 1);
 //    Gdx.gl.glClearColor(.7f, .7f, .7f, 1);
+    Gdx.gl.glLineWidth(3);
     Gdx.graphics.getGL20().glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT | GL20.GL_STENCIL_BUFFER_BIT);
   }
 
@@ -44,23 +48,25 @@ public class GameScreen implements Screen {
   @Override
   public void render(float delta) {
     renderClear();
-    Camera.getInstance().update(delta);
+    state.act(delta);
+
+
+    camera.updateTiles(delta);
 
 //    GameState.getInstance().getStage().getRoot().setCullingArea( Camera.getInstance().getCullBox() );
-    GameState.getInstance().getTileStage().draw();
+    state.getTileStage().draw();
 
 
-    for (Actor A : GameState.getInstance().getWarpStage().getRoot().getChildren()) {
+    for (Actor A : state.getWarpStage().getRoot().getChildren()) {
       A.rotateBy((Float)A.getUserObject() * delta);
     }
-    GameState.getInstance().getWarpStage().draw();
+    state.getWarpStage().draw();
 
     if (Param.DEBUG > 2) {
       sr.setProjectionMatrix(Camera.getInstance().getCamera().combined);
       sr.begin(ShapeRenderer.ShapeType.Line);
-      Gdx.gl.glLineWidth(3);
       sr.setColor(1, 1, 1, 1);
-      for (Actor A : GameState.getInstance().getTileStage().getActors()) {
+      for (Actor A : state.getTileStage().getActors()) {
         try {
           Tile T = (Tile) A;
           T.renderDebug(sr);
@@ -70,18 +76,36 @@ public class GameScreen implements Screen {
       sr.end();
     }
 
-    Camera.getInstance().updateSprite();
+    camera.updateSprite();
+    GameState.getInstance().getSpriteStage().act(delta);
     GameState.getInstance().getSpriteStage().draw();
 
-    Camera.getInstance().updateUI();
+    camera.updateUI();
 //    GameState.getInstance().getUIStage().draw();
+
+
+    camera.update(); // Reset shenanigans
+    if (!state.selectStartWorld.isZero()) {
+
+      sr.setProjectionMatrix(Camera.getInstance().getCamera().combined);
+      sr.begin(ShapeRenderer.ShapeType.Line);
+      sr.setColor(0, 1, 0, 1);
+//      sr.line(state.selectStartWorld, state.selectEndWorld);
+      sr.rect(state.selectStartWorld.x, state.selectStartWorld.y,
+              state.selectEndWorld.x - state.selectStartWorld.x,
+              state.selectEndWorld.y - state.selectStartWorld.y);
+      sr.end();
+    }
+
 
   }
 
   @Override
   public void resize(int width, int height) {
-    GameState.getInstance().getTileStage().getViewport().update(width, height, true);
-    GameState.getInstance().getSpriteStage().getViewport().update(width, height, true);
+    state.getTileStage().getViewport().update(width, height, true);
+    state.getSpriteStage().getViewport().update(width, height, true);
+    state.getWarpStage().getViewport().update(width, height, true);
+    state.getUIStage().getViewport().update(width, height, true);
   }
 
   @Override

@@ -1,11 +1,9 @@
 package timboe.destructor.manager;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.utils.Scaling;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import timboe.destructor.Param;
 import timboe.destructor.Util;
@@ -35,22 +33,6 @@ public class Camera {
     reset();
   }
 
-  public void updateUI() {
-    camera.position.set(viewport.getWorldWidth()/2, viewport.getWorldHeight()/2, 0f);
-    camera.zoom = 1f;
-    camera.update();
-  }
-
-  public void updateSprite() {
-
-
-    camera.zoom *= (float)Param.SPRITE_SCALE;
-    camera.position.scl((float)Param.SPRITE_SCALE);
-    camera.update();
-
-  }
-
-
   public FitViewport getViewport() {
     return viewport;
   }
@@ -63,7 +45,11 @@ public class Camera {
     return cullBox;
   }
 
-  public void reset() {
+  public Vector3 unproject(Vector3 v) {
+    return camera.unproject(v);
+  }
+
+  private void reset() {
     camera = new OrthographicCamera();
     viewport = new FitViewport(Param.DISPLAY_X, Param.DISPLAY_Y, camera);
   }
@@ -90,7 +76,25 @@ public class Camera {
     return desiredZoom;
   }
 
-  public void update(float delta) {
+  public void update() {
+    camera.position.set(currentPos, 0);
+    camera.zoom = currentZoom;
+    camera.update();
+  }
+
+  public void updateUI() {
+    camera.position.set(viewport.getWorldWidth()/2, viewport.getWorldHeight()/2, 0f);
+    camera.zoom = 1f;
+    camera.update();
+  }
+
+  public void updateSprite() { // Note - expects to cove from "update"
+    camera.zoom *= (float)Param.SPRITE_SCALE;
+    camera.position.scl((float)Param.SPRITE_SCALE);
+    camera.update();
+  }
+
+  public void updateTiles(float delta) {
     float frames = delta / Param.FRAME_TIME;
 
     desiredPos.add(velocity);
@@ -99,9 +103,7 @@ public class Camera {
     currentPos = desiredPos;
     currentZoom = desiredZoom;
 
-    camera.position.set(currentPos, 0);
-    camera.zoom = currentZoom;
-    camera.update();
+    update();
 
     int startX = (int)camera.position.x - viewport.getScreenWidth()/2;
     int startY = (int)camera.position.y - viewport.getScreenHeight()/2;
