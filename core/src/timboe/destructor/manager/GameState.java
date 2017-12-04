@@ -67,7 +67,7 @@ public class GameState {
     IVector2 warp = World.getInstance().warps.get( R.nextInt( World.getInstance().warps.size() ) );
     Sprite s = new Sprite((int)Math.round(warp.x + (2*Param.WARP_SIZE/3 * Math.cos(rAngle))),
                           (int)Math.round(warp.y + (2*Param.WARP_SIZE/3 * Math.sin(rAngle))));
-    s.setTexture("ball", 6, false);
+    s.setTexture("ball_" + (R.nextBoolean() ? "r" : "g"), 6, false);
     spriteStage.addActor(s);
     particleSet.add(s);
   }

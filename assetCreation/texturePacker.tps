@@ -200,6 +200,12 @@
         <key>individualSpriteSettings</key>
         <map type="IndividualSpriteSettingsMap">
             <key type="filename">16/b.png</key>
+            <key type="filename">16/ball_0.png</key>
+            <key type="filename">16/ball_1.png</key>
+            <key type="filename">16/ball_2.png</key>
+            <key type="filename">16/ball_3.png</key>
+            <key type="filename">16/ball_4.png</key>
+            <key type="filename">16/ball_5.png</key>
             <key type="filename">16/border_cap_g_N.png</key>
             <key type="filename">16/border_g_E_0.png</key>
             <key type="filename">16/border_g_E_1.png</key>
@@ -410,6 +416,7 @@
             <key type="filename">large/bush_r_1.png</key>
             <key type="filename">large/bush_r_2.png</key>
             <key type="filename">large/bush_r_3.png</key>
+            <key type="filename">large/cloud_sprite.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
                 <point_f>0.5,0.5</point_f>
@@ -463,6 +470,19 @@
                 <rect>8,16,17,32</rect>
                 <key>scale9Paddings</key>
                 <rect>8,16,17,32</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">large/void.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>32,32,64,64</rect>
+                <key>scale9Paddings</key>
+                <rect>32,32,64,64</rect>
                 <key>scale9FromFile</key>
                 <false/>
             </struct>

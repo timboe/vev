@@ -1,6 +1,7 @@
 package timboe.destructor.manager;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.g2d.ParticleEffect;
 import javafx.util.Pair;
 import timboe.destructor.Param;
 import timboe.destructor.Util;
@@ -28,6 +29,7 @@ public class World {
   private Vector<Zone> allZones = new Vector<Zone>();
   public Vector<IVector2> warps = new Vector<IVector2>();
   public Vector<IVector2> tiberium = new Vector<IVector2>();
+  public Vector<ParticleEffect> warpClouds = new Vector<ParticleEffect>();
 
 
   private Tile[][] tiles;
@@ -46,6 +48,7 @@ public class World {
     GameState.getInstance().reset();
     Sprites.getInstance().reset();
     warps.clear();
+    warpClouds.clear();
     tiberium.clear();
     tiles = new Tile[Param.TILES_X][Param.TILES_Y];
     for (int x = 0; x < Param.TILES_X; ++x) {
@@ -196,6 +199,12 @@ public class World {
       addWarpGfx(_x, _y, false, Param.WARP_ROTATE_SPEED * 2, 90);
       addWarpGfx(_x, _y, true, -Param.WARP_ROTATE_SPEED * 1, 0);
       addWarpGfx(_x, _y, true, -Param.WARP_ROTATE_SPEED * 2, -90);
+
+      ParticleEffect clouds = new ParticleEffect();
+      clouds.load(Gdx.files.internal("hell_portal_effect.txt"), Textures.getInstance().getAtlas());
+      clouds.setPosition(Param.TILE_S * _x + Param.TILE_S/2, Param.TILE_S * _y);
+      clouds.start();
+      warpClouds.add(clouds);
 
     } while (++fTry < Param.N_PATCH_TRIES && fPlaced < Param.MAX_WARP);
     if (fPlaced < Param.MIN_WARP) {

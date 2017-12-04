@@ -48,8 +48,10 @@ public class PathFinding {
       T current = open.poll();
       if (current.equals(goal)) { // I found it on my own
 
+//        Gdx.app.error("pathFinding","TOTAL pathfind");
         while (current != null) {
           route.add(0, current);
+//          Gdx.app.error("  ADD T - ",((Tile)current).x + "," + ((Tile)current).y);
           current = fromMap.get(current);
         }
         return route;
@@ -69,14 +71,18 @@ public class PathFinding {
           Gdx.app.error("pathFinding","element was in solutionsKnownFrom but not any individual soln?!");
           return null;
         }
-        for (int i = 0 ; i < otherSolution.size(); ++i) {
+//        Gdx.app.error("pathFinding","partial pathfind. CACHED. Split at:" + ((Tile)current).x + "," + ((Tile)current).y);
+        for (int i = otherSolution.size() - 1; i >= 0; --i) {
           if (otherSolution.get(i) == current) break;
-          route.add( (T)otherSolution.get(i) );
+          route.add(0, (T)otherSolution.get(i) );
+//          Gdx.app.error("  ADD C - ",((Tile)otherSolution.get(i)).x + "," + ((Tile)otherSolution.get(i)).y);
         }
 
         // Add the remainder - unique to me
+//        Gdx.app.error("pathFinding","partial pathfind. UNIQUE");
         while (current != null) {
           route.add(0, current);
+//          Gdx.app.error("  ADD - U",((Tile)current).x + "," + ((Tile)current).y);
           current = fromMap.get(current);
         }
         return route;

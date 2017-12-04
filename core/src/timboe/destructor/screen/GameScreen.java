@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.g2d.ParticleEffect;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -14,6 +15,7 @@ import timboe.destructor.input.Gesture;
 import timboe.destructor.input.Handler;
 import timboe.destructor.manager.Camera;
 import timboe.destructor.manager.GameState;
+import timboe.destructor.manager.World;
 
 public class GameScreen implements Screen {
 
@@ -25,6 +27,7 @@ public class GameScreen implements Screen {
 
   private final Camera camera = Camera.getInstance();
   private final GameState state = GameState.getInstance();
+  private final World world = World.getInstance();
 
   public GameScreen() {
     multiplexer.addProcessor(GameState.getInstance().getUIStage());
@@ -51,17 +54,30 @@ public class GameScreen implements Screen {
     renderClear();
     state.act(delta);
 
+    ////////////////////////////////////////////////
 
     camera.updateTiles(delta);
 
 //    GameState.getInstance().getStage().getRoot().setCullingArea( Camera.getInstance().getCullBox() );
     state.getTileStage().draw();
 
+    ////////////////////////////////////////////////
 
-    for (Actor A : state.getWarpStage().getRoot().getChildren()) {
+
+    for (Actor A : state.getWarpStage().getRoot().getChildren()) { // TODO move this into an act
       A.rotateBy((Float)A.getUserObject() * delta);
     }
     state.getWarpStage().draw();
+
+    // TODO optimise additive mixed batching
+    state.getWarpStage().getBatch().begin();
+    for (ParticleEffect e : world.warpClouds) {
+      e.update(delta);
+      e.draw(state.getWarpStage().getBatch());
+    }
+    state.getWarpStage().getBatch().end();
+
+    ////////////////////////////////////////////////
 
     if (Param.DEBUG > 2) {
       sr.setProjectionMatrix(Camera.getInstance().getCamera().combined);

@@ -46,6 +46,7 @@ public class Param {
   public static final float WARP_ROTATE_SPEED = 3f;
 
   public static final int N_TIBERIUM = 4; // Number of sprites
+  public static final int N_BALLS = 6; // number of sprites
 
   public static final float HILL_IN_HILL_PROB = .2f;
   public static final float STAIRS_PROB = .8f;
