@@ -75,6 +75,10 @@ public class GameScreen implements Screen {
       e.update(delta);
       e.draw(state.getWarpStage().getBatch());
     }
+    for (ParticleEffect e : world.warps.values()) {
+      e.update(delta);
+      if (!e.isComplete()) e.draw(state.getWarpStage().getBatch());
+    }
     state.getWarpStage().getBatch().end();
 
     ////////////////////////////////////////////////

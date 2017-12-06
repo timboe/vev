@@ -2,6 +2,7 @@ package timboe.destructor.manager;
 
 
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.g2d.ParticleEffect;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -9,13 +10,12 @@ import timboe.destructor.DestructorGame;
 import timboe.destructor.Param;
 import timboe.destructor.entity.Sprite;
 import timboe.destructor.entity.Tile;
+import timboe.destructor.enums.Colour;
 import timboe.destructor.pathfinding.IVector2;
 import timboe.destructor.screen.GameScreen;
 import timboe.destructor.screen.TitleScreen;
 
-import java.util.HashSet;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 public class GameState {
 
@@ -59,17 +59,26 @@ public class GameState {
 
   public void act(float delta) {
     tickTime += delta;
-    if (tickTime < .2) return; // Tick every second
-    tickTime -= .2;
+    if (tickTime < 3) return; // Tick every second
+    tickTime -= 3;
 
     // Add a new sprite
     double rAngle = -Math.PI + (R.nextFloat() * Math.PI * 2);
-    IVector2 warp = World.getInstance().warps.get( R.nextInt( World.getInstance().warps.size() ) );
+    List<Map.Entry<IVector2,ParticleEffect>> entries = new ArrayList<Map.Entry<IVector2,ParticleEffect>>(World.getInstance().warps.entrySet());
+    Map.Entry<IVector2,ParticleEffect> rWarp = entries.get( R.nextInt(entries.size()) );
+    IVector2 warp = rWarp.getKey();
+    ParticleEffect zap = rWarp.getValue();
+
     Sprite s = new Sprite((int)Math.round(warp.x + (2*Param.WARP_SIZE/3 * Math.cos(rAngle))),
                           (int)Math.round(warp.y + (2*Param.WARP_SIZE/3 * Math.sin(rAngle))));
-    s.setTexture("ball_" + (R.nextBoolean() ? "r" : "g"), 6, false);
+    s.setTexture("ball_" + Colour.random().getString(), 6, false);
     spriteStage.addActor(s);
     particleSet.add(s);
+    float distance = Camera.getInstance().distanceToCamera(warp.x * Param.TILE_S, warp.y * Param.TILE_S);
+//    if (distance < 200) {
+      Camera.getInstance().addShake(30);
+//    }
+    zap.start();
   }
 
   public boolean isSelecting() {

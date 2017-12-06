@@ -65,48 +65,48 @@ public class Textures {
   }
 
   private void loadMultiColouredBall() {
-    final int redHighlight[] = {220, 138, 92}; //= new Color(220/255f, 138/255f, 92/255f, 1f);
+    // Images in the ATLAS are red
+    final int redHighlight[] = {220, 138, 92};
     final int redTexture[] = {206, 101, 80};
     final int redMain[] = {176, 78, 80};
     final int redShadow[] = {136, 57, 80};
     final int redDark[] = {72, 43, 81};
     final int redBlack[] = {39, 32, 49};
-//
-//    final int redHighlight[] = {220, 138, 92}; //= new Color(220/255f, 138/255f, 92/255f, 1f);
-//    final int redTexture = new Color(206/255f, 101/255f, 80/255f, 1f);
-//    final int redMain = new Color(176/255f, 78/255f, 80/255f, 1f);
-//    final int Color redShadow = new Color(136/255f, 57/255f, 80/255f, 1f);
-//    final int Color redDark = new Color(72/255f, 43/255f, 81/255f, 1f);
-//    Color redBlack = new Color(39/255f, 32/255f, 49/255f, 1f);
 
     TextureData data = atlas.getTextures().first().getTextureData();
     data.prepare();
     Pixmap fullMap = data.consumePixmap();
-
     for (Colour c : Colour.values()) {
+      if (c == Colour.kRED) continue;
       for (int i = 0; i < Param.N_BALLS; ++i) {
         TextureRegion r = new TextureRegion(atlas.findRegion("ball_r_" + i));
-
         Pixmap pixmap = new Pixmap(r.getRegionWidth(), r.getRegionHeight(), Pixmap.Format.RGBA8888);
         pixmap.drawPixmap(fullMap, 0, 0, r.getRegionX(), r.getRegionY(), r.getRegionWidth(), r.getRegionHeight());
-
-        Color changeHighlight = new Color(147/255f, 178/255f, 155/255f, 1f);
-        Color changeTexture = new Color(101/255f, 143/255f, 135/255f, 1f);
-        Color changeMain = new Color(58/255f, 91/255f, 106/255f, 1f);
-        Color changeShadow = new Color(45/255f, 59/255f, 89/255f, 1f);
-        Color changeDark = new Color(50/255f, 43/255f, 81/255f, 1f);
-        Color changeBlack = new Color(39/255f, 32/255f, 49/255f,1f);
-        colourReplace(pixmap, redHighlight, changeHighlight);
-        colourReplace(pixmap, redTexture, changeTexture);
-        colourReplace(pixmap, redMain, changeMain);
-        colourReplace(pixmap, redShadow, changeShadow);
-        colourReplace(pixmap, redDark, changeDark);
-        colourReplace(pixmap, redBlack, changeBlack);
-
+        if (c == Colour.kGREEN) {
+          colourReplace(pixmap, redHighlight, new Color(147/255f, 178/255f, 155/255f, 1f));
+          colourReplace(pixmap, redTexture, new Color(101/255f, 143/255f, 135/255f, 1f));
+          colourReplace(pixmap, redMain, new Color(58/255f, 91/255f, 106/255f, 1f));
+          colourReplace(pixmap, redShadow, new Color(45/255f, 59/255f, 89/255f, 1f));
+          colourReplace(pixmap, redDark, new Color(50/255f, 43/255f, 81/255f, 1f));
+          colourReplace(pixmap, redBlack, new Color(39/255f, 32/255f, 49/255f,1f));
+        } else if (c == Colour.kBLUE) {
+          colourReplace(pixmap, redHighlight, new Color(64/255f, 141/255f, 174/255f, 1f));
+          colourReplace(pixmap, redTexture, new Color(53/255f, 85/255f, 149/255f, 1f));
+          colourReplace(pixmap, redMain, new Color(60/255f, 52/255f, 123/255f, 1f));
+          colourReplace(pixmap, redShadow, new Color(50/255f, 43/255f, 81/255f, 1f));
+          colourReplace(pixmap, redDark, new Color(50/255f, 43/255f, 81/255f, 1f));
+          colourReplace(pixmap, redBlack, new Color(39/255f, 32/255f, 49/255f,1f));
+        } else if (c == Colour.kBLACK) {
+          colourReplace(pixmap, redHighlight, new Color(60/255f, 52/255f, 123/255f, 1f));
+          colourReplace(pixmap, redTexture, new Color(50/255f, 43/255f, 81/255f, 1f));
+          colourReplace(pixmap, redMain, new Color(50/255f, 43/255f, 81/255f, 1f));
+          colourReplace(pixmap, redShadow, new Color(50/255f, 43/255f, 81/255f, 1f));
+          colourReplace(pixmap, redDark, new Color(39/255f, 32/255f, 49/255f,1f));
+          colourReplace(pixmap, redBlack, new Color(39/255f, 32/255f, 49/255f,1f));
+        }
         Texture newTex = new Texture(pixmap);
         TextureRegion newTexRegion = new TextureRegion(newTex);
         pixmap.dispose();
-
         retexturedMap.put("ball_" + c.getString() + "_" + i, newTexRegion);
       }
     }

@@ -8,6 +8,8 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import timboe.destructor.Param;
 import timboe.destructor.Util;
 
+import java.util.Random;
+
 public class Camera {
 
   private static Camera ourInstance;
@@ -25,6 +27,10 @@ public class Camera {
   private Vector2 currentPos = new Vector2(0,0);
   private Vector2 desiredPos = new Vector2(0,0);
   private Vector2 velocity = new Vector2(0,0);
+  private float shake;
+  private float shakeAngle;
+
+  private Random R = new Random();
 
   private OrthographicCamera camera;
   private FitViewport viewport;
@@ -47,6 +53,14 @@ public class Camera {
 
   public Vector3 unproject(Vector3 v) {
     return camera.unproject(v);
+  }
+
+  public void addShake(float amount) {
+    shake += amount;
+  }
+
+  public float distanceToCamera(int x, int y) {
+    return (float)Math.hypot(x - currentPos.x, y - currentPos.y);
   }
 
   private void reset() {
@@ -88,7 +102,7 @@ public class Camera {
     camera.update();
   }
 
-  public void updateSprite() { // Note - expects to cove from "update"
+  public void updateSprite() { // Note - expects to come from "update"
     camera.zoom *= (float)Param.SPRITE_SCALE;
     camera.position.scl((float)Param.SPRITE_SCALE);
     camera.update();
@@ -100,7 +114,11 @@ public class Camera {
     desiredPos.add(velocity);
     velocity.scl((float)Math.pow(0.9f, frames));
 
-    currentPos = desiredPos;
+    shake *= (float)Math.pow(0.9f, frames);
+    shakeAngle = R.nextFloat() * (float)Math.PI * 2f;
+
+    currentPos.set(desiredPos);
+    currentPos.add(shake * (float)Math.cos(shakeAngle), shake * (float)Math.sin(shakeAngle));
     currentZoom = desiredZoom;
 
     update();

@@ -27,7 +27,7 @@ public class World {
   public void dispose() { ourInstance = null; }
   private Random R = new Random();
   private Vector<Zone> allZones = new Vector<Zone>();
-  public Vector<IVector2> warps = new Vector<IVector2>();
+  public Map<IVector2, ParticleEffect> warps = new HashMap<IVector2, ParticleEffect>();
   public Vector<IVector2> tiberium = new Vector<IVector2>();
   public Vector<ParticleEffect> warpClouds = new Vector<ParticleEffect>();
 
@@ -184,7 +184,6 @@ public class World {
       }
       if (tooClose) continue;
       // Apply the area
-      warps.add(new IVector2(_x,_y));
       ++fPlaced;
       if (Param.DEBUG > 0) Gdx.app.log("addWarp", "Adding WARP at ("+_x+","+_y+")");
       for (int x = _x - Param.WARP_SIZE/2; x < _x + Param.WARP_SIZE/2; ++x) {
@@ -205,6 +204,13 @@ public class World {
       clouds.setPosition(Param.TILE_S * _x + Param.TILE_S/2, Param.TILE_S * _y);
       clouds.start();
       warpClouds.add(clouds);
+
+      ParticleEffect zap = new ParticleEffect();
+      zap.load(Gdx.files.internal("lightning_effect.txt"), Textures.getInstance().getAtlas());
+      zap.setPosition(Param.TILE_S * _x + Param.TILE_S/2, Param.TILE_S * _y);
+      zap.allowCompletion();
+
+      warps.put(new IVector2(_x,_y), zap);
 
     } while (++fTry < Param.N_PATCH_TRIES && fPlaced < Param.MAX_WARP);
     if (fPlaced < Param.MIN_WARP) {

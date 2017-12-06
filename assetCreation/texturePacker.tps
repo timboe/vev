@@ -200,12 +200,12 @@
         <key>individualSpriteSettings</key>
         <map type="IndividualSpriteSettingsMap">
             <key type="filename">16/b.png</key>
-            <key type="filename">16/ball_0.png</key>
-            <key type="filename">16/ball_1.png</key>
-            <key type="filename">16/ball_2.png</key>
-            <key type="filename">16/ball_3.png</key>
-            <key type="filename">16/ball_4.png</key>
-            <key type="filename">16/ball_5.png</key>
+            <key type="filename">16/ball_r_0.png</key>
+            <key type="filename">16/ball_r_1.png</key>
+            <key type="filename">16/ball_r_2.png</key>
+            <key type="filename">16/ball_r_3.png</key>
+            <key type="filename">16/ball_r_4.png</key>
+            <key type="filename">16/ball_r_5.png</key>
             <key type="filename">16/border_cap_g_N.png</key>
             <key type="filename">16/border_g_E_0.png</key>
             <key type="filename">16/border_g_E_1.png</key>
@@ -429,6 +429,7 @@
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
+            <key type="filename">large/lightning_1.png</key>
             <key type="filename">large/tree_g_0.png</key>
             <key type="filename">large/tree_g_2.png</key>
             <key type="filename">large/tree_r_0.png</key>
