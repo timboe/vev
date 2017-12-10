@@ -11,6 +11,7 @@ import java.util.Set;
 public class Sprite extends Entity {
 
   public List<Tile> pathingList;
+  private int circleOffset = 0;
 
   public Sprite(int x, int y) {
     super(x, y, Param.TILE_S * Param.SPRITE_SCALE);
@@ -35,7 +36,10 @@ public class Sprite extends Entity {
       }
     }
     if (!selected) return;
-    sr.rect(getX(), getY(), getWidth(), getHeight());
+    for (float a = 0; a < 360; a += 120) {
+      sr.arc( getX() + getWidth()/2, getY() + getWidth()/2, getWidth(), a + 2*Param.FRAME, 30);
+      sr.arc( getX() + getWidth()/2, getY() + getWidth()/2, getWidth(), a - 2*Param.FRAME, 30);
+    }
   }
 
 }

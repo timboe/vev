@@ -3,6 +3,7 @@ package timboe.destructor.entity;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.utils.Align;
 import timboe.destructor.Param;
@@ -19,6 +20,7 @@ public class Entity extends Actor {
   private int frames, frame;
   private float time;
   public boolean selected;
+  public Rectangle boundingBox = new Rectangle();
 
   private TextureRegion[] textureRegion = new TextureRegion[Param.MAX_FRAMES];
 

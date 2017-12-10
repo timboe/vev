@@ -63,6 +63,10 @@ public class Camera {
     return (float)Math.hypot(x - currentPos.x, y - currentPos.y);
   }
 
+  public boolean onScrean(Rectangle r) {
+    return cullBox.contains(r) || cullBox.overlaps(r);
+  }
+
   private void reset() {
     camera = new OrthographicCamera();
     viewport = new FitViewport(Param.DISPLAY_X, Param.DISPLAY_Y, camera);
@@ -98,6 +102,8 @@ public class Camera {
 
   public void updateUI() {
     camera.position.set(viewport.getWorldWidth()/2, viewport.getWorldHeight()/2, 0f);
+    float tempShakeAngle = R.nextFloat() * (float)Math.PI * 2f;
+    camera.position.add(shake * (float)Math.cos(tempShakeAngle) / currentZoom, shake * (float)Math.sin(tempShakeAngle) / currentZoom, 0);
     camera.zoom = 1f;
     camera.update();
   }
@@ -123,6 +129,7 @@ public class Camera {
 
     update();
 
+    // TODO take into consideration ZOOM
     int startX = (int)camera.position.x - viewport.getScreenWidth()/2;
     int startY = (int)camera.position.y - viewport.getScreenHeight()/2;
     cullBox.set(startX, startY, viewport.getScreenWidth(), viewport.getScreenHeight());

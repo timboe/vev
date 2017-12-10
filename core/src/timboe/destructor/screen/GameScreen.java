@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import timboe.destructor.Param;
+import timboe.destructor.ShapeRendererExtended;
 import timboe.destructor.entity.Sprite;
 import timboe.destructor.entity.Tile;
 import timboe.destructor.input.Gesture;
@@ -23,7 +24,7 @@ public class GameScreen implements Screen {
   private Handler handler = new Handler();
   private Gesture gesture = new Gesture();
   private GestureDetector gestureDetector = new GestureDetector(gesture);
-  private ShapeRenderer sr = new ShapeRenderer();
+  private ShapeRendererExtended sr = new ShapeRendererExtended();
 
   private final Camera camera = Camera.getInstance();
   private final GameState state = GameState.getInstance();
@@ -51,6 +52,7 @@ public class GameScreen implements Screen {
 
   @Override
   public void render(float delta) {
+    ++Param.FRAME;
     renderClear();
     state.act(delta);
 
@@ -115,7 +117,7 @@ public class GameScreen implements Screen {
 
 
     camera.updateUI();
-//    GameState.getInstance().getUIStage().draw();
+    GameState.getInstance().getUIStage().draw();
 
     ///////////////////////////////////////////////
 
