@@ -8,17 +8,18 @@ import com.badlogic.gdx.math.MathUtils;
 public class ShapeRendererExtended extends ShapeRenderer {
 
   private final ImmediateModeRenderer renderer;
+  private final Color color;
 
   public ShapeRendererExtended() {
     super();
     renderer = super.getRenderer();
+    color = super.getColor();
   }
 
   /** Draws an arc using {@link ShapeType#Line} or {@link ShapeType#Filled}. */
   @Override
   public void arc (float x, float y, float radius, float start, float degrees) {
     int segments = (int)(6 * (float)Math.cbrt(radius) * (degrees / 360.0f));
-    Color color = super.getColor();
 
     if (segments <= 0) throw new IllegalArgumentException("segments must be > 0.");
     float colorBits = color.toFloatBits();

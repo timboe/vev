@@ -10,10 +10,12 @@ public class Param {
   public static final int TILES_Y = 128+32;
   public static final int TILES_MIN = Math.min(TILES_X, TILES_Y);
 
-
   public static final int TILE_S = 16;
 
   public static final int SPRITE_SCALE = 2;
+  public static final float SPRITE_VELOCITY = 8f;
+  public static final float SPRITE_AT_TARGET = 4;
+
 
   public static final int MIN_GREEN_ZONE = 4;
   public static final int MAX_GREEN_ZONE = 6;

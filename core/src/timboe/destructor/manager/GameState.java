@@ -1,6 +1,7 @@
 package timboe.destructor.manager;
 
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.ParticleEffect;
 import com.badlogic.gdx.math.Rectangle;
@@ -59,6 +60,10 @@ public class GameState {
 
   public void act(float delta) {
     tickTime += delta;
+
+    spriteStage.act(delta);
+
+
     if (tickTime < 1) return; // Tick every second
     tickTime -= 1;
 
@@ -75,6 +80,7 @@ public class GameState {
 
     Sprite s = new Sprite((int)Math.round(warp.x + (2*Param.WARP_SIZE/3 * Math.cos(rAngle))),
                           (int)Math.round(warp.y + (2*Param.WARP_SIZE/3 * Math.sin(rAngle))));
+    s.moveBy(R.nextBoolean() ? Param.TILE_S : 0, R.nextBoolean() ? Param.TILE_S : 0);
     s.setTexture("ball_" + Colour.random().getString(), 6, false);
     spriteStage.addActor(s);
     particleSet.add(s);
@@ -99,19 +105,49 @@ public class GameState {
     selectStartWorld.setZero();
   }
 
+  public void repath() {
+    pathingInternal(0, 0, true);
+  }
+
   public void doParticleMoveOrder(int x, int y) {
-    Tile target = World.getInstance().getTile(x / Param.TILE_S, y / Param.TILE_S);
-    Set<Sprite> doneSet = new HashSet<Sprite>();
-    Set<Tile> solutionKnownFrom = new HashSet<Tile>();
-    for (Sprite s : particleSet) {
-      if (s.selected) {
+    pathingInternal(x, y, false);
+  }
+
+  // Used to send everyone to a particular destination or re-path everyone when the pathing grid mutates
+  private void pathingInternal(int x, int y, boolean doRepath) {
+    Set<Sprite> pathed = new HashSet<Sprite>();
+    boolean anotherRoundNeeded = false;
+    int rounds = 0;
+    do { // Pathfinding for a group of critters in the same location, caching the path between them.
+      ++rounds;
+      Tile target = World.getInstance().getTile(x / Param.TILE_S, y / Param.TILE_S);
+      Set<Sprite> doneSet = new HashSet<Sprite>();
+      Set<Tile> solutionKnownFrom = new HashSet<Tile>();
+      anotherRoundNeeded = false;
+      Sprite firstSprite = null;
+      for (Sprite s : particleSet) {
+        if (pathed.contains(s)) continue; // Already done in another loop
+        if (!doRepath && !s.selected) continue; // If move order, critter must be selected
+        if (doRepath && s.pathingList.isEmpty()) continue; // If repath, critter must be moving
+        if (firstSprite == null) { // have not yet hit the first of this batch of critters to path - this will be it
+          firstSprite = s;
+          if (doRepath) target = s.getDestination(); // Update target
+        }
+        if ((doRepath && s.getDestination() != target) || // I'm going somewhere else
+                Math.hypot(s.getX() - firstSprite.getX(), s.getY() - firstSprite.getY()) > Param.TILE_S * Param.WARP_SIZE) { // TODO try and make this larger to improve performance
+          // Do this (and any others far away or different target) in another iteration of the do loop
+          anotherRoundNeeded = true;
+          continue;
+        }
         s.pathTo(target, solutionKnownFrom, doneSet);
+        pathed.add(s);
         if (s.pathingList != null) {
           doneSet.add(s);
           solutionKnownFrom.addAll(s.pathingList);
         }
       }
-    }
+    } while (anotherRoundNeeded);
+    Gdx.app.log("pathingInternal","Pathing of " + pathed.size() + " sprites took " + rounds + " rounds");
   }
 
 

@@ -60,6 +60,12 @@ public class Tile extends Entity implements Node {
   }
 
   @Override
+  public void act(float delta) {
+    // So far - this will only be called on WARPs
+    rotateBy((Float)getUserObject() * delta);
+  }
+
+  @Override
   public double getHeuristic(Object goal) {
     Tile g = (Tile)goal;
     return Math.hypot(x - g.x, y - g.y);

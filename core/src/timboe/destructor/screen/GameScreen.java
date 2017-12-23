@@ -65,10 +65,7 @@ public class GameScreen implements Screen {
 
     ////////////////////////////////////////////////
 
-
-    for (Actor A : state.getWarpStage().getRoot().getChildren()) { // TODO move this into an act
-      A.rotateBy((Float)A.getUserObject() * delta);
-    }
+    state.getWarpStage().act(delta);
     state.getWarpStage().draw();
 
     // TODO optimise additive mixed batching

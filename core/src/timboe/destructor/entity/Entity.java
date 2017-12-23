@@ -17,8 +17,9 @@ public class Entity extends Actor {
   public int level;
   protected int scale;
   public int x, y;
-  private int frames, frame;
-  private float time;
+  protected int frames;
+  protected int frame;
+  protected float time;
   public boolean selected;
   public Rectangle boundingBox = new Rectangle();
 
@@ -68,13 +69,7 @@ public class Entity extends Actor {
     setOrigin(Align.center);
   }
 
-  @Override
-  public void act(float delta) {
-    time += delta;
-    if (frames == 1 || time < Param.ANIM_TIME) return;
-    time -= Param.ANIM_TIME;
-    if (++frame == frames) frame = 0;
-  }
+
 
   @Override
   public void draw(Batch batch, float alpha) {
