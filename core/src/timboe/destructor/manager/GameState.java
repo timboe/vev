@@ -11,12 +11,17 @@ import timboe.destructor.DestructorGame;
 import timboe.destructor.Param;
 import timboe.destructor.entity.Sprite;
 import timboe.destructor.entity.Tile;
+import timboe.destructor.enums.Cardinal;
 import timboe.destructor.enums.Colour;
 import timboe.destructor.pathfinding.IVector2;
 import timboe.destructor.screen.GameScreen;
 import timboe.destructor.screen.TitleScreen;
 
 import java.util.*;
+
+import static timboe.destructor.enums.Cardinal.kNE;
+import static timboe.destructor.enums.Cardinal.kNW;
+import static timboe.destructor.enums.Cardinal.kSE;
 
 public class GameState {
 
@@ -74,20 +79,27 @@ public class GameState {
     IVector2 warp = rWarp.getKey();
     ParticleEffect zap = rWarp.getValue();
 
-    Rectangle r = new Rectangle((warp.x - Param.WARP_SIZE/2) * Param.TILE_S,
-            (warp.y - Param.WARP_SIZE/2) * Param.TILE_S,
-            Param.WARP_SIZE * Param.TILE_S, Param.WARP_SIZE * Param.TILE_S);
-
-    Sprite s = new Sprite((int)Math.round(warp.x + (2*Param.WARP_SIZE/3 * Math.cos(rAngle))),
-                          (int)Math.round(warp.y + (2*Param.WARP_SIZE/3 * Math.sin(rAngle))));
-    s.moveBy(R.nextBoolean() ? Param.TILE_S : 0, R.nextBoolean() ? Param.TILE_S : 0);
-    s.setTexture("ball_" + Colour.random().getString(), 6, false);
-    spriteStage.addActor(s);
-    particleSet.add(s);
-    if (Camera.getInstance().onScrean(r)) {
-//      Camera.getInstance().addShake(30f / Camera.getInstance().getZoom());
-    }
-    zap.start();
+    int placeTry = 0;
+    do {
+      int tryX = (int) Math.round(warp.x + (2 * Param.WARP_SIZE / 3 * Math.cos(rAngle)));
+      int tryY = (int) Math.round(warp.y + (2 * Param.WARP_SIZE / 3 * Math.sin(rAngle)));
+      if (!World.getInstance().getTile(tryX, tryY).hasParkingSpace()) continue;
+      if (World.getInstance().getTile(tryX, tryY).getNeighbours().size() == 0) continue; // Non-pathable
+      Sprite s = new Sprite(tryX, tryY);
+      Cardinal pSpace = World.getInstance().getTile(tryX, tryY).regSprite(s);
+      s.moveBy(pSpace == kSE || pSpace == kNE ? Param.TILE_S : 0, pSpace == kNW || pSpace == kNE ? Param.TILE_S : 0);
+      s.setTexture("ball_" + Colour.random().getString(), 6, false);
+      spriteStage.addActor(s);
+      particleSet.add(s);
+      Rectangle r = new Rectangle((warp.x - Param.WARP_SIZE / 2) * Param.TILE_S,
+              (warp.y - Param.WARP_SIZE / 2) * Param.TILE_S,
+              Param.WARP_SIZE * Param.TILE_S, Param.WARP_SIZE * Param.TILE_S);
+      if (Camera.getInstance().onScrean(r)) {
+        //      Camera.getInstance().addShake(30f / Camera.getInstance().getZoom());
+      }
+      zap.start();
+      placeTry = Param.N_PATCH_TRIES; // To break the loop
+    } while (++placeTry < Param.N_PATCH_TRIES);
   }
 
   public boolean isSelecting() {
@@ -148,6 +160,7 @@ public class GameState {
       }
     } while (anotherRoundNeeded);
     Gdx.app.log("pathingInternal","Pathing of " + pathed.size() + " sprites took " + rounds + " rounds");
+    if (!doRepath && pathed.size() > 0) Sounds.getInstance().moveOrder();
   }
 
 

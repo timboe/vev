@@ -56,7 +56,7 @@ public class PathFinding {
         }
         return route;
 
-      } else if (solutionKnownFrom.contains(current)) { // Someone else knows how to take it from here
+      } else if (solutionKnownFrom != null && solutionKnownFrom.contains(current)) { // Someone else knows how to take it from here
 
         List<Tile> otherSolution = null;
         for (Sprite done : doneSet) {
