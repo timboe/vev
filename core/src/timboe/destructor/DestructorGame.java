@@ -11,7 +11,6 @@ public class DestructorGame extends Game {
 		GameState.getInstance().create();
 		Textures.getInstance().create();
 		Sounds.getInstance().create();
-		Sprites.getInstance().create();
 		World.getInstance().create();
 		UI.getInstance().create();
 
@@ -23,7 +22,6 @@ public class DestructorGame extends Game {
 	public void dispose () {
 		UI.getInstance().dispose();
 		Textures.getInstance().dispose();
-		Sprites.getInstance().dispose();
 		Sounds.getInstance().dispose();
 		World.getInstance().dispose();
 		Camera.getInstance().dispose();

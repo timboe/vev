@@ -102,6 +102,8 @@ public class Camera {
 
   public void updateUI() {
     camera.position.set(viewport.getWorldWidth()/2, viewport.getWorldHeight()/2, 0f);
+//    camera.position.set(viewport.getWorldWidth(), viewport.getWorldHeight(), 0f);
+//    camera.position.set(0f, 0f, 0f);
     float tempShakeAngle = R.nextFloat() * (float)Math.PI * 2f;
     camera.position.add(shake * (float)Math.cos(tempShakeAngle) / currentZoom, shake * (float)Math.sin(tempShakeAngle) / currentZoom, 0);
     camera.zoom = 1f;

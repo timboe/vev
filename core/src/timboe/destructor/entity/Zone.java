@@ -1,6 +1,6 @@
 package timboe.destructor.entity;
 
-import javafx.util.Pair;
+import timboe.destructor.Pair;
 import timboe.destructor.Param;
 import timboe.destructor.enums.Colour;
 import timboe.destructor.pathfinding.IVector2;
@@ -17,7 +17,7 @@ public class Zone extends Entity {
   public int w, h;
 
   public Zone(int x, int y) {
-    colour = Colour.kRED;
+    tileColour = Colour.kRED;
     mask = false;
     level = 1;
     w = (Param.TILES_X / Param.ZONES_X);

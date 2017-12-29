@@ -9,7 +9,6 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import timboe.destructor.Param;
-import timboe.destructor.ShapeRendererExtended;
 import timboe.destructor.entity.Sprite;
 import timboe.destructor.entity.Tile;
 import timboe.destructor.input.Gesture;
@@ -24,14 +23,19 @@ public class GameScreen implements Screen {
   private Handler handler = new Handler();
   private Gesture gesture = new Gesture();
   private GestureDetector gestureDetector = new GestureDetector(gesture);
-  private ShapeRendererExtended sr = new ShapeRendererExtended();
+  private ShapeRenderer sr = new ShapeRenderer();
 
   private final Camera camera = Camera.getInstance();
   private final GameState state = GameState.getInstance();
   private final World world = World.getInstance();
 
   public GameScreen() {
-    multiplexer.addProcessor(GameState.getInstance().getUIStage());
+    setMultiplexerInputs();
+  }
+
+  public void setMultiplexerInputs() {
+    multiplexer.clear();
+    multiplexer.addProcessor(state.getUIStage());
     multiplexer.addProcessor(handler);
     multiplexer.addProcessor(gestureDetector);
   }
@@ -39,7 +43,7 @@ public class GameScreen implements Screen {
   @Override
   public void show() {
     Gdx.input.setInputProcessor( multiplexer );
-    Gdx.app.log("GameScreen", "Show");
+    Gdx.app.log("GameScreen", "Show " + Gdx.input.getInputProcessor());
   }
 
   private void renderClear() {
@@ -53,7 +57,9 @@ public class GameScreen implements Screen {
   @Override
   public void render(float delta) {
     ++Param.FRAME;
+    delta = Math.min(delta, Param.FRAME_TIME * 10); // Do not let this get too extreme
     renderClear();
+    camera.updateUI();
     state.act(delta);
 
     ////////////////////////////////////////////////
@@ -63,9 +69,10 @@ public class GameScreen implements Screen {
 //    GameState.getInstance().getStage().getRoot().setCullingArea( Camera.getInstance().getCullBox() );
     state.getTileStage().draw();
 
+    state.getBuildingStage().draw();
+
     ////////////////////////////////////////////////
 
-    state.getWarpStage().act(delta);
     state.getWarpStage().draw();
 
     // TODO optimise additive mixed batching
@@ -97,12 +104,11 @@ public class GameScreen implements Screen {
     }
 
     camera.updateSprite();
-    GameState.getInstance().getSpriteStage().act(delta);
     GameState.getInstance().getSpriteStage().draw();
 
     sr.setProjectionMatrix(Camera.getInstance().getCamera().combined);
     sr.begin(ShapeRenderer.ShapeType.Line);
-    sr.setColor(0, 1, 0, 1);
+    sr.setColor(1, 0, 0, 1);
     // Draw selected particles
     for (Sprite s : state.particleSet) {
       s.draw(sr);
@@ -111,14 +117,11 @@ public class GameScreen implements Screen {
 
     ////////////////////////////////////////////////
 
-
-
     camera.updateUI();
-    GameState.getInstance().getUIStage().draw();
+    state.getUIStage().draw();
 
     ///////////////////////////////////////////////
 
-    camera.update(); // Reset shenanigans
     sr.setProjectionMatrix(Camera.getInstance().getCamera().combined);
     sr.begin(ShapeRenderer.ShapeType.Line);
     sr.setColor(0, 1, 0, 1);
@@ -129,6 +132,8 @@ public class GameScreen implements Screen {
 
     }
     sr.end();
+
+//    camera.updateUI(); // needed to make clicking the UI work
 
   }
 
@@ -152,6 +157,7 @@ public class GameScreen implements Screen {
 
   @Override
   public void hide() {
+    Gdx.app.log("GameScreen", "Hide " + Gdx.input.getInputProcessor());
     Gdx.input.setInputProcessor( null );
   }
 

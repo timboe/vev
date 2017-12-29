@@ -5,6 +5,9 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
+
+import timboe.destructor.Param;
+import timboe.destructor.enums.UIMode;
 import timboe.destructor.manager.Camera;
 import timboe.destructor.manager.GameState;
 
@@ -30,9 +33,16 @@ public class Gesture implements GestureDetector.GestureListener {
   @Override
   public boolean tap(float x, float y, int count, int button) {
     Gdx.app.log("tap","tap "+x+","+"y");
+    GameState state = GameState.getInstance();
     v3temp.set(x, y, 0);
     v3temp = Camera.getInstance().unproject(v3temp);
-    GameState.getInstance().doParticleMoveOrder((int)v3temp.x, (int)v3temp.y);
+    if (button == Input.Buttons.RIGHT) {
+      state.doRightClick();
+    } else if (state.uiMode == UIMode.kPLACE_BUILDING) {
+      boolean success = GameState.getInstance().placeBuilding();
+    } else if (!state.selectedSet.isEmpty()) {
+      state.doParticleMoveOrder((int)v3temp.x, (int)v3temp.y);
+    }
     return false;
   }
 

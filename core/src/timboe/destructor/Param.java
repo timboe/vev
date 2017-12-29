@@ -1,5 +1,7 @@
 package timboe.destructor;
 
+import com.badlogic.gdx.graphics.Color;
+
 public class Param {
 
   public static final int ZONES_X = 3; // Constant... or not to constant
@@ -9,12 +11,13 @@ public class Param {
   public static final int TILES_X = 128+32;
   public static final int TILES_Y = 128+32;
   public static final int TILES_MIN = Math.min(TILES_X, TILES_Y);
+  public static final int TILES_MAX = Math.max(TILES_X, TILES_Y);
 
   public static final int TILE_S = 16;
 
   public static final int SPRITE_SCALE = 2;
-  public static final float SPRITE_VELOCITY = 8f;
-  public static final float SPRITE_AT_TARGET = 4;
+  public static final float SPRITE_VELOCITY = 32f;
+  public static final float SPRITE_AT_TARGET = 2f;
 
 
   public static final int MIN_GREEN_ZONE = 4;
@@ -49,6 +52,7 @@ public class Param {
 
   public static final int N_TIBERIUM = 4; // Number of sprites
   public static final int N_BALLS = 6; // number of sprites
+  public static final int MAX_FRAMES = Math.max(N_TIBERIUM, N_BALLS);
 
   public static final float HILL_IN_HILL_PROB = .2f;
   public static final float STAIRS_PROB = .8f;
@@ -63,7 +67,6 @@ public class Param {
   public static final int DISPLAY_X = 1920;
   public static final int DISPLAY_Y = 1080;
 
-  public static final int MAX_FRAMES = 6;
 
   public static final int N_GRASS_VARIANTS = 13;
   public static final int N_BORDER_VARIANTS = 4;
@@ -81,6 +84,13 @@ public class Param {
   public static int FRAME = 0;
 
   public static final float ANIM_TIME = 1/12f; // I.e. 12 frames per second
+
+  public static final Color HIGHLIGHT_GREEN = new Color(0f, 1f, 0f, 1f);
+  public static final Color HIGHLIGHT_RED = new Color(1f, 0f, 0f, 1f);
+  public static final Color HIGHLIGHT_YELLOW = new Color(1f, 1f, 0f, 1f);
+
+  public static int QUEUE_SIZE = 9;
+
 
   //
 

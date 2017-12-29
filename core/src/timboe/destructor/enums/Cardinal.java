@@ -13,6 +13,7 @@ public enum Cardinal {
   kSW,
   kW,
   kNW,
+  kBUILDING_CONTROLLED, // Special return value that a building is taking over a sprite
   kNONE;
 
   public static final List<Cardinal> NESW = new ArrayList<Cardinal>(Arrays.asList(kN, kE, kS, kW));
@@ -25,6 +26,12 @@ public enum Cardinal {
     if (this == kW) return kN;
     if (this == kNW) return kNE;
     return values()[ordinal() + 2];
+  }
+
+  public Cardinal minus90() {
+    if (this == kE) return kN;
+    if (this == kNE) return kNW;
+    return values()[ordinal() - 2];
   }
 
   public Cardinal next45() {

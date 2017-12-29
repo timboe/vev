@@ -1,6 +1,7 @@
 package timboe.destructor.entity;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
@@ -13,7 +14,7 @@ import timboe.destructor.manager.Textures;
 public class Entity extends Actor {
 
   public boolean mask;
-  public Colour colour;
+  public Colour tileColour;
   public int level;
   protected int scale;
   public int x, y;
@@ -22,6 +23,7 @@ public class Entity extends Actor {
   protected float time;
   public boolean selected;
   public Rectangle boundingBox = new Rectangle();
+  public boolean doTint = false;
 
   private TextureRegion[] textureRegion = new TextureRegion[Param.MAX_FRAMES];
 
@@ -69,12 +71,21 @@ public class Entity extends Actor {
     setOrigin(Align.center);
   }
 
-
-
   @Override
   public void draw(Batch batch, float alpha) {
     if (textureRegion[frame] == null) return;
-    batch.draw(textureRegion[frame], this.getX(), this.getY(), this.getOriginX(), this.getOriginY(), this.getWidth(), this.getHeight(), this.getScaleX(), this.getScaleY(), this.getRotation());
+    if (doTint) {
+      batch.setColor(getColor());
+      doDraw(batch);
+      batch.setColor(1f,1f,1f,1f);
+      doTint = false; // Only lasts one frame - needs to be re-set in act
+    } else {
+      doDraw(batch);
+    }
 //    draw(TextureRegion region, float x, float y, float originX, float originY, float width, float height, float scaleX, float scaleY, float rotation)
+  }
+
+  private void doDraw(Batch batch) {
+    batch.draw(textureRegion[frame],this.getX(),this.getY(),this.getOriginX(),this.getOriginY(),this.getWidth(),this.getHeight(),this.getScaleX(),this.getScaleY(),this.getRotation());
   }
 }

@@ -18,6 +18,8 @@ public enum TileType {
   kCLIFF,
   kCLIFF_EDGE,
   kFOILAGE,
+  kBUILDING,
+  kQUEUE,
   // Specialisation - used only when assigning texture
   kSTAIRS_1, // single-width stairs
   kGROUND_CORNER,
@@ -136,114 +138,115 @@ public enum TileType {
   }
 
   private static boolean testGrass(final Tile T, final Map<Cardinal, Tile> neighbours, boolean N, boolean E, boolean S, boolean W) {
-    if (T.colour != kGREEN) return false;
-    return (neighbours.get(Cardinal.kN).colour == (N ? kGREEN : kRED)
-            && neighbours.get(Cardinal.kE).colour == (E ? kGREEN : kRED)
-            && neighbours.get(Cardinal.kS).colour == (S ? kGREEN : kRED)
-            && neighbours.get(Cardinal.kW).colour == (W ? kGREEN : kRED));
+    if (T.tileColour != kGREEN) return false;
+    return (neighbours.get(Cardinal.kN).tileColour == (N ? kGREEN : kRED)
+            && neighbours.get(Cardinal.kE).tileColour == (E ? kGREEN : kRED)
+            && neighbours.get(Cardinal.kS).tileColour == (S ? kGREEN : kRED)
+            && neighbours.get(Cardinal.kW).tileColour == (W ? kGREEN : kRED));
   }
 
 
   // Large test case for all possible tiles
-  public static String getTextureString(final Tile t, final Map<Cardinal, Tile> neighbours) {
+  public static String getTextureString(final Tile t) {
+    final Map<Cardinal, Tile> neighbours = t.n8;
 
     // Temp
 //    if (t.mask) return "missing3";
-//    if (true) return getTextureString(kGROUND, t.colour);
+//    if (true) return getTextureString(kGROUND, t.tileColour);
 
 //    if (t.type == kSTAIRS) return "missing2";
 
 
     // Stairs N
-    if (testStairs(t, neighbours, 1, 0, -1, 0)) return getTextureString(kSTAIRS, t.colour, Cardinal.kN, Cardinal.kN);
-    if (testStairs(t, neighbours, 1, 9, -1, 0)) return getTextureString(kSTAIRS, t.colour, Cardinal.kN, Cardinal.kE);
-    if (testStairs(t, neighbours, 1, 0, -1, 9)) return getTextureString(kSTAIRS, t.colour, Cardinal.kN, Cardinal.kW);
+    if (testStairs(t, neighbours, 1, 0, -1, 0)) return getTextureString(kSTAIRS, t.tileColour, Cardinal.kN, Cardinal.kN);
+    if (testStairs(t, neighbours, 1, 9, -1, 0)) return getTextureString(kSTAIRS, t.tileColour, Cardinal.kN, Cardinal.kE);
+    if (testStairs(t, neighbours, 1, 0, -1, 9)) return getTextureString(kSTAIRS, t.tileColour, Cardinal.kN, Cardinal.kW);
     // Stairs S
-    if (testStairs(t, neighbours, -1, 0, 1, 0)) return getTextureString(kSTAIRS, t.colour, Cardinal.kS, Cardinal.kS);
-    if (testStairs(t, neighbours, -1, 9, 1, 0)) return getTextureString(kSTAIRS, t.colour, Cardinal.kS, Cardinal.kE);
-    if (testStairs(t, neighbours, -1, 0, 1, 9)) return getTextureString(kSTAIRS, t.colour, Cardinal.kS, Cardinal.kW);
+    if (testStairs(t, neighbours, -1, 0, 1, 0)) return getTextureString(kSTAIRS, t.tileColour, Cardinal.kS, Cardinal.kS);
+    if (testStairs(t, neighbours, -1, 9, 1, 0)) return getTextureString(kSTAIRS, t.tileColour, Cardinal.kS, Cardinal.kE);
+    if (testStairs(t, neighbours, -1, 0, 1, 9)) return getTextureString(kSTAIRS, t.tileColour, Cardinal.kS, Cardinal.kW);
     // Stairs E
-    if (testStairs(t, neighbours, 0, -1, 0, 1)) return getTextureString(kSTAIRS, t.colour, Cardinal.kE, Cardinal.kE);
-    if (testStairs(t, neighbours, 9, -1, 0, 1)) return getTextureString(kSTAIRS, t.colour, Cardinal.kE, Cardinal.kN);
-    if (testStairs(t, neighbours, 0, -1, 9, 1)) return getTextureString(kSTAIRS, t.colour, Cardinal.kE, Cardinal.kS);
+    if (testStairs(t, neighbours, 0, -1, 0, 1)) return getTextureString(kSTAIRS, t.tileColour, Cardinal.kE, Cardinal.kE);
+    if (testStairs(t, neighbours, 9, -1, 0, 1)) return getTextureString(kSTAIRS, t.tileColour, Cardinal.kE, Cardinal.kN);
+    if (testStairs(t, neighbours, 0, -1, 9, 1)) return getTextureString(kSTAIRS, t.tileColour, Cardinal.kE, Cardinal.kS);
     // Stairs W
-    if (testStairs(t, neighbours, 0, 1, 0, -1)) return getTextureString(kSTAIRS, t.colour, Cardinal.kW, Cardinal.kW);
-    if (testStairs(t, neighbours, 9, 1, 0, -1)) return getTextureString(kSTAIRS, t.colour, Cardinal.kW, Cardinal.kN);
-    if (testStairs(t, neighbours, 0, 1, 9, -1)) return getTextureString(kSTAIRS, t.colour, Cardinal.kW, Cardinal.kS);
+    if (testStairs(t, neighbours, 0, 1, 0, -1)) return getTextureString(kSTAIRS, t.tileColour, Cardinal.kW, Cardinal.kW);
+    if (testStairs(t, neighbours, 9, 1, 0, -1)) return getTextureString(kSTAIRS, t.tileColour, Cardinal.kW, Cardinal.kN);
+    if (testStairs(t, neighbours, 0, 1, 9, -1)) return getTextureString(kSTAIRS, t.tileColour, Cardinal.kW, Cardinal.kS);
     // Single stair
-    if (testStairs(t, neighbours, 1, 9, -1, 9)) return getTextureString(kSTAIRS_1, t.colour, Cardinal.kN);
-    if (testStairs(t, neighbours, -1, 9, 1, 9)) return getTextureString(kSTAIRS_1, t.colour, Cardinal.kS);
-    if (testStairs(t, neighbours, 9, -1, 9, 1)) return getTextureString(kSTAIRS_1, t.colour, Cardinal.kE);
-    if (testStairs(t, neighbours, 9, 1, 9, -1)) return getTextureString(kSTAIRS_1, t.colour, Cardinal.kW);
+    if (testStairs(t, neighbours, 1, 9, -1, 9)) return getTextureString(kSTAIRS_1, t.tileColour, Cardinal.kN);
+    if (testStairs(t, neighbours, -1, 9, 1, 9)) return getTextureString(kSTAIRS_1, t.tileColour, Cardinal.kS);
+    if (testStairs(t, neighbours, 9, -1, 9, 1)) return getTextureString(kSTAIRS_1, t.tileColour, Cardinal.kE);
+    if (testStairs(t, neighbours, 9, 1, 9, -1)) return getTextureString(kSTAIRS_1, t.tileColour, Cardinal.kW);
 
     // Two special cases with clif edges reaching stairs
     if (neighbours.get(Cardinal.kE).type == kSTAIRS
             && neighbours.get(Cardinal.kSE).type == kGROUND
             && neighbours.get(Cardinal.kSE).level < t.level) {
-      return getTextureString(kCLIFF_EDGE, t.colour, Cardinal.kE);
+      return getTextureString(kCLIFF_EDGE, t.tileColour, Cardinal.kE);
     }
     if (neighbours.get(Cardinal.kW).type == kSTAIRS
             && neighbours.get(Cardinal.kSW).type == kGROUND
             && neighbours.get(Cardinal.kSW).level < t.level) {
-      return getTextureString(kCLIFF_EDGE, t.colour, Cardinal.kW);
+      return getTextureString(kCLIFF_EDGE, t.tileColour, Cardinal.kW);
     }
     // TODO could also do kSE and kSW cases here
 
     // Cliff Edges (x8)
-    if (testCliffEdge(t, neighbours, true,false,false,false)) return getTextureString(kCLIFF_EDGE, t.colour, Cardinal.kN);
-    if (testCliffEdge(t, neighbours, true,true,false,false)) return getTextureString(kCLIFF_EDGE, t.colour, Cardinal.kNE);
-    if (testCliffEdge(t, neighbours, false,true,false,false)) return getTextureString(kCLIFF_EDGE, t.colour, Cardinal.kE);
-    if (testCliffEdge(t, neighbours, false,true,true,false)) return getTextureString(kCLIFF_EDGE, t.colour, Cardinal.kSE);
-    if (testCliffEdge(t, neighbours, false,false,true,false)) return getTextureString(kCLIFF_EDGE, t.colour, Cardinal.kS);
-    if (testCliffEdge(t, neighbours, false,false,true,true)) return getTextureString(kCLIFF_EDGE, t.colour, Cardinal.kSW);
-    if (testCliffEdge(t, neighbours, false,false,false,true)) return getTextureString(kCLIFF_EDGE, t.colour, Cardinal.kW);
-    if (testCliffEdge(t, neighbours, true,false,false,true)) return getTextureString(kCLIFF_EDGE, t.colour, Cardinal.kNW);
+    if (testCliffEdge(t, neighbours, true,false,false,false)) return getTextureString(kCLIFF_EDGE, t.tileColour, Cardinal.kN);
+    if (testCliffEdge(t, neighbours, true,true,false,false)) return getTextureString(kCLIFF_EDGE, t.tileColour, Cardinal.kNE);
+    if (testCliffEdge(t, neighbours, false,true,false,false)) return getTextureString(kCLIFF_EDGE, t.tileColour, Cardinal.kE);
+    if (testCliffEdge(t, neighbours, false,true,true,false)) return getTextureString(kCLIFF_EDGE, t.tileColour, Cardinal.kSE);
+    if (testCliffEdge(t, neighbours, false,false,true,false)) return getTextureString(kCLIFF_EDGE, t.tileColour, Cardinal.kS);
+    if (testCliffEdge(t, neighbours, false,false,true,true)) return getTextureString(kCLIFF_EDGE, t.tileColour, Cardinal.kSW);
+    if (testCliffEdge(t, neighbours, false,false,false,true)) return getTextureString(kCLIFF_EDGE, t.tileColour, Cardinal.kW);
+    if (testCliffEdge(t, neighbours, true,false,false,true)) return getTextureString(kCLIFF_EDGE, t.tileColour, Cardinal.kNW);
     // Two-sides (x2)
-    if (testCliffEdge(t, neighbours, true,false,true,false)) return getTextureString(kCLIFF_EDGE_2, t.colour, Cardinal.kE);
-    if (testCliffEdge(t, neighbours, false,true,false,true)) return getTextureString(kCLIFF_EDGE_2, t.colour, Cardinal.kN);
+    if (testCliffEdge(t, neighbours, true,false,true,false)) return getTextureString(kCLIFF_EDGE_2, t.tileColour, Cardinal.kE);
+    if (testCliffEdge(t, neighbours, false,true,false,true)) return getTextureString(kCLIFF_EDGE_2, t.tileColour, Cardinal.kN);
     // Three-sides (x4)
-    if (testCliffEdge(t, neighbours, true,true,false,true)) return getTextureString(kCLIFF_EDGE_3, t.colour, Cardinal.kN);
-    if (testCliffEdge(t, neighbours, true,true,true,false)) return getTextureString(kCLIFF_EDGE_3, t.colour, Cardinal.kE);
-    if (testCliffEdge(t, neighbours, false,true,true,true)) return getTextureString(kCLIFF_EDGE_3, t.colour, Cardinal.kS);
-    if (testCliffEdge(t, neighbours, true,false,true,true)) return getTextureString(kCLIFF_EDGE_3, t.colour, Cardinal.kW);
+    if (testCliffEdge(t, neighbours, true,true,false,true)) return getTextureString(kCLIFF_EDGE_3, t.tileColour, Cardinal.kN);
+    if (testCliffEdge(t, neighbours, true,true,true,false)) return getTextureString(kCLIFF_EDGE_3, t.tileColour, Cardinal.kE);
+    if (testCliffEdge(t, neighbours, false,true,true,true)) return getTextureString(kCLIFF_EDGE_3, t.tileColour, Cardinal.kS);
+    if (testCliffEdge(t, neighbours, true,false,true,true)) return getTextureString(kCLIFF_EDGE_3, t.tileColour, Cardinal.kW);
     // Four sides
-    if (testCliffEdge(t, neighbours, true,true,true,true)) return getTextureString(kCLIFF_EDGE_4, t.colour);
+    if (testCliffEdge(t, neighbours, true,true,true,true)) return getTextureString(kCLIFF_EDGE_4, t.tileColour);
 
-    // Bottom of cliff. This colour block keeps the correct void fade around tight corners
-    Colour lowerC = neighbours.get(Cardinal.kS).colour;
-    if      (neighbours.get(Cardinal.kSE).level < neighbours.get(Cardinal.kS).level) lowerC = neighbours.get(Cardinal.kSE).colour;
-    else if (neighbours.get(Cardinal.kSW).level < neighbours.get(Cardinal.kS).level) lowerC = neighbours.get(Cardinal.kSW).colour;
-    else if (neighbours.get(Cardinal.kE).level < neighbours.get(Cardinal.kS).level) lowerC = neighbours.get(Cardinal.kE).colour;
-    else if (neighbours.get(Cardinal.kW).level < neighbours.get(Cardinal.kS).level) lowerC = neighbours.get(Cardinal.kW).colour;
+    // Bottom of cliff. This tileColour block keeps the correct void fade around tight corners
+    Colour lowerC = neighbours.get(Cardinal.kS).tileColour;
+    if      (neighbours.get(Cardinal.kSE).level < neighbours.get(Cardinal.kS).level) lowerC = neighbours.get(Cardinal.kSE).tileColour;
+    else if (neighbours.get(Cardinal.kSW).level < neighbours.get(Cardinal.kS).level) lowerC = neighbours.get(Cardinal.kSW).tileColour;
+    else if (neighbours.get(Cardinal.kE).level < neighbours.get(Cardinal.kS).level) lowerC = neighbours.get(Cardinal.kE).tileColour;
+    else if (neighbours.get(Cardinal.kW).level < neighbours.get(Cardinal.kS).level) lowerC = neighbours.get(Cardinal.kW).tileColour;
     // Bottom of cliff.
-    if (testCliff(t, neighbours,true, true, true)) return getTextureString(kCLIFF, neighbours.get(Cardinal.kN).colour, Cardinal.kS, lowerC);
-    if (testCliff(t, neighbours,false, true, true)) return getTextureString(kCLIFF, neighbours.get(Cardinal.kN).colour, Cardinal.kSE, lowerC);
-    if (testCliff(t, neighbours,true, true, false)) return getTextureString(kCLIFF, neighbours.get(Cardinal.kN).colour, Cardinal.kSW, lowerC);
+    if (testCliff(t, neighbours,true, true, true)) return getTextureString(kCLIFF, neighbours.get(Cardinal.kN).tileColour, Cardinal.kS, lowerC);
+    if (testCliff(t, neighbours,false, true, true)) return getTextureString(kCLIFF, neighbours.get(Cardinal.kN).tileColour, Cardinal.kSE, lowerC);
+    if (testCliff(t, neighbours,true, true, false)) return getTextureString(kCLIFF, neighbours.get(Cardinal.kN).tileColour, Cardinal.kSW, lowerC);
     // Three sides
-    if (testCliff(t, neighbours,false, true, false)) return getTextureString(kCLIFF_3, neighbours.get(Cardinal.kN).colour, Cardinal.kS, lowerC);
+    if (testCliff(t, neighbours,false, true, false)) return getTextureString(kCLIFF_3, neighbours.get(Cardinal.kN).tileColour, Cardinal.kS, lowerC);
 
 
     // Grass-Dirt boundary
     // sides
-    if (testGrass(t, neighbours, false,true,true,true)) return getTextureString(kGRASS_EDGE, t.colour, Cardinal.kN);
-    if (testGrass(t, neighbours, true,false,true,true)) return getTextureString(kGRASS_EDGE, t.colour, Cardinal.kE);
-    if (testGrass(t, neighbours, true,true,false,true)) return getTextureString(kGRASS_EDGE, t.colour, Cardinal.kS);
-    if (testGrass(t, neighbours, true,true,true,false)) return getTextureString(kGRASS_EDGE, t.colour, Cardinal.kW);
+    if (testGrass(t, neighbours, false,true,true,true)) return getTextureString(kGRASS_EDGE, t.tileColour, Cardinal.kN);
+    if (testGrass(t, neighbours, true,false,true,true)) return getTextureString(kGRASS_EDGE, t.tileColour, Cardinal.kE);
+    if (testGrass(t, neighbours, true,true,false,true)) return getTextureString(kGRASS_EDGE, t.tileColour, Cardinal.kS);
+    if (testGrass(t, neighbours, true,true,true,false)) return getTextureString(kGRASS_EDGE, t.tileColour, Cardinal.kW);
     // Corners
-    if (testGrass(t, neighbours, false,false,true,true)) return getTextureString(kGRASS_CORNER, t.colour, Cardinal.kNE);
-    if (testGrass(t, neighbours, true,false,false,true)) return getTextureString(kGRASS_CORNER, t.colour, Cardinal.kSE);
-    if (testGrass(t, neighbours, true,true,false,false)) return getTextureString(kGRASS_CORNER, t.colour, Cardinal.kSW);
-    if (testGrass(t, neighbours, false,true,true,false)) return getTextureString(kGRASS_CORNER, t.colour, Cardinal.kNW);
+    if (testGrass(t, neighbours, false,false,true,true)) return getTextureString(kGRASS_CORNER, t.tileColour, Cardinal.kNE);
+    if (testGrass(t, neighbours, true,false,false,true)) return getTextureString(kGRASS_CORNER, t.tileColour, Cardinal.kSE);
+    if (testGrass(t, neighbours, true,true,false,false)) return getTextureString(kGRASS_CORNER, t.tileColour, Cardinal.kSW);
+    if (testGrass(t, neighbours, false,true,true,false)) return getTextureString(kGRASS_CORNER, t.tileColour, Cardinal.kNW);
     // Inner corners
     if (testGrass(t, neighbours, true,true,true,true)) {
-      if (neighbours.get(Cardinal.kNE).colour == kRED && neighbours.get(Cardinal.kSW).colour == kRED)
-        return getTextureString(kGRASS_INNER_CORNER_DOUBLE, t.colour, Cardinal.kNE);
-      if (neighbours.get(Cardinal.kSE).colour == kRED && neighbours.get(Cardinal.kNW).colour == kRED)
-        return getTextureString(kGRASS_INNER_CORNER_DOUBLE, t.colour, Cardinal.kSE);
-      if (neighbours.get(Cardinal.kNE).colour == kRED) return getTextureString(kGRASS_INNER_CORNER, t.colour, Cardinal.kNE);
-      if (neighbours.get(Cardinal.kSE).colour == kRED) return getTextureString(kGRASS_INNER_CORNER, t.colour, Cardinal.kSE);
-      if (neighbours.get(Cardinal.kSW).colour == kRED) return getTextureString(kGRASS_INNER_CORNER, t.colour, Cardinal.kSW);
-      if (neighbours.get(Cardinal.kNW).colour == kRED) return getTextureString(kGRASS_INNER_CORNER, t.colour, Cardinal.kNW);
+      if (neighbours.get(Cardinal.kNE).tileColour == kRED && neighbours.get(Cardinal.kSW).tileColour == kRED)
+        return getTextureString(kGRASS_INNER_CORNER_DOUBLE, t.tileColour, Cardinal.kNE);
+      if (neighbours.get(Cardinal.kSE).tileColour == kRED && neighbours.get(Cardinal.kNW).tileColour == kRED)
+        return getTextureString(kGRASS_INNER_CORNER_DOUBLE, t.tileColour, Cardinal.kSE);
+      if (neighbours.get(Cardinal.kNE).tileColour == kRED) return getTextureString(kGRASS_INNER_CORNER, t.tileColour, Cardinal.kNE);
+      if (neighbours.get(Cardinal.kSE).tileColour == kRED) return getTextureString(kGRASS_INNER_CORNER, t.tileColour, Cardinal.kSE);
+      if (neighbours.get(Cardinal.kSW).tileColour == kRED) return getTextureString(kGRASS_INNER_CORNER, t.tileColour, Cardinal.kSW);
+      if (neighbours.get(Cardinal.kNW).tileColour == kRED) return getTextureString(kGRASS_INNER_CORNER, t.tileColour, Cardinal.kNW);
     }
 
     // Check cliff inner-edge (away from stairs)
@@ -252,15 +255,15 @@ public enum TileType {
     if (stepNeighbour == 0) {
       if (t.level - 1 == neighbours.get(Cardinal.kNE).level
               && t.level - 1 == neighbours.get(Cardinal.kNW).level)
-        return getTextureString(kGROUND_CORNER, t.colour, Cardinal.kN);
+        return getTextureString(kGROUND_CORNER, t.tileColour, Cardinal.kN);
       else if (t.level - 1 == neighbours.get(Cardinal.kNE).level)
-        return getTextureString(kGROUND_CORNER, t.colour, Cardinal.kNE);
+        return getTextureString(kGROUND_CORNER, t.tileColour, Cardinal.kNE);
       else if (t.level - 1 == neighbours.get(Cardinal.kNW).level)
-        return getTextureString(kGROUND_CORNER, t.colour, Cardinal.kNW);
+        return getTextureString(kGROUND_CORNER, t.tileColour, Cardinal.kNW);
     }
 
     // Regular ground
-    return getTextureString(kGROUND, t.colour);
+    return getTextureString(kGROUND, t.tileColour);
 
     // Void
 //    if (t.level == 0) return getTextureString(kGROUND, Colour.kBLACK);
