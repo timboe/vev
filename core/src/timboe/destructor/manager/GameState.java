@@ -57,6 +57,8 @@ public class GameState {
 
   public Set<Sprite> particleSet = new HashSet<Sprite>(); // All movable sprites
   public Set<Sprite> selectedSet = new HashSet<Sprite>(); // Sub-set, selected sprites
+  public Set<Building> buildingSet = new HashSet<Building>(); // All buildings
+
 
   private Rectangle tempRect = new Rectangle();
 
@@ -99,19 +101,21 @@ public class GameState {
       Tile t = World.getInstance().getTile(cursor.x, cursor.y);
       if (t != null && t.n8 != null && t.n8.get(kSW).n8 != null) {
         buildingLocation = t;
-        buildingLocationGood = t.setHighlight(false);
-        for (Cardinal D : Cardinal.n8) buildingLocationGood &= t.n8.get(D).setHighlight(false);
-        buildingLocationGood &= t.n8.get(kSW).n8.get(kS).setHighlight(true);
-        if (buildingLocationGood && OrderlyQueue.canDoSimpleQueue(t.n8.get(kSW).n8.get(kS), false)) {
-          OrderlyQueue.canDoSimpleQueue(t.n8.get(kSW).n8.get(kS), true); // doTint
-        }
-        t.n8.get(kSW).n8.get(kS).setHighlight(false); // Re-apply green tint here
+        buildingLocationGood = t.setBuildableHighlight();
+        for (Cardinal D : Cardinal.n8) buildingLocationGood &= t.n8.get(D).setBuildableHighlight();
+        buildingLocationGood &= t.n8.get(kSW).n8.get(kS).setBuildableHighlight();
+        if (buildingLocationGood) OrderlyQueue.hintSimpleQueue(t.n8.get(kSW).n8.get(kS));
+        t.n8.get(kSW).n8.get(kS).setBuildableHighlight(); // Re-apply green tint here
       }
     }
 
 
     if (tickTime < 0.22) return; // Tick every second
     tickTime -= 0.22;
+
+    for (Building b : buildingSet) {
+      b.moveAlongMoveAlong();
+    }
 
     // Add a new sprite
     double rAngle = -Math.PI + (R.nextFloat() * Math.PI * 2);
@@ -143,6 +147,12 @@ public class GameState {
     } while (++placeTry < Param.N_PATCH_TRIES);
   }
 
+  public void killSprite(Sprite s) {
+    particleSet.remove(s);
+    selectedSet.remove(s);
+    s.remove(); // From its renderer
+  }
+
   public boolean isSelecting() {
     return selectStartWorld.dst(selectEndWorld) > 6; // Min pixels to count as a selection
   }
@@ -153,6 +163,7 @@ public class GameState {
     Building b = new Building(buildingLocation);
     b.setTexture("build_3_3", 1, false);
     buildingStage.addActor(b);
+    buildingSet.add(b);
     repath();
     return true;
   }
@@ -280,6 +291,7 @@ public class GameState {
     warpStageC.a = Param.WARP_TRANSPARENCY;
     warpStage.getBatch().setColor(warpStageC);
     particleSet.clear();
+    buildingSet.clear();
   }
 
   public void dispose() {
@@ -289,7 +301,7 @@ public class GameState {
     spriteStage.dispose();
     uiStage.dispose();
     warpStage.dispose();
-    buildingStage.dispose();;
+    buildingStage.dispose();
     ourInstance = null;
   }
 

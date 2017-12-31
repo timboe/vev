@@ -1,16 +1,27 @@
 package timboe.destructor;
 
 public class Pair<A, B> {
-    private A first;
-    private B second;
+  private A first;
+  private B second;
 
-    public Pair(A first, B second) {
-      super();
-      this.first = first;
-      this.second = second;
-    }
+  public Pair(A first, B second) {
+    super();
+    this.first = first;
+    this.second = second;
+  }
 
-    public A getKey() {
+  public Pair() {
+    super();
+  }
+
+  public Pair<A,B> set(A first, B second) {
+    this.first = first;
+    this.second = second;
+    return this;
+  }
+
+
+  public A getKey() {
       return first;
     }
 

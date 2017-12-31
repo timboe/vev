@@ -2,9 +2,11 @@ package timboe.destructor.pathfinding;
 
 import com.badlogic.gdx.Gdx;
 
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Set;
 import java.util.Vector;
 
 import sun.awt.geom.AreaOp;
@@ -16,6 +18,7 @@ import timboe.destructor.entity.Sprite;
 import timboe.destructor.entity.Tile;
 import timboe.destructor.enums.Cardinal;
 import timboe.destructor.enums.TileType;
+import timboe.destructor.manager.GameState;
 import timboe.destructor.manager.World;
 
 /**
@@ -40,18 +43,47 @@ public class OrderlyQueue {
   }
 
   public void moveAlongMoveAlong() {
-    // If at 1st - move to building
-//    if (queueStart.parkingSpaces.containsValue( queueStart.queue.get(0) )) {
-//      Sprite s = queueStart.parkingSpaces.
-//    }
-//    if (queue.get(0).queue.get(0))
+    // Now try and move everyone along
+    for (int i = 0; i < queue.size(); ++i) {
+      final Tile tile = queue.get(i);
+      if (tile == null) Gdx.app.error("WTF?!?!","");
+      Sprite toRemove = null;
+      for (Sprite s : tile.containedSprites) {
+        // Get parking space
+        final Cardinal parking = tile.parkingSpaces.get(s);
+        if (parking == null) continue; // I'm not partked here, e.g. moving over the entrance tile
 
-      // get if sprite at end - add it to the building
-    // move all sprites down one
-
-    // Forward iterator - if free, move next to me
-
-
+        if (parking == tile.queueExit) { // Is this the final space of the tile?
+          if (i == 0) { // Is this the final tile?
+            // Is the sprite *actually here*
+            if (s.nudgeDestination.isZero()) { // Arrived
+              if (toRemove != null) Gdx.app.error("moveAlongMoveAlong", "should only ever be one toRemove");
+              toRemove = s; // from its tile
+              GameState.getInstance().killSprite(s); // from the game manager
+              // TODO give to building
+            }
+          } else { // Not the final tile.
+            // Is the entrance of the next tile free?
+            Tile nextTile = queue.get(i - 1);
+            Cardinal nextTileEntrance = nextTile.queueExit.next90( nextTile.queueClockwise );
+            if (!nextTile.parkingSpaces.containsValue(nextTileEntrance)) {
+              // Move me to here
+              if (toRemove != null) Gdx.app.error("moveAlongMoveAlong", "should only ever be one toRemove");
+              toRemove = s;
+              // Move on to next tile
+              nextTile.parkSprite(s, nextTileEntrance);
+            }
+          }
+        } else { // This is *NOT* the final space on this tile, can we move on?
+          Cardinal nextParking = parking.next90( tile.queueClockwise );
+          if (!tile.parkingSpaces.containsValue(nextParking)) {
+            // Move me to here
+            tile.parkSprite(s, nextParking);
+          }
+        }
+      }
+      if (toRemove != null) tile.deRegSprite(toRemove);
+    }
   }
 
   // New sprite is trying to enter the queue
@@ -60,11 +92,12 @@ public class OrderlyQueue {
     Tile previousT = null;
     Cardinal previousD = null;
     ListIterator<Tile> liTile = queue.listIterator( queue.size() );
+
     while(liTile.hasPrevious()) {
-      Tile t = liTile.previous();
-      ListIterator<Cardinal> liCardinal = t.queue.listIterator( t.queue.size() );
-      while (liCardinal.hasPrevious()) {
-        Cardinal D = liCardinal.previous();
+      final Tile t = liTile.previous();
+      final Cardinal queueStart = t.queueExit.next90( t.queueClockwise );
+      Cardinal D = queueStart;
+      do {
         if (t.parkingSpaces.containsValue(D)) { // Someone is here - go for the previous place
           Gdx.app.log("getFreeLocationInQueue","Accepted sprite to "+t.coordinates+" "+D.getString());
           if (previousT != null) return new Pair<Tile, Cardinal>(previousT, previousD);
@@ -73,9 +106,17 @@ public class OrderlyQueue {
           previousT = t;
           previousD = D;
         }
-      }
+        D = D.next90( t.queueClockwise ); // Not as we are reverse iterating
+      } while (D != queueStart);
     }
-    // If we made it to the end - we can place in the final slot
+
+    // Check final slot
+    Tile queueFinal = queue.get(0);
+    if (!queueFinal.parkingSpaces.containsValue(queueFinal.queueExit)) {
+      return new Pair<Tile,Cardinal>(queueFinal, queueFinal.queueExit);
+    }
+
+    // If we made it to the end - we can also place in the first slot
     if (previousT != null) return new Pair<Tile, Cardinal>(previousT, previousD);
     return null;
   }
@@ -96,13 +137,13 @@ public class OrderlyQueue {
     }
   }
 
-  public static boolean canDoSimpleQueue(final Tile start, boolean doTint) {
+  public static void hintSimpleQueue(final Tile start) {
     int step = 0, x = start.coordinates.x, y = start.coordinates.y, move = 3;
     World w = World.getInstance();
     while (step++ < Param.QUEUE_SIZE) {
-      if (!Util.inBounds(x,y)) return false;
-      if (!w.getTile(x,y).buildable()) return false;
-      if (doTint) w.getTile(x,y).setHighlight(true);
+      if (!Util.inBounds(x,y)) return;
+      if (!w.getTile(x,y).buildable()) return;
+      w.getTile(x,y).setHighlightColour(Param.HIGHLIGHT_YELLOW);
       if (Math.abs(move) > 1) {
         x += 1 * Math.signum(move);
         move -= 1 * Math.signum(move);
@@ -111,7 +152,6 @@ public class OrderlyQueue {
         move *= -3;
       }
     }
-    return true;
   }
 
   private void doSimpleQueue(int xStart, int yStart) {
@@ -125,8 +165,11 @@ public class OrderlyQueue {
     v.add(new Pair<Cardinal, Cardinal>(Cardinal.kW, Cardinal.kE));
     v.add(new Pair<Cardinal, Cardinal>(Cardinal.kS, Cardinal.kE));
     while (step++ < Param.QUEUE_SIZE) {
-      List<Cardinal> tileQueue = getTilesQueue(v.get(element).getKey(), v.get(element).getValue());
-      w.getTile(x, y).setQueue(v.get(element).getKey(), v.get(element).getValue(), myBuilding, tileQueue, step < Param.QUEUE_SIZE);
+      Cardinal D = getExitLocation(v.get(element).getValue());
+      boolean isClockwise = getQueueClockwise(v.get(element).getKey(), v.get(element).getValue());
+      Tile t = w.getTile(x, y);
+      if (!t.buildable()) break;
+      t.setQueue(v.get(element).getKey(), v.get(element).getValue(), myBuilding, D, isClockwise);
       queue.add( w.getTile(x, y) );
       if (++element == v.size()) element = 0;
       if (Math.abs(move) > 1) {
@@ -137,33 +180,51 @@ public class OrderlyQueue {
         move *= -3;
       }
     }
+    queue.get( queue.size()-1 ).type = TileType.kGROUND; // Re-set to ground to make pathable
   }
 
-  private List<Cardinal> getTilesQueue(Cardinal from, Cardinal to) {
-    List<Cardinal> l = new LinkedList<Cardinal>();
-    boolean clockwise = true;
-    if (from == Cardinal.kE && to == Cardinal.kN) {
-      l.add(Cardinal.kNE);
-      clockwise = false;
-    } else if (from == Cardinal.kW && to == Cardinal.kN) {
-      l.add(Cardinal.kNE);
-    } else if (from == Cardinal.kE && to == Cardinal.kW) {
-      l.add(Cardinal.kSW);
-    } else if (from == Cardinal.kW && to == Cardinal.kE) {
-      l.add(Cardinal.kNE);
-    } else if (from == Cardinal.kS && to == Cardinal.kW) {
-      l.add(Cardinal.kSW);
-    } else if (from == Cardinal.kS && to == Cardinal.kE) {
-      l.add(Cardinal.kNE);
-      clockwise = false;
-    } else {
-      Gdx.app.error("getTilesQueue", "Need to add for from:" + from.getString() + " to:" + to.getString());
-      l.add(Cardinal.kNE); // any random one
-    }
+  // TODO figure out the pattern!
+  private boolean getQueueClockwise(Cardinal from, Cardinal to) {
+    if      (from == Cardinal.kE && to == Cardinal.kN) return true;
+    // E -> S false
+    // E -> W false
 
-    while (l.size() < Cardinal.corners.size()) {
-      l.add( clockwise ? l.get(l.size()-1).next90() : l.get(l.size()-1).minus90() );
-    }
-    return l;
+    else if (from == Cardinal.kW && to == Cardinal.kS) return true;
+    // W -> N fase
+    // W -> E false
+
+    else if (from == Cardinal.kS && to == Cardinal.kE) return true;
+    // S -> W false
+    else if (from == Cardinal.kS && to == Cardinal.kN) return true;
+
+    else if (from == Cardinal.kN && to == Cardinal.kW) return true;
+    // N -> E false
+    else if (from == Cardinal.kN && to == Cardinal.kS) return true;
+
+    return false;
+  }
+
+  private Cardinal getExitLocation(Cardinal to) {
+    if (to == Cardinal.kN || to == Cardinal.kE) return Cardinal.kNE;
+    return Cardinal.kSW;
+//
+//    if      (from == Cardinal.kE && to == Cardinal.kN) return Cardinal.kNE;
+//    else if (from == Cardinal.kE && to == Cardinal.kS) return Cardinal.kSE;
+//
+//    else if (from == Cardinal.kW && to == Cardinal.kN) return Cardinal.kNE;
+//    else if (from == Cardinal.kW && to == Cardinal.kS) return Cardinal.kSW;
+//
+//    else if (from == Cardinal.kE && to == Cardinal.kW) return Cardinal.kSW;
+//    else if (from == Cardinal.kW && to == Cardinal.kE) return Cardinal.kNE;
+//    else if (from == Cardinal.kN && to == Cardinal.kS) return Cardinal.kSW;
+//    else if (from == Cardinal.kS && to == Cardinal.kN) return Cardinal.kNE;
+//
+//
+//    else if (from == Cardinal.kS && to == Cardinal.kW) return Cardinal.kSW;
+//    else if (from == Cardinal.kS && to == Cardinal.kE) return Cardinal.kNE;
+//
+//
+//    else if (from == Cardinal.kN && to == Cardinal.kE) return Cardinal.kNE;
+//    else if (from == Cardinal.kN && to == Cardinal.kW) return Cardinal.kSW;
   }
 }

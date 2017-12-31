@@ -37,6 +37,10 @@ public class Building extends Entity {
     return myQueue.getPathingDestination();
   }
 
+  public void moveAlongMoveAlong() {
+    myQueue.moveAlongMoveAlong();
+  }
+
   // Moves on any sprites under the building
   private void moveOn() {
     centre.moveOnSprites();

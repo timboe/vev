@@ -769,7 +769,7 @@ public class World {
       final IVector2 destination = edges.elementAt(section).clone();
       final IVector2 next = (section < edges.size() - 1 ? edges.elementAt(section + 1).clone() : null);
       final Cardinal D = getDirection(current, destination);
-      final boolean rightTurnNext = (next == null || getDirection(destination, next) == D.next90());
+      final boolean rightTurnNext = (next == null || getDirection(destination, next) == D.next90(true));
       if (Param.DEBUG > 0) Gdx.app.log("    Edge",
               "From " + edges.elementAt(section - 1).toString() +
                       " to " + destination.toString() +

@@ -3,6 +3,7 @@ package timboe.destructor.entity;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
+
 import timboe.destructor.Param;
 import timboe.destructor.Util;
 import timboe.destructor.enums.Cardinal;
@@ -13,8 +14,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
-import static timboe.destructor.enums.Cardinal.corners;
-import static timboe.destructor.enums.Cardinal.kBUILDING_CONTROLLED;
 import static timboe.destructor.enums.Cardinal.kNE;
 import static timboe.destructor.enums.Cardinal.kNW;
 import static timboe.destructor.enums.Cardinal.kSE;
@@ -23,9 +22,9 @@ public class Sprite extends Entity {
 
   public List<Tile> pathingList;
   private Vector2 velocity = new Vector2();
-  private Vector2 nudgeDestination = new Vector2();
+  public Vector2 nudgeDestination = new Vector2();
   private List<Integer> walkSearchList = Arrays.asList(0,1,2,3);
-  private Tile myTile;
+  public Tile myTile;
 
   public Sprite(int x, int y, Tile t) {
     super(x, y, Param.TILE_S * Param.SPRITE_SCALE);
@@ -35,9 +34,8 @@ public class Sprite extends Entity {
   public void pathTo(Tile target, Set<Tile> solutionKnownFrom, Set<Sprite> doneSet) {
     if (target == null) return;
     if (myTile.getPathFindNeighbours().isEmpty()) {
-      myTile.deRegSprite(this);
-      myTile = findPathingNearbyLocation(myTile);
-      myTile.regSprite(this);
+      Tile jumpTo = findPathingNearbyLocation(myTile);
+      jumpTo.tryRegSprite(this);
     }
     if (target.getPathFindNeighbours().isEmpty()) target = findPathingNearbyLocation(target);
     pathingList = PathFinding.doAStar(myTile, target, solutionKnownFrom, doneSet);
@@ -66,14 +64,9 @@ public class Sprite extends Entity {
       Tile next = pathingList.get(0);
       boolean atDestination = doMove(next.centreScaleSprite.x, next.centreScaleSprite.y, delta);
       if (atDestination) { // Reached destination
-        myTile = next;
-        Cardinal parking = pathingList.remove(0).regSprite(this);
-        if (pathingList.isEmpty()) {
-          if (parking == Cardinal.kNONE) { // I cannot stay here! Find me somewhere else
-            doWanderFrom(next);
-          } else if (parking != kBUILDING_CONTROLLED) { // Move to my resting location
-            setNudgeDestination(myTile, parking);
-          }
+        boolean wasParked = pathingList.remove(0).tryRegSprite(this);
+        if (pathingList.isEmpty() && !wasParked) { // I cannot stay here! Find me somewhere else
+          doWanderFrom(next);
         }
       }
     } else if (!nudgeDestination.isZero()) { // Nudge
@@ -101,8 +94,9 @@ public class Sprite extends Entity {
         for (int y = t.coordinates.y - tryRadius; y <= t.coordinates.y + tryRadius; ++y) {
           if (!Util.inBounds(x,y)) continue;
           Tile tempTilePtr = World.getInstance().getTile(x, y);
-          if (tempTilePtr == t) continue;
-          if (tempTilePtr.level != t.level) continue;
+          if (tempTilePtr == t) continue; // Do not return self as option
+          if (tempTilePtr.mySprite != null) continue; // Building or queue or vegetation
+          if (tempTilePtr.level != t.level) continue; // Different level
           if (!tempTilePtr.getPathFindNeighbours().isEmpty()) return tempTilePtr;
         }
       }
@@ -114,7 +108,8 @@ public class Sprite extends Entity {
   private boolean tryWanderDest(int x, int y, int level) {
     if (!Util.inBounds(x,y)) return false;
     Tile tempTilePtr = World.getInstance().getTile(x, y);
-    if (tempTilePtr.hasParkingSpace() && tempTilePtr.level == level) {
+    // mySprite check to avoid vegetation, queues or buildings
+    if (tempTilePtr.hasParkingSpace() && tempTilePtr.level == level && tempTilePtr.mySprite == null) {
       pathTo( tempTilePtr, null, null );
       return true;
     }

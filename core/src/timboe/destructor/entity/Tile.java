@@ -1,6 +1,7 @@
 package timboe.destructor.entity;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Action;
@@ -32,13 +33,14 @@ public class Tile extends Entity implements Node {
   public Vector3 centreScaleSprite = new Vector3(); // My centre in SPRITE coordinated (scaled x2)
   public IVector2 coordinates = new IVector2(); // X-Y tile grid coordinates
 
-  private Set<Sprite> containedSprites = new HashSet<Sprite>(); // Moving sprites on this tile
+  public Set<Sprite> containedSprites = new HashSet<Sprite>(); // Moving sprites on this tile
   public Map<Sprite, Cardinal> parkingSpaces = new HashMap<Sprite, Cardinal>(); // Four sprites allowed to "park" here
   public Entity mySprite = null; // For buildings and foliage
 
   public Map<Cardinal, Tile> n8; // Neighbours, cached for speed
 
-  public List<Cardinal> queue; // the order sprites move through this tile when it is a queue
+  public Cardinal queueExit; // Which sub-space is my last
+  public boolean queueClockwise; // If true, clockwise - if false, counterclockwise
 
   public Tile(int x, int y) {
     super(x, y);
@@ -66,11 +68,12 @@ public class Tile extends Entity implements Node {
     mySprite = b;
   }
 
-  public void setQueue(Cardinal from, Cardinal to, Building b, List<Cardinal> q, boolean setType) {
-    if (setType) type = TileType.kQUEUE;
+  public void setQueue(Cardinal from, Cardinal to, Building b, Cardinal queueExit, boolean queueClockwise) {
+    type = TileType.kQUEUE;
     removeSprite();
     setTexture("queue_"+tileColour.getString()+"_"+from.getString()+"_"+to.getString(), 1, false);
-    queue = q;
+    this.queueExit = queueExit;
+    this.queueClockwise = queueClockwise;
     mySprite = b;
   }
 
@@ -78,47 +81,74 @@ public class Tile extends Entity implements Node {
     return tileColour == kGREEN && (type == TileType.kGROUND || type == TileType.kFOILAGE);
   }
 
-  public boolean setHighlight(boolean queueTint) {
+  public void setHighlightColour(Color c) {
+    setColor(c);
     doTint = true;
-    if (mySprite != null) mySprite.doTint = true;
-    if (queueTint) {
-      setColor(Param.HIGHLIGHT_YELLOW);
-      if (mySprite != null) mySprite.setColor(Param.HIGHLIGHT_YELLOW);
-      return true;
-    } else if (buildable()) {
-      setColor(Param.HIGHLIGHT_GREEN);
-      if (mySprite != null) mySprite.setColor(Param.HIGHLIGHT_GREEN);
+    if (mySprite != null) {
+      mySprite.setColor(c);
+      mySprite.doTint = true;
+    }
+  }
+
+  public boolean setBuildableHighlight() {
+    if (buildable()) {
+      setHighlightColour(Param.HIGHLIGHT_GREEN);
       return true;
     } else {
-      setColor(Param.HIGHLIGHT_RED);
-      if (mySprite != null) mySprite.setColor(Param.HIGHLIGHT_RED);
+      setHighlightColour(Param.HIGHLIGHT_RED);
       return false;
     }
   }
 
-  public Cardinal regSprite(Sprite s) {
-    for (Tile t : pathFindNeighbours) { // De-reg from neighbours
-      if(t.deRegSprite(s)) break;
-    }
-    containedSprites.add(s);
+  // Return wasParked
+  public boolean tryRegSprite(Sprite s) {
+    // De-reg from current
+    s.myTile.deRegSprite(s);
+
     boolean isStartOfQueue = (mySprite != null && mySprite.getClass() == Building.class);
-    if (isStartOfQueue && s.pathingList.size() == 0) { // I am finishing at the entrance to the buildings queue
-      Pair<Tile,Cardinal> slot = ((Building)mySprite).getFreeLocationInQueue();
-      if (slot == null) return Cardinal.kNONE;
-      // TODO not nice that sprite cannot call this on itself, but how to send both tile & cardinal?
-      slot.getKey().parkingSpaces.put(s, slot.getValue());
-      s.setNudgeDestination(slot.getKey(), slot.getValue());
-      return Cardinal.kBUILDING_CONTROLLED;
-    } else if (isStartOfQueue) {
-      return Cardinal.kNONE; // Do not give passing through sprites a temp parking slot either
-    } else if (parkingSpaces.size() < Cardinal.corners.size()) { // I am a regular tile, and have free slots
-      for (Cardinal D : Cardinal.corners) {
-        if (parkingSpaces.containsValue(D)) continue;
-        parkingSpaces.put(s, D);
-        return D;
+    if (isStartOfQueue) {
+      Pair<Tile, Cardinal> slot = null;
+      // If thi is my final destination
+      if (s.pathingList.size() == 0) slot = ((Building) mySprite).getFreeLocationInQueue();
+
+      if (slot == null) { // Cannot stay here
+        visitingSprite(s);
+        return false;
+      } else { // We reg the sprite to (potentially) ANOTHER tile
+        s.myTile = slot.getKey();
+        slot.getKey().parkSprite(s, slot.getValue());
+        return true;
       }
     }
-    return Cardinal.kNONE; // No room on the tile for parking
+
+    // Regular tile - add the sprite
+    if (parkingSpaces.size() < Cardinal.corners.size()) { // I am a regular tile, and have free slots
+      for (Cardinal D : Cardinal.corners) {
+        if (parkingSpaces.containsValue(D)) continue;
+        parkSprite(s, D);
+        return true;
+      }
+    }
+    // Otherwise just visiting
+    visitingSprite(s);
+    return false; // No room on the tile for parking
+  }
+
+  public void visitingSprite(Sprite s) {
+    s.myTile = this;
+    containedSprites.add(s);
+  }
+
+  public void parkSprite(Sprite s, Cardinal parking) {
+    s.myTile = this;
+    containedSprites.add(s);
+    parkingSpaces.put(s, parking);
+    s.setNudgeDestination(this, parking);
+  }
+
+  public void deRegSprite(Sprite s) {
+    containedSprites.remove(s);
+    parkingSpaces.remove(s);
   }
 
   // Can no longer stay here
@@ -140,11 +170,6 @@ public class Tile extends Entity implements Node {
 
   public boolean hasParkingSpace() {
     return (!pathFindNeighbours.isEmpty() && parkingSpaces.size() < Cardinal.corners.size());
-  }
-
-  public boolean deRegSprite(Sprite s) {
-    boolean contained = containedSprites.remove(s);
-    return parkingSpaces.remove(s) != null || contained; // force both "remove"s to be evaluated
   }
 
   public void setType(TileType t, Colour c, int l) {

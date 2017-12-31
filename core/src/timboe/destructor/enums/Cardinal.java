@@ -13,7 +13,6 @@ public enum Cardinal {
   kSW,
   kW,
   kNW,
-  kBUILDING_CONTROLLED, // Special return value that a building is taking over a sprite
   kNONE;
 
   public static final List<Cardinal> NESW = new ArrayList<Cardinal>(Arrays.asList(kN, kE, kS, kW));
@@ -22,21 +21,17 @@ public enum Cardinal {
 
   public static final List<Cardinal> corners = new ArrayList<Cardinal>(Arrays.asList(kNW, kNE, kSE, kSW));
 
-  public Cardinal next90() {
-    if (this == kW) return kN;
-    if (this == kNW) return kNE;
-    return values()[ordinal() + 2];
-  }
-
-  public Cardinal minus90() {
-    if (this == kE) return kN;
-    if (this == kNE) return kNW;
-    return values()[ordinal() - 2];
-  }
-
-  public Cardinal next45() {
-    if (this == kNW) return kN;
-    return values()[ordinal() + 1];
+  public Cardinal next90(boolean clockwise) {
+    if (this == kNONE) Gdx.app.error("Cardinal", "Called next90(clockwise="+clockwise+") on "+kNONE.getString());
+    if (clockwise) {
+      if (this == kW) return kN;
+      if (this == kNW) return kNE;
+      return values()[ordinal() + 2];
+    } else {
+      if (this == kN) return kW;
+      if (this == kNE) return kNW;
+      return values()[ordinal() - 2];
+    }
   }
 
   public String getString() {

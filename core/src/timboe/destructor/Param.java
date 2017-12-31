@@ -16,7 +16,7 @@ public class Param {
   public static final int TILE_S = 16;
 
   public static final int SPRITE_SCALE = 2;
-  public static final float SPRITE_VELOCITY = 32f;
+  public static final float SPRITE_VELOCITY = 32f*2f;
   public static final float SPRITE_AT_TARGET = 2f;
 
 
@@ -89,7 +89,7 @@ public class Param {
   public static final Color HIGHLIGHT_RED = new Color(1f, 0f, 0f, 1f);
   public static final Color HIGHLIGHT_YELLOW = new Color(1f, 1f, 0f, 1f);
 
-  public static int QUEUE_SIZE = 9;
+  public static int QUEUE_SIZE = 99;
 
 
   //
