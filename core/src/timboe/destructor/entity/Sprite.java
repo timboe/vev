@@ -105,11 +105,11 @@ public class Sprite extends Entity {
   }
 
   // Can I wander to this nearby space? is there room to park? (If so - initiate pathing, should be fast!)
-  private boolean tryWanderDest(int x, int y, int level) {
-    if (!Util.inBounds(x,y)) return false;
+  private boolean tryWanderDest(int x, int y, int level, int sameHeight) {
     Tile tempTilePtr = World.getInstance().getTile(x, y);
     // mySprite check to avoid vegetation, queues or buildings
-    if (tempTilePtr.hasParkingSpace() && tempTilePtr.level == level && tempTilePtr.mySprite == null) {
+    if (sameHeight == 1 && tempTilePtr.level != level) return false;
+    if (tempTilePtr.hasParkingSpace() && tempTilePtr.mySprite == null) {
       pathTo( tempTilePtr, null, null );
       return true;
     }
@@ -118,32 +118,38 @@ public class Sprite extends Entity {
 
   // I cannot park in my destination - find me a nearby spot. Note this randomises the direction
   private void doWanderFrom(final Tile t) {
-    int tryRadius = 0;
-    while (++tryRadius < 1e6) { // Danger! This number is in essence infinity
-      // Try these four in random order
-//      int invertX = Util.R.nextBoolean() ? 1 : -1, invertY = Util.R.nextBoolean() ? 1 : -1;
-//      for (int x = t.coordinates.x - (invertX * tryRadius); x <= t.coordinates.x + (invertX * tryRadius); x += invertX) {
-//        for (int y = t.coordinates.y - (invertY * tryRadius); y <= t.coordinates.y + (invertY * tryRadius); y += invertY) {
-//          if (tryWanderDest(x, y)) return;
-//        }
-//      }
-      java.util.Collections.shuffle(walkSearchList); // TODO this is ugly
-      for (final Integer s : walkSearchList) {
-        if (s == 0) {
-          for (int x = t.coordinates.x - tryRadius; x <= t.coordinates.x + tryRadius; ++x) {
-            if (tryWanderDest(x, t.coordinates.y + tryRadius, t.level)) return;
-          }
-        } else if (s == 1) {
-          for (int x = t.coordinates.x - tryRadius; x <= t.coordinates.x + tryRadius; ++x) {
-            if (tryWanderDest(x, t.coordinates.y - tryRadius, t.level)) return;
-          }
-        } else if (s == 2) {
-            for (int y = t.coordinates.y - tryRadius; y <= t.coordinates.y + tryRadius; ++y) {
-              if (tryWanderDest(t.coordinates.x + tryRadius, y, t.level)) return;
+    for (int sameHeight = 1; sameHeight >= 0; --sameHeight) { // Try and stay on the level
+      int tryRadius = 0;
+      while (++tryRadius < Param.TILES_MAX) {
+        // Try these four in random order
+        //      int invertX = Util.R.nextBoolean() ? 1 : -1, invertY = Util.R.nextBoolean() ? 1 : -1;
+        //      for (int x = t.coordinates.x - (invertX * tryRadius); x <= t.coordinates.x + (invertX * tryRadius); x += invertX) {
+        //        for (int y = t.coordinates.y - (invertY * tryRadius); y <= t.coordinates.y + (invertY * tryRadius); y += invertY) {
+        //          if (tryWanderDest(x, y)) return;
+        //        }
+        //      }
+        java.util.Collections.shuffle(walkSearchList); // TODO this is ugly
+        for (final Integer s : walkSearchList) {
+          if (s == 0) {
+            for (int x = t.coordinates.x - tryRadius; x <= t.coordinates.x + tryRadius; ++x) {
+              if (!Util.inBounds(x, t.coordinates.y + tryRadius)) break;
+              if (tryWanderDest(x, t.coordinates.y + tryRadius, t.level, sameHeight)) return;
             }
-        } else if (s == 3) {
-          for (int y = t.coordinates.y - tryRadius; y <= t.coordinates.y + tryRadius; ++y) {
-            if (tryWanderDest(t.coordinates.x - tryRadius, y, t.level)) return;
+          } else if (s == 1) {
+            for (int x = t.coordinates.x - tryRadius; x <= t.coordinates.x + tryRadius; ++x) {
+              if (!Util.inBounds(x, t.coordinates.y - tryRadius)) break;
+              if (tryWanderDest(x, t.coordinates.y - tryRadius, t.level, sameHeight)) return;
+            }
+          } else if (s == 2) {
+            for (int y = t.coordinates.y - tryRadius; y <= t.coordinates.y + tryRadius; ++y) {
+              if (!Util.inBounds(t.coordinates.x + tryRadius, y)) break;
+              if (tryWanderDest(t.coordinates.x + tryRadius, y, t.level, sameHeight)) return;
+            }
+          } else if (s == 3) {
+            for (int y = t.coordinates.y - tryRadius; y <= t.coordinates.y + tryRadius; ++y) {
+              if (!Util.inBounds(t.coordinates.x - tryRadius, y)) break;
+              if (tryWanderDest(t.coordinates.x - tryRadius, y, t.level, sameHeight)) return;
+            }
           }
         }
       }

@@ -14,8 +14,9 @@ public class Building extends Entity {
 
   private OrderlyQueue myQueue;
   private Tile centre;
-  private float time;
-  private Sprite spriteProcessing;
+  private float timeDissasemble;
+  private float timeMove;
+  public Sprite spriteProcessing = null;
 
   public Building(Tile t) {
     super(t.coordinates.x - 1, t.coordinates.y - 1);
@@ -37,10 +38,6 @@ public class Building extends Entity {
     return myQueue.getPathingDestination();
   }
 
-  public void moveAlongMoveAlong() {
-    myQueue.moveAlongMoveAlong();
-  }
-
   // Moves on any sprites under the building
   private void moveOn() {
     centre.moveOnSprites();
@@ -51,14 +48,15 @@ public class Building extends Entity {
 
   @Override
   public void act(float delta) {
-    time += delta;
-    if (time < 1f) return;
-    time -= 1f;
-    if (spriteProcessing != null) {
-      spriteProcessing.remove();
-      spriteProcessing = null; // Kill it
+    timeMove += delta;
+    timeDissasemble += delta;
+    if (timeMove > 0.2f) {
+      timeMove -= 0.2f;
+      myQueue.moveAlongMoveAlong();
     }
-    myQueue.moveAlongMoveAlong();
+    if (timeDissasemble < 1f) return;
+    timeDissasemble -= 1f;
+    spriteProcessing = null; // Kill it
   }
 
   // Updates the pathing grid

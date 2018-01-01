@@ -90,6 +90,7 @@ public class GameState {
     spriteStage.act(delta);
     warpStage.act(delta);
     uiStage.act(delta);
+    buildingStage.act(delta);
     // Tile stage is static - does not need to be acted
 
 
@@ -104,18 +105,17 @@ public class GameState {
         buildingLocationGood = t.setBuildableHighlight();
         for (Cardinal D : Cardinal.n8) buildingLocationGood &= t.n8.get(D).setBuildableHighlight();
         buildingLocationGood &= t.n8.get(kSW).n8.get(kS).setBuildableHighlight();
-        if (buildingLocationGood) OrderlyQueue.hintSimpleQueue(t.n8.get(kSW).n8.get(kS));
+        if (buildingLocationGood) OrderlyQueue.hintQueue(t.n8.get(kSW).n8.get(kS));
         t.n8.get(kSW).n8.get(kS).setBuildableHighlight(); // Re-apply green tint here
       }
     }
 
 
+
+
     if (tickTime < 0.22) return; // Tick every second
     tickTime -= 0.22;
 
-    for (Building b : buildingSet) {
-      b.moveAlongMoveAlong();
-    }
 
     // Add a new sprite
     double rAngle = -Math.PI + (R.nextFloat() * Math.PI * 2);

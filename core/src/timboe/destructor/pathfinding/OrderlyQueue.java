@@ -32,7 +32,7 @@ public class OrderlyQueue {
 
   public OrderlyQueue(int x, int y, List<Tile> customQueue, Building b) {
     myBuilding = b;
-    if (customQueue == null) doSimpleQueue(x, y);
+    if (customQueue == null) doQueue(x, y);
     else queue = customQueue;
     queueStart = queue.get(0);
     repath();
@@ -56,11 +56,11 @@ public class OrderlyQueue {
         if (parking == tile.queueExit) { // Is this the final space of the tile?
           if (i == 0) { // Is this the final tile?
             // Is the sprite *actually here*
-            if (s.nudgeDestination.isZero()) { // Arrived
+            if (myBuilding.spriteProcessing == null && s.nudgeDestination.isZero()) { // Arrived
               if (toRemove != null) Gdx.app.error("moveAlongMoveAlong", "should only ever be one toRemove");
               toRemove = s; // from its tile
               GameState.getInstance().killSprite(s); // from the game manager
-              // TODO give to building
+              myBuilding.spriteProcessing = s; // Now the last ref to the sprite is held only by the building
             }
           } else { // Not the final tile.
             // Is the entrance of the next tile free?
@@ -137,12 +137,37 @@ public class OrderlyQueue {
     }
   }
 
-  public static void hintSimpleQueue(final Tile start) {
+  public static void hintQueue(final Tile start) {
+    switch (Param.QUEUE_TYPE) {
+      case kSIMPLE: hintSimpleQueue(start); break;
+      case kSPIRAL: hintSpiralQueue(start); break;
+      default: Gdx.app.error("hintQueue","Unknown - " + Param.QUEUE_TYPE);
+    }
+  }
+
+  private static void hintSpiralQueue(final Tile start) {
+    Tile t = start;
+    int step = 0, move = 3, toAdd =3;
+    boolean inc = true;
+    Cardinal D = Cardinal.kE;
+    while (step++ < Param.QUEUE_SIZE) {
+      if (!t.buildable()) return;
+      t.setHighlightColour(Param.HIGHLIGHT_YELLOW);
+      t = t.n8.get(D);
+      if (--move == 0) {
+        if (inc) ++toAdd;
+        inc = !inc;
+        move += toAdd;
+        D = D.next90(false);
+      }
+    }
+  }
+
+  private static void hintSimpleQueue(final Tile start) {
     int step = 0, x = start.coordinates.x, y = start.coordinates.y, move = 3;
     World w = World.getInstance();
     while (step++ < Param.QUEUE_SIZE) {
-      if (!Util.inBounds(x,y)) return;
-      if (!w.getTile(x,y).buildable()) return;
+      if (!Util.inBounds(x,y) || !w.getTile(x,y).buildable()) return;
       w.getTile(x,y).setHighlightColour(Param.HIGHLIGHT_YELLOW);
       if (Math.abs(move) > 1) {
         x += 1 * Math.signum(move);
@@ -153,6 +178,47 @@ public class OrderlyQueue {
       }
     }
   }
+
+  public void doQueue(int xStart, int yStart) {
+    switch (Param.QUEUE_TYPE) {
+      case kSIMPLE: doSimpleQueue(xStart, yStart); break;
+      case kSPIRAL: doSpiralQueue(xStart, yStart); break;
+      default: Gdx.app.error("hintQueue","Unknown - " + Param.QUEUE_TYPE);
+    }
+    queue.get( queue.size()-1 ).type = TileType.kGROUND; // Re-set to ground to make pathable
+  }
+
+  private void doSpiralQueue(int xStart, int yStart) {
+    Tile t = World.getInstance().getTile(xStart, yStart);
+    int step = 0, move = 3, toAdd =3;
+    boolean inc = true;
+    Cardinal D = Cardinal.kE, previousD = Cardinal.kN;
+    while (step++ < Param.QUEUE_SIZE) {
+      if (!t.buildable()) return;
+      Cardinal from, to;
+      if (D == previousD) {
+        from = D;
+        to = D.next90(true).next90(true); // 180deg
+      } else { // We just turned a corner
+        from = D;
+        to = D.next90(false);
+      }
+      Cardinal exit = getExitLocation(to);
+      boolean isClockwise = getQueueClockwise(from, to);
+      t.setQueue(from, to, myBuilding, exit, isClockwise);
+      queue.add(t);
+
+      t = t.n8.get(D);
+      previousD = D;
+      if (--move == 0) {
+        if (inc) ++toAdd;
+        inc = !inc;
+        move += toAdd;
+        D = D.next90(false);
+      }
+    }
+  }
+
 
   private void doSimpleQueue(int xStart, int yStart) {
     int step = 0, x = xStart, y = yStart, move = 3, element = 0;
@@ -180,7 +246,6 @@ public class OrderlyQueue {
         move *= -3;
       }
     }
-    queue.get( queue.size()-1 ).type = TileType.kGROUND; // Re-set to ground to make pathable
   }
 
   // TODO figure out the pattern!

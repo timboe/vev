@@ -2,6 +2,8 @@ package timboe.destructor;
 
 import com.badlogic.gdx.graphics.Color;
 
+import timboe.destructor.enums.QueueType;
+
 public class Param {
 
   public static final int ZONES_X = 3; // Constant... or not to constant
@@ -90,7 +92,7 @@ public class Param {
   public static final Color HIGHLIGHT_YELLOW = new Color(1f, 1f, 0f, 1f);
 
   public static int QUEUE_SIZE = 99;
-
+  public static QueueType QUEUE_TYPE = QueueType.kSPIRAL;
 
   //
 

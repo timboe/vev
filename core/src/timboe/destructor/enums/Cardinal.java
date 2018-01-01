@@ -4,6 +4,8 @@ import com.badlogic.gdx.Gdx;
 
 import java.util.*;
 
+import timboe.destructor.pathfinding.IVector2;
+
 public enum Cardinal {
   kN,
   kNE,
@@ -20,6 +22,17 @@ public enum Cardinal {
   public static final List<Cardinal> n8 = new ArrayList<Cardinal>(Arrays.asList(kN, kNE, kE, kSE, kS, kSW, kW, kNW));
 
   public static final List<Cardinal> corners = new ArrayList<Cardinal>(Arrays.asList(kNW, kNE, kSE, kSW));
+
+  public void modVec(IVector2 v) {
+    switch (this) {
+      case kN: case kNE: case kNW: ++v.x; break;
+      case kS: case kSE: case kSW: --v.x; break;
+    }
+    switch (this) {
+      case kE: case kNE: case kSE: ++v.y; break;
+      case kW: case kNW: case kSW: --v.y; break;
+    }
+  }
 
   public Cardinal next90(boolean clockwise) {
     if (this == kNONE) Gdx.app.error("Cardinal", "Called next90(clockwise="+clockwise+") on "+kNONE.getString());
