@@ -1,5 +1,6 @@
 package timboe.destructor;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 
 import timboe.destructor.enums.QueueType;
@@ -66,15 +67,12 @@ public class Param {
   public static final int MIN_DIST = 2; // Minimum number of steps to do for a feature
   public static final int MAX_DIST = 7; // Maximum number of steps to do for a feature
 
-  public static final int DISPLAY_X = 1920;
-  public static final int DISPLAY_Y = 1080;
-
-
   public static final int N_GRASS_VARIANTS = 13;
   public static final int N_BORDER_VARIANTS = 4;
 
   public static final int N_BUSH = 4;
   public static final int N_TREE = 4;
+  public static final int N_BUILDING = 5;
 
   public static final float SCROLL_ZOOM = 0.1f;
 
@@ -91,7 +89,7 @@ public class Param {
   public static final Color HIGHLIGHT_RED = new Color(1f, 0f, 0f, 1f);
   public static final Color HIGHLIGHT_YELLOW = new Color(1f, 1f, 0f, 1f);
 
-  public static int QUEUE_SIZE = 99;
+  public static int QUEUE_SIZE = 999;
   public static QueueType QUEUE_TYPE = QueueType.kSPIRAL;
 
   //

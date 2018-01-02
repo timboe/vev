@@ -59,19 +59,20 @@ public class GameScreen implements Screen {
     ++Param.FRAME;
     delta = Math.min(delta, Param.FRAME_TIME * 10); // Do not let this get too extreme
     renderClear();
-    camera.updateUI();
+    camera.update(delta);
     state.act(delta);
 
     ////////////////////////////////////////////////
-
-    camera.updateTiles(delta);
+    camera.getTileViewport().apply();
 
 //    GameState.getInstance().getStage().getRoot().setCullingArea( Camera.getInstance().getCullBox() );
+
     state.getTileStage().draw();
 
     state.getBuildingStage().draw();
 
     ////////////////////////////////////////////////
+
 
     state.getWarpStage().draw();
 
@@ -90,7 +91,7 @@ public class GameScreen implements Screen {
     ////////////////////////////////////////////////
 
     if (Param.DEBUG > 2) {
-      sr.setProjectionMatrix(Camera.getInstance().getCamera().combined);
+      sr.setProjectionMatrix(Camera.getInstance().getTileCamera().combined);
       sr.begin(ShapeRenderer.ShapeType.Line);
       sr.setColor(1, 1, 1, 1);
       for (Actor A : state.getTileStage().getActors()) {
@@ -103,10 +104,12 @@ public class GameScreen implements Screen {
       sr.end();
     }
 
-    camera.updateSprite();
+    ////////////////////////////////////////////////
+    camera.getSpriteViewport().apply();
+
     GameState.getInstance().getSpriteStage().draw();
 
-    sr.setProjectionMatrix(Camera.getInstance().getCamera().combined);
+    sr.setProjectionMatrix(Camera.getInstance().getSpriteCamera().combined);
     sr.begin(ShapeRenderer.ShapeType.Line);
     sr.setColor(1, 0, 0, 1);
     // Draw selected particles
@@ -116,33 +119,25 @@ public class GameScreen implements Screen {
     sr.end();
 
     ////////////////////////////////////////////////
+    camera.getUiViewport().apply();
 
-    camera.updateUI();
-    state.getUIStage().draw();
-
-    ///////////////////////////////////////////////
-
-    sr.setProjectionMatrix(Camera.getInstance().getCamera().combined);
-    sr.begin(ShapeRenderer.ShapeType.Line);
-    sr.setColor(0, 1, 0, 1);
     if (!state.selectStartWorld.isZero()) { // Draw select box
+      sr.setProjectionMatrix(Camera.getInstance().getTileCamera().combined);
+      sr.begin(ShapeRenderer.ShapeType.Line);
+      sr.setColor(0, 1, 0, 1);
       sr.rect(state.selectStartWorld.x, state.selectStartWorld.y,
-              state.selectEndWorld.x - state.selectStartWorld.x,
-              state.selectEndWorld.y - state.selectStartWorld.y);
+          state.selectEndWorld.x - state.selectStartWorld.x,
+          state.selectEndWorld.y - state.selectStartWorld.y);
 
+      sr.end();
     }
-    sr.end();
 
-//    camera.updateUI(); // needed to make clicking the UI work
-
+    state.getUIStage().draw();
   }
 
   @Override
   public void resize(int width, int height) {
-    state.getTileStage().getViewport().update(width, height, true);
-    state.getSpriteStage().getViewport().update(width, height, true);
-    state.getWarpStage().getViewport().update(width, height, true);
-    state.getUIStage().getViewport().update(width, height, true);
+    camera.resize(width, height);
   }
 
   @Override

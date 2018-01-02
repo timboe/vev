@@ -109,7 +109,7 @@ public class Tile extends Entity implements Node {
     if (isStartOfQueue) {
       Pair<Tile, Cardinal> slot = null;
       // If thi is my final destination
-      if (s.pathingList.size() == 0) slot = ((Building) mySprite).getFreeLocationInQueue();
+      if (s.pathingList.size() == 0) slot = ((Building) mySprite).getFreeLocationInQueue(s);
 
       if (slot == null) { // Cannot stay here
         visitingSprite(s);

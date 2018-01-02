@@ -83,12 +83,26 @@ public class Textures {
         Pixmap pixmap = new Pixmap(r.getRegionWidth(), r.getRegionHeight(), Pixmap.Format.RGBA8888);
         pixmap.drawPixmap(fullMap, 0, 0, r.getRegionX(), r.getRegionY(), r.getRegionWidth(), r.getRegionHeight());
         if (c == Colour.kGREEN) {
-          colourReplace(pixmap, redHighlight, new Color(147/255f, 178/255f, 155/255f, 1f));
-          colourReplace(pixmap, redTexture, new Color(101/255f, 143/255f, 135/255f, 1f));
+          colourReplace(pixmap, redHighlight, new Color(147 / 255f, 178 / 255f, 155 / 255f, 1f));
+          colourReplace(pixmap, redTexture, new Color(101 / 255f, 143 / 255f, 135 / 255f, 1f));
+          colourReplace(pixmap, redMain, new Color(58 / 255f, 91 / 255f, 106 / 255f, 1f));
+          colourReplace(pixmap, redShadow, new Color(45 / 255f, 59 / 255f, 89 / 255f, 1f));
+          colourReplace(pixmap, redDark, new Color(50 / 255f, 43 / 255f, 81 / 255f, 1f));
+          colourReplace(pixmap, redBlack, new Color(39 / 255f, 32 / 255f, 49 / 255f, 1f));
+        } else if (c == Colour.kGREEN_DARK) {
+          colourReplace(pixmap, redHighlight, new Color(101 / 255f, 143 / 255f, 135 / 255f, 1f)); // texture
+          colourReplace(pixmap, redTexture, new Color(45 / 255f, 59 / 255f, 89 / 255f, 1f)); //shaddow
           colourReplace(pixmap, redMain, new Color(58/255f, 91/255f, 106/255f, 1f));
-          colourReplace(pixmap, redShadow, new Color(45/255f, 59/255f, 89/255f, 1f));
-          colourReplace(pixmap, redDark, new Color(50/255f, 43/255f, 81/255f, 1f));
+          colourReplace(pixmap, redShadow, new Color(50 / 255f, 43 / 255f, 81 / 255f, 1f)); // dark
+          colourReplace(pixmap, redDark, new Color(50 / 255f, 43 / 255f, 81 / 255f, 1f)); // dark
           colourReplace(pixmap, redBlack, new Color(39/255f, 32/255f, 49/255f,1f));
+        } else if (c == Colour.kRED_DARK) {
+          colourReplace(pixmap, redTexture, new Color(136 / 255f, 57 / 255f, 80 / 255f, 1f));  // redShadow[] = {136, 57, 80};
+          colourReplace(pixmap, redHighlight, new Color(206 / 255f, 101 / 255f, 80 / 255f, 1f)); //  redTexture[] = {206, 101, 80};
+//          colourReplace(pixmap, redMain, new Color(58/255f, 91/255f, 106/255f, 1f));
+          colourReplace(pixmap, redShadow, new Color(72 / 255f, 43 / 255f, 81 / 255f, 1f)); //redDark[] = {72, 43, 81};
+          colourReplace(pixmap, redDark, new Color(72 / 255f, 43 / 255f, 81 / 255f, 1f));  //redDark[] = {72, 43, 81};
+//          colourReplace(pixmap, redBlack, new Color(39/255f, 32/255f, 49/255f,1f));
         } else if (c == Colour.kBLUE) {
           colourReplace(pixmap, redHighlight, new Color(64/255f, 141/255f, 174/255f, 1f));
           colourReplace(pixmap, redTexture, new Color(53/255f, 85/255f, 149/255f, 1f));

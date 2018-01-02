@@ -7,7 +7,9 @@ import java.util.Random;
 
 public enum Colour {
   kRED,
+  kRED_DARK,
   kGREEN,
+  kGREEN_DARK,
   kBLUE,
   kBLACK;
 
@@ -22,7 +24,9 @@ public enum Colour {
   public String getString() {
     switch (this) {
       case kRED: return "r";
+      case kRED_DARK: return "r_dark";
       case kGREEN: return "g";
+      case kGREEN_DARK: return "g_dark";
       case kBLUE: return "blue";
       default: return "b";
     }

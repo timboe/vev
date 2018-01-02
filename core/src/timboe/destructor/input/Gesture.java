@@ -10,6 +10,7 @@ import timboe.destructor.Param;
 import timboe.destructor.enums.UIMode;
 import timboe.destructor.manager.Camera;
 import timboe.destructor.manager.GameState;
+import timboe.destructor.manager.UI;
 
 public class Gesture implements GestureDetector.GestureListener {
 
@@ -38,8 +39,8 @@ public class Gesture implements GestureDetector.GestureListener {
     v3temp = Camera.getInstance().unproject(v3temp);
     if (button == Input.Buttons.RIGHT) {
       state.doRightClick();
-    } else if (state.uiMode == UIMode.kPLACE_BUILDING) {
-      boolean success = GameState.getInstance().placeBuilding();
+    } else if (UI.getInstance().uiMode == UIMode.kPLACE_BUILDING) {
+      state.placeBuilding();
     } else if (!state.selectedSet.isEmpty()) {
       state.doParticleMoveOrder((int)v3temp.x, (int)v3temp.y);
     }

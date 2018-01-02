@@ -33,7 +33,6 @@ import static timboe.destructor.enums.Cardinal.kSW;
 public class GameState {
 
   // UI interactions
-  public UIMode uiMode = UIMode.kNONE;
 
   public Vector3 selectStartScreen = new Vector3();
   public Vector3 selectStartWorld = new Vector3();
@@ -58,7 +57,6 @@ public class GameState {
   public Set<Sprite> particleSet = new HashSet<Sprite>(); // All movable sprites
   public Set<Sprite> selectedSet = new HashSet<Sprite>(); // Sub-set, selected sprites
   public Set<Building> buildingSet = new HashSet<Building>(); // All buildings
-
 
   private Rectangle tempRect = new Rectangle();
 
@@ -94,7 +92,7 @@ public class GameState {
     // Tile stage is static - does not need to be acted
 
 
-    if (uiMode == UIMode.kPLACE_BUILDING) {
+    if (UI.getInstance().uiMode == UIMode.kPLACE_BUILDING) {
       cursor.set(Gdx.input.getX(), Gdx.input.getY(), 0);
       cursor = Camera.getInstance().unproject(cursor);
       cursor.scl(1f / (float) Param.TILE_S);
@@ -133,7 +131,9 @@ public class GameState {
       Sprite s = new Sprite(tryX, tryY, tryTile);
       s.moveBy(Param.TILE_S/2, Param.TILE_S/2);
       s.pathTo(tryTile, null, null);
-      s.setTexture("ball_" + Colour.random().getString(), 6, false);
+      Colour c = Colour.random();
+      s.setTexture("ball_" + c.getString(), 6, false);
+      s.setUserObject(c);
       spriteStage.addActor(s);
       particleSet.add(s);
       Rectangle r = new Rectangle((warp.x - Param.WARP_SIZE / 2) * Param.TILE_S,
@@ -159,8 +159,7 @@ public class GameState {
 
   public boolean placeBuilding() {
     if (!buildingLocationGood) return false;
-    uiMode = UIMode.kNONE;
-    Building b = new Building(buildingLocation);
+    Building b = new Building(buildingLocation, UI.getInstance().buildingBeingPlaced);
     b.setTexture("build_3_3", 1, false);
     buildingStage.addActor(b);
     buildingSet.add(b);
@@ -169,9 +168,26 @@ public class GameState {
   }
 
   public void doRightClick() {
-    for (Sprite s : selectedSet) s.selected = false;
-    selectedSet.clear();
-    uiMode = UIMode.kNONE;
+    if (!selectedSet.isEmpty()) {
+      for (Sprite s : selectedSet) s.selected = false;
+      selectedSet.clear();
+      UI.getInstance().showMain();
+    } else if (UI.getInstance().uiMode == UIMode.kPLACE_BUILDING) {
+      UI.getInstance().showMain();
+    }
+  }
+
+
+  public void reduceSelectedSet(Colour c, boolean invert) {
+    Set<Sprite> toRemove = new HashSet<Sprite>();
+    for (Sprite s : selectedSet) {
+      if ((invert && s.getUserObject() == c) || (!invert && s.getUserObject() != c)) {
+        toRemove.add(s);
+        s.selected = false;
+      }
+    }
+    selectedSet.removeAll(toRemove);
+    UI.getInstance().doSelect(selectedSet);
   }
 
   public void doParticleSelect() {
@@ -184,6 +200,9 @@ public class GameState {
     for (Sprite s : particleSet) {
       s.selected = tempRect.contains(s.getX() / Param.SPRITE_SCALE, s.getY() / Param.SPRITE_SCALE);
       if (s.selected) selectedSet.add(s);
+    }
+    if (!selectedSet.isEmpty()) {
+      UI.getInstance().doSelect(selectedSet);
     }
     selectStartWorld.setZero();
   }
@@ -282,11 +301,11 @@ public class GameState {
     if (uiStage != null) uiStage.dispose();
     if (warpStage != null) warpStage.dispose();
     if (buildingStage != null) buildingStage.dispose();
-    tileStage = new Stage(Camera.getInstance().getViewport());
-    spriteStage = new Stage(Camera.getInstance().getViewport());
-    uiStage = new Stage(Camera.getInstance().getViewport());
-    warpStage = new Stage(Camera.getInstance().getViewport());
-    buildingStage = new Stage(Camera.getInstance().getViewport());
+    tileStage = new Stage(Camera.getInstance().getTileViewport());
+    spriteStage = new Stage(Camera.getInstance().getSpriteViewport());
+    uiStage = new Stage(Camera.getInstance().getUiViewport());
+    warpStage = new Stage(Camera.getInstance().getTileViewport());
+    buildingStage = new Stage(Camera.getInstance().getTileViewport());
     Color warpStageC = warpStage.getBatch().getColor();
     warpStageC.a = Param.WARP_TRANSPARENCY;
     warpStage.getBatch().setColor(warpStageC);

@@ -1,6 +1,7 @@
 package timboe.destructor.input;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Graphics;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 import timboe.destructor.Param;
@@ -9,6 +10,8 @@ import timboe.destructor.manager.GameState;
 import timboe.destructor.manager.World;
 
 public class Handler extends InputAdapter {
+
+  boolean fullScreen = false;
 
   @Override
   public boolean scrolled(int amount) {
@@ -33,6 +36,11 @@ public class Handler extends InputAdapter {
       GameState.getInstance().getTileStage().setDebugAll( Param.DEBUG > 1 );
     } else if (keycode == Input.Keys.N) {
       World.getInstance().generate();
+    } else if (keycode == Input.Keys.ENTER) {
+      if (Gdx.input.isKeyPressed(Input.Keys.ALT_LEFT) || Gdx.input.isKeyPressed(Input.Keys.ALT_RIGHT)) {
+//        Gdx.graphics.setWindowedMode()
+        Gdx.graphics.setFullscreenMode(Gdx.graphics.getDisplayMode());
+      }
     }
     return false;
   }

@@ -157,14 +157,14 @@ public class Sprite extends Entity {
   }
 
   public void draw(ShapeRenderer sr) {
-    if (Param.DEBUG > 0 && pathingList != null && pathingList.size() > 1) {
+    if (!selected) return;
+    if (pathingList != null && pathingList.size() > 1) {
       for (int i = 1; i < pathingList.size(); ++i) {
         Tile previous = pathingList.get(i-1);
         Tile current = pathingList.get(i);
         sr.line(previous.centreScaleSprite, current.centreScaleSprite);
       }
     }
-    if (!selected) return;
     float off = Param.FRAME * 0.25f / (float)Math.PI;
     final float xC = getX() + getWidth()/2f, yC = getY() + getHeight()/2f;
     for (float a = (float)-Math.PI; a < Math.PI; a += 2f*Math.PI/3f) {

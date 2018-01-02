@@ -1,5 +1,6 @@
 package timboe.destructor.manager;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
@@ -19,7 +20,7 @@ public class Camera {
   public static void create() { ourInstance = new Camera(); }
   public void dispose() {  ourInstance = null; }
 
-  private Rectangle cullBox = new Rectangle(0, 0, Param.DISPLAY_X, Param.DISPLAY_Y);
+  private Rectangle cullBox = new Rectangle(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
   private float currentZoom = 1f;
   private float desiredZoom = 1f;
@@ -32,19 +33,50 @@ public class Camera {
 
   private Random R = new Random();
 
-  private OrthographicCamera camera;
-  private FitViewport viewport;
+  private OrthographicCamera tileCamera;
+  private OrthographicCamera spriteCamera;
+  private OrthographicCamera uiCamera;
+
+
+  private FitViewport tileViewport;
+  private FitViewport spriteViewport;
+  private FitViewport uiViewport;
+
+
 
   private Camera() {
     reset();
   }
 
-  public FitViewport getViewport() {
-    return viewport;
+  public FitViewport getTileViewport() {
+    return tileViewport;
   }
 
-  public OrthographicCamera getCamera() {
-    return camera;
+  public FitViewport getSpriteViewport() {
+    return spriteViewport;
+  }
+
+  public FitViewport getUiViewport() {
+    return uiViewport;
+  }
+
+  public void resize(int width, int height) {
+    tileViewport.update(width, height, true);
+    spriteViewport.update(width, height, true);
+    uiViewport.update(width, height, true);
+    cullBox.setSize(width, height);
+  }
+
+  public OrthographicCamera getTileCamera() {
+    return tileCamera;
+  }
+
+  public OrthographicCamera getSpriteCamera() {
+    return spriteCamera;
+  }
+
+  public OrthographicCamera getUiCamera() {
+    return uiCamera;
   }
 
   public Rectangle getCullBox() {
@@ -52,7 +84,7 @@ public class Camera {
   }
 
   public Vector3 unproject(Vector3 v) {
-    return camera.unproject(v);
+    return tileCamera.unproject(v);
   }
 
   public void addShake(float amount) {
@@ -68,8 +100,13 @@ public class Camera {
   }
 
   private void reset() {
-    camera = new OrthographicCamera();
-    viewport = new FitViewport(Param.DISPLAY_X, Param.DISPLAY_Y, camera);
+    tileCamera = new OrthographicCamera();
+    spriteCamera = new OrthographicCamera();
+    uiCamera = new OrthographicCamera();
+
+    tileViewport = new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), tileCamera);
+    spriteViewport = new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), spriteCamera);
+    uiViewport = new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), uiCamera);
   }
 
   public void translate(float x, float y) {
@@ -94,29 +131,8 @@ public class Camera {
     return desiredZoom;
   }
 
-  public void update() {
-    camera.position.set(currentPos, 0);
-    camera.zoom = currentZoom;
-    camera.update();
-  }
 
-  public void updateUI() {
-    camera.position.set(viewport.getWorldWidth()/2, viewport.getWorldHeight()/2, 0f);
-//    camera.position.set(viewport.getWorldWidth(), viewport.getWorldHeight(), 0f);
-//    camera.position.set(0f, 0f, 0f);
-    float tempShakeAngle = R.nextFloat() * (float)Math.PI * 2f;
-    camera.position.add(shake * (float)Math.cos(tempShakeAngle) / currentZoom, shake * (float)Math.sin(tempShakeAngle) / currentZoom, 0);
-    camera.zoom = 1f;
-    camera.update();
-  }
-
-  public void updateSprite() { // Note - expects to come from "update"
-    camera.zoom *= (float)Param.SPRITE_SCALE;
-    camera.position.scl((float)Param.SPRITE_SCALE);
-    camera.update();
-  }
-
-  public void updateTiles(float delta) {
+  public void update(float delta) {
     float frames = delta / Param.FRAME_TIME;
 
     desiredPos.add(velocity);
@@ -129,12 +145,26 @@ public class Camera {
     currentPos.add(shake * (float)Math.cos(shakeAngle), shake * (float)Math.sin(shakeAngle));
     currentZoom = desiredZoom;
 
-    update();
+    tileCamera.position.set(currentPos, 0);
+    tileCamera.zoom = currentZoom;
+    tileCamera.update();
+
+    spriteCamera.position.set(currentPos, 0);
+    spriteCamera.zoom = currentZoom;
+    spriteCamera.zoom *= (float)Param.SPRITE_SCALE;
+    spriteCamera.position.scl((float)Param.SPRITE_SCALE);
+    spriteCamera.update();
+
+    uiCamera.position.set(uiViewport.getWorldWidth()/2, uiViewport.getWorldHeight()/2, 0f);
+    float tempShakeAngle = R.nextFloat() * (float)Math.PI * 2f;
+    uiCamera.position.add(shake * (float)Math.cos(tempShakeAngle), shake * (float)Math.sin(tempShakeAngle), 0);
+    uiCamera.update();
+
 
     // TODO take into consideration ZOOM
-    int startX = (int)camera.position.x - viewport.getScreenWidth()/2;
-    int startY = (int)camera.position.y - viewport.getScreenHeight()/2;
-    cullBox.set(startX, startY, viewport.getScreenWidth(), viewport.getScreenHeight());
+    //int startX = (int)camera.position.x - viewport.getScreenWidth()/2;
+    //int startY = (int)camera.position.y - viewport.getScreenHeight()/2;
+    //cullBox.set(startX, startY, viewport.getScreenWidth(), viewport.getScreenHeight());
   }
 
 }

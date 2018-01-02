@@ -1,6 +1,7 @@
 package timboe.destructor.entity;
 
 import timboe.destructor.Pair;
+import timboe.destructor.enums.BuildingType;
 import timboe.destructor.enums.Cardinal;
 import timboe.destructor.enums.TileType;
 import timboe.destructor.manager.World;
@@ -13,13 +14,15 @@ import timboe.destructor.pathfinding.OrderlyQueue;
 public class Building extends Entity {
 
   private OrderlyQueue myQueue;
+  private BuildingType type;
   private Tile centre;
   private float timeDissasemble;
   private float timeMove;
   public Sprite spriteProcessing = null;
 
-  public Building(Tile t) {
+  public Building(Tile t, BuildingType type) {
     super(t.coordinates.x - 1, t.coordinates.y - 1);
+    this.type = type;
     centre = t;
     centre.setBuilding(this);
     for (Cardinal D : Cardinal.n8) centre.n8.get(D).setBuilding(this);
@@ -30,7 +33,9 @@ public class Building extends Entity {
     myQueue.moveOn();
   }
 
-  public Pair<Tile, Cardinal> getFreeLocationInQueue() {
+
+  public Pair<Tile, Cardinal> getFreeLocationInQueue(Sprite s) {
+    if (!type.accepts(s)) return null;
     return myQueue.getFreeLocationInQueue();
   }
 

@@ -32,7 +32,6 @@ public class World {
   public Vector<IVector2> tiberium = new Vector<IVector2>();
   public Vector<ParticleEffect> warpClouds = new Vector<ParticleEffect>();
 
-
   private Tile[][] tiles;
   private Zone[][] zones;
 
