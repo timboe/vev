@@ -86,4 +86,27 @@ public enum BuildingType {
     }
   }
 
+  public int getOutputEnergy(int mode) {
+    if (mode >= N_MODES) Gdx.app.error("getOutputs", "Invalid mode:"+mode);
+    switch (this) {
+      case kHZE:
+        if (mode == 0) return 99;
+        if (mode == 1) return 88;
+        if (mode == 2) return 77;
+      case kHWM:
+        if (mode == 0) return 66;
+        if (mode == 1) return 55;
+        if (mode == 2) return 44;
+      case kWEQ:
+        if (mode == 0) return 33;
+        if (mode == 1) return 22;
+        if (mode == 2) return 11;
+      case kZMQ:
+        if (mode == 0) return 1;
+        if (mode == 1) return 9;
+        if (mode == 2) return 99;
+      case kMINE: default: return 50;
+    }
+  }
+
 }

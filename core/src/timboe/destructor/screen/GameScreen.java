@@ -36,6 +36,8 @@ public class GameScreen implements Screen {
   public void setMultiplexerInputs() {
     multiplexer.clear();
     multiplexer.addProcessor(state.getUIStage());
+    multiplexer.addProcessor(state.getWarpStage());
+    multiplexer.addProcessor(state.getSpriteStage());
     multiplexer.addProcessor(handler);
     multiplexer.addProcessor(gestureDetector);
   }

@@ -2,6 +2,10 @@ package timboe.destructor.manager;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.ParticleEffect;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
+import com.badlogic.gdx.scenes.scene2d.Touchable;
+
 import timboe.destructor.Pair;
 import timboe.destructor.Param;
 import timboe.destructor.Util;
@@ -209,7 +213,16 @@ public class World {
       addWarpGfx(_x, _y, false, Param.WARP_ROTATE_SPEED * 1, 0);
       addWarpGfx(_x, _y, false, Param.WARP_ROTATE_SPEED * 2, 90);
       addWarpGfx(_x, _y, true, -Param.WARP_ROTATE_SPEED * 1, 0);
-      addWarpGfx(_x, _y, true, -Param.WARP_ROTATE_SPEED * 2, -90);
+      Tile lastWarpTile = addWarpGfx(_x, _y, true, -Param.WARP_ROTATE_SPEED * 2, -90);
+
+//      lastWarpTile.setBounds(0, 0, lastWarpTile.textureRegion[0].getRegionWidth(), lastWarpTile.textureRegion[0].getRegionHeight());
+      lastWarpTile.setTouchable(Touchable.enabled);
+      lastWarpTile.addListener(new InputListener() {
+        public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
+          Gdx.app.log("WARP","clicked");
+        }
+      });
+
 
       ParticleEffect clouds = new ParticleEffect();
       clouds.load(Gdx.files.internal("hell_portal_effect.txt"), Textures.getInstance().getAtlas());
@@ -232,13 +245,14 @@ public class World {
     return true;
   }
 
-  private void addWarpGfx(final int x, final int y, final boolean flipped, final float speed, final float initialR) {
+  private Tile addWarpGfx(final int x, final int y, final boolean flipped, final float speed, final float initialR) {
     Tile warp = new Tile(x - Param.WARP_SIZE/2 + 2, y - Param.WARP_SIZE/2 + 2);
     warp.setTexture("void", 1, flipped);
     warp.setUserObject(speed);
     warp.rotateBy(initialR);
     warp.moveBy(0, -Param.TILE_S/2);
     GameState.getInstance().getWarpStage().addActor(warp);
+    return warp;
   }
 
   private boolean tryPatchOfStuff(final int _x, final int _y, final boolean isForest, final int patchSize) { // Otherwise, is Tiberium

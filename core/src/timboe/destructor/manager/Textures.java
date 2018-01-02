@@ -7,6 +7,8 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.TextureData;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+
+import sun.util.resources.ar.CurrencyNames_ar_BH;
 import timboe.destructor.Param;
 import timboe.destructor.enums.Colour;
 
@@ -78,8 +80,10 @@ public class Textures {
     Pixmap fullMap = data.consumePixmap();
     for (Colour c : Colour.values()) {
       if (c == Colour.kRED) continue;
-      for (int i = 0; i < Param.N_BALLS; ++i) {
-        TextureRegion r = new TextureRegion(atlas.findRegion("ball_r_" + i));
+      for (int i = 0; i <= Param.N_BALLS; ++i) {
+        TextureRegion r;
+        if (i == Param.N_BALLS) r = new TextureRegion(atlas.findRegion("ball_r"));
+        else r = new TextureRegion(atlas.findRegion("ball_r_" + i));
         Pixmap pixmap = new Pixmap(r.getRegionWidth(), r.getRegionHeight(), Pixmap.Format.RGBA8888);
         pixmap.drawPixmap(fullMap, 0, 0, r.getRegionX(), r.getRegionY(), r.getRegionWidth(), r.getRegionHeight());
         if (c == Colour.kGREEN) {
@@ -121,7 +125,8 @@ public class Textures {
         Texture newTex = new Texture(pixmap);
         TextureRegion newTexRegion = new TextureRegion(newTex);
         pixmap.dispose();
-        retexturedMap.put("ball_" + c.getString() + "_" + i, newTexRegion);
+        if (i == Param.N_BALLS) retexturedMap.put("ball_" + c.getString(), newTexRegion);
+        else retexturedMap.put("ball_" + c.getString() + "_" + i, newTexRegion);
       }
     }
     fullMap.dispose();

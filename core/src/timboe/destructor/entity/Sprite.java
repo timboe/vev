@@ -3,6 +3,9 @@ package timboe.destructor.entity;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
+import com.badlogic.gdx.scenes.scene2d.Touchable;
 
 import timboe.destructor.Param;
 import timboe.destructor.Util;
@@ -28,6 +31,14 @@ public class Sprite extends Entity {
 
   public Sprite(int x, int y, Tile t) {
     super(x, y, Param.TILE_S * Param.SPRITE_SCALE);
+
+
+    this.addListener(new InputListener() {
+      public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
+        Gdx.app.log("SPRITE","clicked");
+      }
+    });
+
     myTile = t;
   }
 

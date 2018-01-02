@@ -96,7 +96,6 @@ public class GameState {
       cursor.set(Gdx.input.getX(), Gdx.input.getY(), 0);
       cursor = Camera.getInstance().unproject(cursor);
       cursor.scl(1f / (float) Param.TILE_S);
-      Gdx.app.log("act","Cursor (" + Gdx.input.getX() +"," + Gdx.input.getY() +") -> "  + cursor);
       Tile t = World.getInstance().getTile(cursor.x, cursor.y);
       if (t != null && t.n8 != null && t.n8.get(kSW).n8 != null) {
         buildingLocation = t;
@@ -164,6 +163,7 @@ public class GameState {
     buildingStage.addActor(b);
     buildingSet.add(b);
     repath();
+    UI.getInstance().showMain();
     return true;
   }
 
@@ -213,6 +213,7 @@ public class GameState {
 
   public void doParticleMoveOrder(int x, int y) {
     Tile target = World.getInstance().getTile(x / Param.TILE_S, y / Param.TILE_S);
+    if (target == null) return;
     if (target.mySprite != null && target.mySprite.getClass() == Building.class) {
       target = ((Building)target.mySprite).getPathingDestination();
     } else if (target.getPathFindNeighbours().isEmpty()) {

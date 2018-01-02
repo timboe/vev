@@ -1,6 +1,8 @@
 package timboe.destructor;
 
 import com.badlogic.gdx.Game;
+import com.badlogic.gdx.utils.Json;
+
 import timboe.destructor.manager.*;
 
 public class DestructorGame extends Game {

@@ -25,7 +25,7 @@ public class Entity extends Actor {
   public Rectangle boundingBox = new Rectangle();
   public boolean doTint = false;
 
-  private TextureRegion[] textureRegion = new TextureRegion[Param.MAX_FRAMES];
+  public TextureRegion[] textureRegion = new TextureRegion[Param.MAX_FRAMES];
 
   public Entity(int x, int y, int scale) {
     construct(x, y, scale);

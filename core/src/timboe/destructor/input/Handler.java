@@ -38,8 +38,9 @@ public class Handler extends InputAdapter {
       World.getInstance().generate();
     } else if (keycode == Input.Keys.ENTER) {
       if (Gdx.input.isKeyPressed(Input.Keys.ALT_LEFT) || Gdx.input.isKeyPressed(Input.Keys.ALT_RIGHT)) {
-//        Gdx.graphics.setWindowedMode()
-        Gdx.graphics.setFullscreenMode(Gdx.graphics.getDisplayMode());
+        fullScreen = !fullScreen;
+        if (fullScreen) Gdx.graphics.setFullscreenMode(Gdx.graphics.getDisplayMode());
+        else Gdx.graphics.setWindowedMode(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
       }
     }
     return false;
