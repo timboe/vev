@@ -15,7 +15,6 @@ import timboe.destructor.entity.Sprite;
 import timboe.destructor.entity.Tile;
 import timboe.destructor.enums.Cardinal;
 import timboe.destructor.enums.Colour;
-import timboe.destructor.enums.TileType;
 import timboe.destructor.enums.UIMode;
 import timboe.destructor.pathfinding.IVector2;
 import timboe.destructor.pathfinding.OrderlyQueue;
@@ -24,10 +23,7 @@ import timboe.destructor.screen.TitleScreen;
 
 import java.util.*;
 
-import static timboe.destructor.enums.Cardinal.kNE;
-import static timboe.destructor.enums.Cardinal.kNW;
 import static timboe.destructor.enums.Cardinal.kS;
-import static timboe.destructor.enums.Cardinal.kSE;
 import static timboe.destructor.enums.Cardinal.kSW;
 
 public class GameState {
@@ -46,6 +42,7 @@ public class GameState {
 
   private Stage tileStage;
   private Stage spriteStage;
+  private Stage foliageStage;
   private Stage warpStage;
   private Stage uiStage;
   private Stage buildingStage;
@@ -55,10 +52,10 @@ public class GameState {
   private float tickTime = 0;
 
   public Set<Sprite> particleSet = new HashSet<Sprite>(); // All movable sprites
-  public Set<Sprite> selectedSet = new HashSet<Sprite>(); // Sub-set, selected sprites
   public Set<Building> buildingSet = new HashSet<Building>(); // All buildings
 
-  private Rectangle tempRect = new Rectangle();
+  public Set<Sprite> selectedSet = new HashSet<Sprite>(); // Sub-set, selected sprites
+  public Building selectedBuilding = null;
 
   private static GameState ourInstance;
   public static GameState getInstance() {
@@ -96,7 +93,8 @@ public class GameState {
       cursor.set(Gdx.input.getX(), Gdx.input.getY(), 0);
       cursor = Camera.getInstance().unproject(cursor);
       cursor.scl(1f / (float) Param.TILE_S);
-      Tile t = World.getInstance().getTile(cursor.x, cursor.y);
+      Tile t = null;
+      if (Util.inBounds((int)cursor.x, (int)cursor.y)) t = World.getInstance().getTile(cursor.x, cursor.y);
       if (t != null && t.n8 != null && t.n8.get(kSW).n8 != null) {
         buildingLocation = t;
         buildingLocationGood = t.setBuildableHighlight();
@@ -113,7 +111,12 @@ public class GameState {
     if (tickTime < 0.22) return; // Tick every second
     tickTime -= 0.22;
 
+      tryNewParticle();
 
+
+  }
+
+  public void tryNewParticle() {
     // Add a new sprite
     double rAngle = -Math.PI + (R.nextFloat() * Math.PI * 2);
     List<Map.Entry<IVector2,ParticleEffect>> entries = new ArrayList<Map.Entry<IVector2,ParticleEffect>>(World.getInstance().warps.entrySet());
@@ -136,8 +139,8 @@ public class GameState {
       spriteStage.addActor(s);
       particleSet.add(s);
       Rectangle r = new Rectangle((warp.x - Param.WARP_SIZE / 2) * Param.TILE_S,
-              (warp.y - Param.WARP_SIZE / 2) * Param.TILE_S,
-              Param.WARP_SIZE * Param.TILE_S, Param.WARP_SIZE * Param.TILE_S);
+          (warp.y - Param.WARP_SIZE / 2) * Param.TILE_S,
+          Param.WARP_SIZE * Param.TILE_S, Param.WARP_SIZE * Param.TILE_S);
       if (Camera.getInstance().onScrean(r)) {
         //      Camera.getInstance().addShake(30f / Camera.getInstance().getZoom());
       }
@@ -168,43 +171,78 @@ public class GameState {
   }
 
   public void doRightClick() {
-    if (!selectedSet.isEmpty()) {
-      for (Sprite s : selectedSet) s.selected = false;
-      selectedSet.clear();
+    if (UI.getInstance().uiMode == UIMode.kPLACE_BUILDING) {
       UI.getInstance().showMain();
-    } else if (UI.getInstance().uiMode == UIMode.kPLACE_BUILDING) {
+    } else if (selectedSet.size() > 0 || selectedBuilding != null) {
+      clearSelect();
       UI.getInstance().showMain();
     }
   }
 
 
-  public void reduceSelectedSet(Colour c, boolean invert) {
+  public void reduceSelectedSet() {
     Set<Sprite> toRemove = new HashSet<Sprite>();
     for (Sprite s : selectedSet) {
-      if ((invert && s.getUserObject() == c) || (!invert && s.getUserObject() != c)) {
+      if (!UI.getInstance().selectButton.get( s.getUserObject() ).isChecked()) {
         toRemove.add(s);
         s.selected = false;
       }
     }
     selectedSet.removeAll(toRemove);
-    UI.getInstance().doSelect(selectedSet);
+    UI.getInstance().doSelectParticle(selectedSet);
   }
 
-  public void doParticleSelect() {
-    // TODO fix bounds
-    tempRect.set(Math.min(selectStartWorld.x, selectEndWorld.x),
-            Math.min(selectStartWorld.y, selectEndWorld.y),
-            Math.abs(selectEndWorld.x - selectStartWorld.x),
-            Math.abs(selectEndWorld.y - selectStartWorld.y));
+  private void clearSelect() {
+    for (Sprite s : selectedSet) s.selected = false;
     selectedSet.clear();
-    for (Sprite s : particleSet) {
-      s.selected = tempRect.contains(s.getX() / Param.SPRITE_SCALE, s.getY() / Param.SPRITE_SCALE);
-      if (s.selected) selectedSet.add(s);
+    if (selectedBuilding != null) selectedBuilding.selected = false;
+    selectedBuilding = null;
+  }
+
+  public boolean doParticleSelect(boolean rangeBased) {
+
+    if (rangeBased) {
+
+      clearSelect();
+      Rectangle.tmp.set(Math.min(selectStartWorld.x, selectEndWorld.x),
+          Math.min(selectStartWorld.y, selectEndWorld.y),
+          Math.abs(selectEndWorld.x - selectStartWorld.x),
+          Math.abs(selectEndWorld.y - selectStartWorld.y));
+      for (Sprite s : particleSet) {
+        s.selected = Rectangle.tmp.contains(s.getX() / Param.SPRITE_SCALE, s.getY() / Param.SPRITE_SCALE);
+        if (s.selected) selectedSet.add(s);
+      }
+      if (!selectedSet.isEmpty()) UI.getInstance().doSelectParticle(selectedSet);
+      selectStartWorld.setZero();
+      return !selectedSet.isEmpty();
+
+    } else {
+
+      for (Building b : buildingSet) {
+        // We only let a building be selected if no particles are selected
+        // if particles are selected then we want to path to the building
+        if (!selectedSet.isEmpty()) break;
+        Rectangle.tmp.set(b.getX(), b.getY(), b.getWidth(), b.getHeight());
+        if (Rectangle.tmp.contains(selectStartWorld.x, selectStartWorld.y)) {
+          clearSelect();
+          b.selected = true;
+          selectedBuilding = b;
+          return true;
+        }
+      }
+      for (Sprite s : particleSet) {
+        Rectangle.tmp.set(s.getX(), s.getY(), s.getWidth(), s.getHeight());
+        if (Rectangle.tmp.contains(selectStartWorld.x * Param.SPRITE_SCALE, selectStartWorld.y * Param.SPRITE_SCALE)) {
+          clearSelect();
+          s.selected = true;
+          selectedSet.add(s);
+          UI.getInstance().doSelectParticle(selectedSet);
+          return true;
+        }
+      }
+      return false;
+
     }
-    if (!selectedSet.isEmpty()) {
-      UI.getInstance().doSelect(selectedSet);
-    }
-    selectStartWorld.setZero();
   }
 
   public void repath() {
@@ -212,8 +250,8 @@ public class GameState {
   }
 
   public void doParticleMoveOrder(int x, int y) {
+    if (!Util.inBounds(x / Param.TILE_S, y / Param.TILE_S)) return;
     Tile target = World.getInstance().getTile(x / Param.TILE_S, y / Param.TILE_S);
-    if (target == null) return;
     if (target.mySprite != null && target.mySprite.getClass() == Building.class) {
       target = ((Building)target.mySprite).getPathingDestination();
     } else if (target.getPathFindNeighbours().isEmpty()) {
@@ -237,10 +275,13 @@ public class GameState {
         if (pathed.contains(s)) continue; // Already done in another loop
         if (doRepath) { // DOING REPATH
 
-          if (s.pathingList.isEmpty()) continue;
+          if (s.pathingList == null || s.pathingList.isEmpty()) continue;
           if (firstSprite == null) {
             firstSprite = s;
             target = s.getDestination();
+            // Note - if this turns out to not be valid anymore, pathTo will choose a new one
+            // in a reproducible way. So we can continue to use "target" here, even though everyone's
+            // target will mutate to a new location
           } else {
             if (s.getDestination() != target) {
               anotherRoundNeeded = true;
@@ -254,11 +295,20 @@ public class GameState {
           if (firstSprite == null) firstSprite = s;
 
         }
+
         if (Math.hypot(s.getX() - firstSprite.getX(), s.getY() - firstSprite.getY()) > Param.TILE_S * Param.WARP_SIZE) { // TODO try and make this larger to improve performance
           // Do this (and any others far away or different target) in another iteration of the do loop
           anotherRoundNeeded = true;
           continue;
         }
+
+        if (s != firstSprite && firstSprite.pathingList == null) { // Pathing failed for the firstSprite :(
+          // Hence it will (very likley) fail here too. And failed pathing is EXPENSIVE
+          // So don't run it.
+          pathed.add(s);
+          continue;
+        }
+
         s.pathTo(target, solutionKnownFrom, doneSet);
         pathed.add(s);
         if (s.pathingList != null) {
@@ -294,16 +344,20 @@ public class GameState {
     return spriteStage;
   }
 
+  public Stage getFoliageStage() { return foliageStage; }
+
   public Stage getBuildingStage() { return buildingStage; }
 
   public void reset() {
     if (tileStage != null) tileStage.dispose();
     if (spriteStage != null) spriteStage.dispose();
+    if (foliageStage != null) foliageStage.dispose();
     if (uiStage != null) uiStage.dispose();
     if (warpStage != null) warpStage.dispose();
     if (buildingStage != null) buildingStage.dispose();
     tileStage = new Stage(Camera.getInstance().getTileViewport());
     spriteStage = new Stage(Camera.getInstance().getSpriteViewport());
+    foliageStage = new Stage(Camera.getInstance().getSpriteViewport());
     uiStage = new Stage(Camera.getInstance().getUiViewport());
     warpStage = new Stage(Camera.getInstance().getTileViewport());
     buildingStage = new Stage(Camera.getInstance().getTileViewport());
@@ -319,6 +373,7 @@ public class GameState {
     theTitleScreen.dispose();
     tileStage.dispose();
     spriteStage.dispose();
+    foliageStage.dispose();
     uiStage.dispose();
     warpStage.dispose();
     buildingStage.dispose();

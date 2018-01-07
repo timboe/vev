@@ -153,10 +153,6 @@ public class Tile extends Entity implements Node {
 
   // Can no longer stay here
   public void moveOnSprites() {
-    if (!getPathFindNeighbours().isEmpty()) {
-      Gdx.app.error("moveOnSprites", "Called on " + coordinates + ", but this tile is pathable");
-      return; // Sanity check - should be true
-    }
     Set<Sprite> set = new HashSet<Sprite>();
     for (Sprite s : containedSprites) {
       // If I am parked here, or just passing through but my destination is also now invalid
@@ -165,7 +161,10 @@ public class Tile extends Entity implements Node {
         set.add(s);
       }
     }
-    for (Sprite s : set) s.pathTo(Sprite.findPathingNearbyLocation(this), null, null);
+    for (Sprite s : set) {
+      Tile newDest = s.findPathingLocation(this, true, true); // Reproducible=True, requiresParking=True.
+      if (newDest != null) s.pathTo(newDest, null, null);
+    }
   }
 
   public boolean hasParkingSpace() {

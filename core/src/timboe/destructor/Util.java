@@ -8,8 +8,9 @@ public class Util {
 
   public static Random R = new Random();
 
+  // Why -2? It's to allow for an buffer for odd world sizes
   public static boolean inBounds(int x, int y) {
-    return !needsClamp(x, 0, Param.TILES_X - 1) && !needsClamp(y, 0, Param.TILES_Y - 1);
+    return !needsClamp(x, 0, Param.TILES_X - 2) && !needsClamp(y, 0, Param.TILES_Y - 2);
   }
 
   public static boolean inBounds(IVector2 v) {

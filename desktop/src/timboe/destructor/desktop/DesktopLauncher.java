@@ -14,6 +14,7 @@ public class DesktopLauncher {
 		config.vSyncEnabled = true;
 		config.foregroundFPS = 60;
 		config.samples = 2;
+		config.fullscreen = false;
 		new LwjglApplication(new DestructorGame(), config);
 	}
 }

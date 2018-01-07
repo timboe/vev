@@ -83,14 +83,20 @@ public class Param {
   public static final float FRAME_TIME = (1f/DESIRED_FPS);
   public static int FRAME = 0;
 
-  public static final float ANIM_TIME = 1/12f; // I.e. 12 frames per second
+  public static final float ANIM_TIME = 1/20f; // I.e. 12 frames per second
 
   public static final Color HIGHLIGHT_GREEN = new Color(0f, 1f, 0f, 1f);
   public static final Color HIGHLIGHT_RED = new Color(1f, 0f, 0f, 1f);
   public static final Color HIGHLIGHT_YELLOW = new Color(1f, 1f, 0f, 1f);
 
-  public static int QUEUE_SIZE = 999;
-  public static QueueType QUEUE_TYPE = QueueType.kSPIRAL;
+  public static final int DISPLAY_X = Gdx.graphics.getWidth();
+  public static final int DISPLAY_Y = Gdx.graphics.getHeight();
+
+
+  public static int QUEUE_SIZE = 9;
+  public static QueueType QUEUE_TYPE = QueueType.kSIMPLE;
+
+  public static float PLAYER_ENERGY = 10000000;
 
   //
 

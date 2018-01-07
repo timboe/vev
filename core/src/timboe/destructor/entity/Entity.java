@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.utils.Align;
@@ -87,5 +88,19 @@ public class Entity extends Actor {
 
   private void doDraw(Batch batch) {
     batch.draw(textureRegion[frame],this.getX(),this.getY(),this.getOriginX(),this.getOriginY(),this.getWidth(),this.getHeight(),this.getScaleX(),this.getScaleY(),this.getRotation());
+  }
+
+  public void draw(ShapeRenderer sr) {
+    if (!selected) return;
+    float off = Param.FRAME * 0.25f / (float)Math.PI;
+    final float xC = getX() + getWidth()/2f, yC = getY() + getHeight()/2f;
+    for (float a = (float)-Math.PI; a < Math.PI; a += 2f*Math.PI/3f) {
+
+      sr.rectLine(xC + getWidth() * ((float) Math.cos(a + off)),
+          yC + getHeight() * ((float) Math.sin(a + off)),
+          xC + getWidth()/2f * ((float) Math.cos(a + off + Math.PI / 6f)),
+          yC + getHeight()/2f * ((float) Math.sin(a + off + Math.PI / 6f)),
+          2);
+    }
   }
 }

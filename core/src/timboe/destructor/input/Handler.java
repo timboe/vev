@@ -5,13 +5,12 @@ import com.badlogic.gdx.Graphics;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 import timboe.destructor.Param;
+import timboe.destructor.enums.Particle;
 import timboe.destructor.manager.Camera;
 import timboe.destructor.manager.GameState;
 import timboe.destructor.manager.World;
 
 public class Handler extends InputAdapter {
-
-  boolean fullScreen = false;
 
   @Override
   public boolean scrolled(int amount) {
@@ -22,7 +21,7 @@ public class Handler extends InputAdapter {
   public boolean touchUp (int screenX, int screenY, int pointer, int button) {
     if (button == Input.Buttons.LEFT && GameState.getInstance().isSelecting()) {
       Gdx.app.log("touchUp", "End selecting");
-      GameState.getInstance().doParticleSelect();
+      GameState.getInstance().doParticleSelect(true);
       return true; // Consume
     }
     return false;
@@ -36,12 +35,15 @@ public class Handler extends InputAdapter {
       GameState.getInstance().getTileStage().setDebugAll( Param.DEBUG > 1 );
     } else if (keycode == Input.Keys.N) {
       World.getInstance().generate();
+    } else if (keycode == Input.Keys.G) {
+      for (int i=0; i<2500; ++i) GameState.getInstance().tryNewParticle();
     } else if (keycode == Input.Keys.ENTER) {
       if (Gdx.input.isKeyPressed(Input.Keys.ALT_LEFT) || Gdx.input.isKeyPressed(Input.Keys.ALT_RIGHT)) {
-        fullScreen = !fullScreen;
-        if (fullScreen) Gdx.graphics.setFullscreenMode(Gdx.graphics.getDisplayMode());
-        else Gdx.graphics.setWindowedMode(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        if (!Gdx.graphics.isFullscreen()) Gdx.graphics.setFullscreenMode(Gdx.graphics.getDisplayMode());
+        else Gdx.graphics.setWindowedMode(Param.DISPLAY_X, Param.DISPLAY_Y);
       }
+    } else if (keycode == Input.Keys.ESCAPE) {
+      Gdx.app.exit();
     }
     return false;
   }

@@ -46,7 +46,8 @@ public class World {
   public Tile getTile(float x, float y) { return getTile((int)x, (int)y); }
 
   public Tile getTile(int x, int y) {
-    if (x < 0 || y < 0 || x >= Param.TILES_X-1 || y >= Param.TILES_Y-1) return null;
+    // Removed bounds check for speed....
+//    if (x < 0 || y < 0 || x >= Param.TILES_X-1 || y >= Param.TILES_Y-1) return null;
     return tiles[x][y];
   }
 
@@ -169,9 +170,10 @@ public class World {
     return "bush_" + c.getString() + "_" + R.nextInt(Param.N_BUSH);
   }
 
-  private Sprite newSprite(int x, int y, String name) {
+  private Sprite newSprite(int x, int y, String name, boolean isFoliage) {
     Sprite s = new Sprite(x, y, tiles[x][y]);
-    GameState.getInstance().getSpriteStage().addActor(s);
+    if (isFoliage) GameState.getInstance().getFoliageStage().addActor(s);
+    else GameState.getInstance().getSpriteStage().addActor(s);
     s.setTexture(name, 1, R.nextBoolean());
     return s;
   }
@@ -286,7 +288,7 @@ public class World {
 
   private void tryTree(final double distance, final double maxDistance, final int x, final int y, final String forestTexture) {
     if (distance > Math.abs(R.nextGaussian() * Param.PATCH_DENSITY * maxDistance)) return;
-    Sprite s = newSprite(x, y, forestTexture);
+    Sprite s = newSprite(x, y, forestTexture, true);
     s.moveBy((-Param.WIGGLE) + Util.R.nextInt(Param.WIGGLE*2), (-Param.WIGGLE) + Util.R.nextInt(Param.WIGGLE*2));
     tiles[x][y].type = TileType.kFOILAGE;
     tiles[x][y].mySprite = s;
@@ -296,7 +298,7 @@ public class World {
     for (int subX = 0; subX < 2; ++subX) {
       for (int subY = 0; subY < 2; ++subY) {
         if (distance > Math.abs(R.nextGaussian() * Param.PATCH_DENSITY * maxDistance)) continue;
-        Sprite s = newSprite(x, y, "tiberium_" + R.nextInt(Param.N_TIBERIUM));
+        Sprite s = newSprite(x, y, "tiberium_" + R.nextInt(Param.N_TIBERIUM), false);
         s.moveBy(subX * Param.TILE_S, subY * Param.TILE_S);
         s.moveBy((-Param.WIGGLE/2) + Util.R.nextInt(Param.WIGGLE), (-Param.WIGGLE/2) + Util.R.nextInt(Param.WIGGLE));
       }
@@ -326,7 +328,7 @@ public class World {
       for (int y = Param.TILES_Y-1; y >= 0 ; --y) {
         if (tiles[x][y].type != TileType.kGROUND || tiles[x][y].tileColour == Colour.kBLACK) continue;
         if (R.nextFloat() < Param.FOLIAGE_PROB) {
-          Sprite s = newSprite(x, y, randomFoliage(tiles[x][y].tileColour));
+          Sprite s = newSprite(x, y, randomFoliage(tiles[x][y].tileColour), true);
           tiles[x][y].type = TileType.kFOILAGE;
           tiles[x][y].mySprite = s;
 //        } else if (tiles[x][y].tileColour == Colour.kGREEN && R.nextFloat() < 0.01) {

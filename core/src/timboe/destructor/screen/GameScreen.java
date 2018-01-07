@@ -8,13 +8,17 @@ import com.badlogic.gdx.graphics.g2d.ParticleEffect;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.ui.Button;
+
 import timboe.destructor.Param;
+import timboe.destructor.entity.Building;
 import timboe.destructor.entity.Sprite;
 import timboe.destructor.entity.Tile;
 import timboe.destructor.input.Gesture;
 import timboe.destructor.input.Handler;
 import timboe.destructor.manager.Camera;
 import timboe.destructor.manager.GameState;
+import timboe.destructor.manager.UI;
 import timboe.destructor.manager.World;
 
 public class GameScreen implements Screen {
@@ -28,6 +32,7 @@ public class GameScreen implements Screen {
   private final Camera camera = Camera.getInstance();
   private final GameState state = GameState.getInstance();
   private final World world = World.getInstance();
+  private final UI ui = UI.getInstance();
 
   public GameScreen() {
     setMultiplexerInputs();
@@ -36,8 +41,8 @@ public class GameScreen implements Screen {
   public void setMultiplexerInputs() {
     multiplexer.clear();
     multiplexer.addProcessor(state.getUIStage());
-    multiplexer.addProcessor(state.getWarpStage());
-    multiplexer.addProcessor(state.getSpriteStage());
+//    multiplexer.addProcessor(state.getWarpStage());
+//    multiplexer.addProcessor(state.getSpriteStage());
     multiplexer.addProcessor(handler);
     multiplexer.addProcessor(gestureDetector);
   }
@@ -63,6 +68,7 @@ public class GameScreen implements Screen {
     renderClear();
     camera.update(delta);
     state.act(delta);
+    ui.act(delta);
 
     ////////////////////////////////////////////////
     camera.getTileViewport().apply();
@@ -109,14 +115,26 @@ public class GameScreen implements Screen {
     ////////////////////////////////////////////////
     camera.getSpriteViewport().apply();
 
-    GameState.getInstance().getSpriteStage().draw();
+    state.getSpriteStage().draw();
+    state.getFoliageStage().draw();
 
-    sr.setProjectionMatrix(Camera.getInstance().getSpriteCamera().combined);
-    sr.begin(ShapeRenderer.ShapeType.Line);
+    sr.setProjectionMatrix(camera.getSpriteCamera().combined);
+    sr.begin(ShapeRenderer.ShapeType.Filled);
     sr.setColor(1, 0, 0, 1);
     // Draw selected particles
     for (Sprite s : state.particleSet) {
       s.draw(sr);
+    }
+    sr.end();
+
+    ////////////////////////////////////////////////
+    camera.getTileViewport().apply();
+
+    sr.setProjectionMatrix(camera.getTileCamera().combined);
+    sr.begin(ShapeRenderer.ShapeType.Filled);
+    sr.setColor(1, 0, 0, 1);
+    for (Building b : state.buildingSet) {
+      b.draw(sr);
     }
     sr.end();
 

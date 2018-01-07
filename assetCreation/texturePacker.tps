@@ -4,7 +4,7 @@
         <key>fileFormatVersion</key>
         <int>4</int>
         <key>texturePackerVersion</key>
-        <string>4.5.0</string>
+        <string>4.6.1</string>
         <key>fileName</key>
         <string>C:/Users/Tim/Dropbox/git/destructor/assetCreation/texturePacker.tps</string>
         <key>autoSDSettings</key>
@@ -199,7 +199,9 @@
         </struct>
         <key>individualSpriteSettings</key>
         <map type="IndividualSpriteSettingsMap">
+            <key type="filename">16/arrow.png</key>
             <key type="filename">16/b.png</key>
+            <key type="filename">16/ball_r.png</key>
             <key type="filename">16/ball_r_0.png</key>
             <key type="filename">16/ball_r_1.png</key>
             <key type="filename">16/ball_r_2.png</key>
@@ -321,6 +323,18 @@
             <key type="filename">16/missing.png</key>
             <key type="filename">16/missing2.png</key>
             <key type="filename">16/missing3.png</key>
+            <key type="filename">16/queue_g_E_N.png</key>
+            <key type="filename">16/queue_g_E_S.png</key>
+            <key type="filename">16/queue_g_E_W.png</key>
+            <key type="filename">16/queue_g_N_E.png</key>
+            <key type="filename">16/queue_g_N_S.png</key>
+            <key type="filename">16/queue_g_N_W.png</key>
+            <key type="filename">16/queue_g_S_E.png</key>
+            <key type="filename">16/queue_g_S_N.png</key>
+            <key type="filename">16/queue_g_S_W.png</key>
+            <key type="filename">16/queue_g_W_E.png</key>
+            <key type="filename">16/queue_g_W_N.png</key>
+            <key type="filename">16/queue_g_W_S.png</key>
             <key type="filename">16/s_g_E_E.png</key>
             <key type="filename">16/s_g_E_N.png</key>
             <key type="filename">16/s_g_E_S.png</key>
@@ -349,10 +363,11 @@
             <key type="filename">16/s_r_W_N.png</key>
             <key type="filename">16/s_r_W_S.png</key>
             <key type="filename">16/s_r_W_W.png</key>
-            <key type="filename">large/tiberium_0.png</key>
-            <key type="filename">large/tiberium_1.png</key>
-            <key type="filename">large/tiberium_2.png</key>
-            <key type="filename">large/tiberium_3.png</key>
+            <key type="filename">16/tiberium_0.png</key>
+            <key type="filename">16/tiberium_1.png</key>
+            <key type="filename">16/tiberium_2.png</key>
+            <key type="filename">16/tiberium_3.png</key>
+            <key type="filename">16/zap.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
                 <point_f>0.5,0.5</point_f>
@@ -365,19 +380,7 @@
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
-            <key type="filename">large/building_0.png</key>
-            <struct type="IndividualSpriteSettings">
-                <key>pivotPoint</key>
-                <point_f>0.5,0.5</point_f>
-                <key>scale9Enabled</key>
-                <false/>
-                <key>scale9Borders</key>
-                <rect>12,16,24,32</rect>
-                <key>scale9Paddings</key>
-                <rect>12,16,24,32</rect>
-                <key>scale9FromFile</key>
-                <false/>
-            </struct>
+            <key type="filename">large/build_3_3.png</key>
             <key type="filename">large/building_1.png</key>
             <key type="filename">large/building_2.png</key>
             <key type="filename">large/building_3.png</key>
@@ -391,6 +394,19 @@
                 <rect>12,12,24,24</rect>
                 <key>scale9Paddings</key>
                 <rect>12,12,24,24</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">large/building_0.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>12,16,24,32</rect>
+                <key>scale9Paddings</key>
+                <rect>12,16,24,32</rect>
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
@@ -417,6 +433,8 @@
             <key type="filename">large/bush_r_2.png</key>
             <key type="filename">large/bush_r_3.png</key>
             <key type="filename">large/cloud_sprite.png</key>
+            <key type="filename">large/cross.png</key>
+            <key type="filename">large/tick.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
                 <point_f>0.5,0.5</point_f>
@@ -448,6 +466,21 @@
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
+            <key type="filename">large/queue_simple.png</key>
+            <key type="filename">large/queue_spiral.png</key>
+            <key type="filename">large/void.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>32,32,64,64</rect>
+                <key>scale9Paddings</key>
+                <rect>32,32,64,64</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
             <key type="filename">large/tree_g_1.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
@@ -471,19 +504,6 @@
                 <rect>8,16,17,32</rect>
                 <key>scale9Paddings</key>
                 <rect>8,16,17,32</rect>
-                <key>scale9FromFile</key>
-                <false/>
-            </struct>
-            <key type="filename">large/void.png</key>
-            <struct type="IndividualSpriteSettings">
-                <key>pivotPoint</key>
-                <point_f>0.5,0.5</point_f>
-                <key>scale9Enabled</key>
-                <false/>
-                <key>scale9Borders</key>
-                <rect>32,32,64,64</rect>
-                <key>scale9Paddings</key>
-                <rect>32,32,64,64</rect>
                 <key>scale9FromFile</key>
                 <false/>
             </struct>

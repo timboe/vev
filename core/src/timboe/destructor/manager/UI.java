@@ -1,17 +1,22 @@
 package timboe.destructor.manager;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.g2d.NinePatch;
+import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.scenes.scene2d.utils.NinePatchDrawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 
+import java.text.DecimalFormat;
 import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.Set;
 
+import timboe.destructor.LabelDF;
 import timboe.destructor.Pair;
 import timboe.destructor.Param;
 import timboe.destructor.entity.Sprite;
@@ -21,7 +26,6 @@ import timboe.destructor.enums.Particle;
 import timboe.destructor.enums.QueueType;
 import timboe.destructor.enums.UIMode;
 import timboe.destructor.input.BuildingButton;
-import timboe.destructor.input.ParticleButton;
 import timboe.destructor.input.QueueButton;
 import timboe.destructor.input.QueueLengthSlider;
 import timboe.destructor.input.YesNoButton;
@@ -46,28 +50,39 @@ public class UI {
 
   private Table table;
   private Skin skin;
+  private ShaderProgram dfShader;
 
-  private Window mainWindow;
-  private Window selectWindow;
+  private Table mainWindow;
+  private Table selectWindow;
 
-  private EnumMap<BuildingType, Window> buildingWindow;
-  public EnumMap<BuildingType, ImageButton>buildingWindowQSimple;
-  public EnumMap<BuildingType, ImageButton> buildingWindowQSpiral;
+  private float displayEnergy;
+  private float time;
+  DecimalFormat formatter = new DecimalFormat("###,###");
+  LabelDF displayEnergyLabel;
+
+  private YesNoButton yesNoButton = new YesNoButton();
+
+  private EnumMap<BuildingType, Table> buildingWindow;
+  public EnumMap<BuildingType, Button> buildingWindowQSimple;
+  public EnumMap<BuildingType, Button> buildingWindowQSpiral;
   public EnumMap<BuildingType, Label> buildingWindowQSize;
 
-  private EnumMap<Colour, Button> selectButton;
+  public EnumMap<Colour, Button> selectButton;
   private EnumMap<Colour, Label> selectLabel;
-
-  public Table getTable() {
-    return table;
-  }
+  private Button selectTick;
+  private Button selectCross;
 
   private UI() {
     reset();
   }
 
-  private Label getLabel(String label) {
-    Label l = new Label(label, skin, "default");
+  private void separator(Table w, int colspan) {
+    w.add(new Image( Textures.getInstance().getTexture("separator", false) )).width( (int)( w.getPrefWidth() * 0.5) ).height(4).pad(2).colspan(colspan);
+    w.row();
+  }
+
+  private LabelDF getLabel(String label) {
+    LabelDF l = new LabelDF(label, skin, "default", dfShader);
     l.setAlignment(Align.center);
     l.setWidth(SIZE_S);
     l.setHeight(SIZE_S);
@@ -76,38 +91,51 @@ public class UI {
 
   private Image getImage(String image) {
     Image i = new Image( Textures.getInstance().getTexture(image, false) );
-    i.setWidth(SIZE_S);
-    i.setHeight(SIZE_S);
+//    i.setWidth(SIZE_S);
+//    i.setHeight(SIZE_S);
     i.setAlign(Align.center);
     return i;
   }
 
-  private Window getWindow(String window) {
-    Window w = new Window(window, skin, "default");
-    w.getTitleLabel().setAlignment(Align.center);
-    w.setMovable(false);
-    return w;
+  private Table getWindow() {
+    Table t = new Table();
+    t.setBackground(new NinePatchDrawable(new NinePatch(skin.getRegion("window"), 10, 10, 10, 10)));
+//    Window w = new Window("", skin, "default");
+//    w.
+//    w.getTitleLabel().setAlignment(Align.center);
+//    w.setMovable(false);
+    return t;
   }
 
-  private ImageButton getImageButton(String image, String style) {
-    ImageButton.ImageButtonStyle ibs = new ImageButton.ImageButtonStyle( skin.get(style, ImageButton.ImageButtonStyle.class) );
-    ibs.imageUp = new TextureRegionDrawable( Textures.getInstance().getTexture(image, false) );
-    ImageButton ib = new ImageButton(skin);
+  private Button getImageButton(String image, String style, int resize) {
+    Button ib = new Button(skin, style);
+    if (image.equals("tick") || image.equals("cross")) {
+      ib.setUserObject( image.equals("cross") ? 0 : 1);
+      ib.addListener(yesNoButton);
+      resize = SIZE_M;
+    }
+
+    Image im = new Image( Textures.getInstance().getTexture(image, false) );
+    Container<Actor> cont = new Container<Actor>();
+    cont.setActor(im);
+    if (resize != 0) cont.width( resize ).height( resize );
+
     ib.setProgrammaticChangeEvents(false);
-    ib.setStyle(ibs);
+    ib.add(cont);
+    ib.align(Align.center);
     return ib;
   }
 
-  private ImageButton getImageButton(String image) {
-    return getImageButton(image, "default");
+  private Button getImageButton(String image) {
+    return getImageButton(image, "default", 0);
   }
 
-  private void addToWin(Window w, Actor a, int size) {
+  private void addToWin(Table w, Actor a, int size) {
     w.add(a).width(size).height(size).pad(size/PAD);
   }
 
-  private void addToWin(Window w, Actor a, int size, int colspan) {
-    w.add(a).colspan(colspan).width(size).height(size).pad(size/PAD);
+  private void addToWin(Table w, Actor a, int sizeX, int sizeY, int colspan) {
+    w.add(a).colspan(colspan).width(sizeX).height(sizeY).pad(SIZE_S/4);
   }
 
   public void reset() {
@@ -116,61 +144,68 @@ public class UI {
     table.row().fillY();
     table.top();
     table.right();
-    //    table.right().top().pad(Param.TILE_S*2);
+    table.pad(Param.TILE_S);
+    dfShader = new ShaderProgram(Gdx.files.internal("font.vert"), Gdx.files.internal("font.frag"));
+    if (!dfShader.isCompiled()) Gdx.app.error("fontShader", "compilation failed:\n" + dfShader.getLog());
     skin = new Skin(Gdx.files.internal("uiskin.json"));
     skin.addRegions(Textures.getInstance().getUIAtlas());
+//    skin.getFont("default-font").getData().setScale(2f);
 
     GameState.getInstance().getUIStage().addActor(table);
 
-    ParticleButton particleButtonHandler = new ParticleButton();
+//    ParticleButton particleButtonHandler = new ParticleButton();
     BuildingButton buildingButtonHandler = new BuildingButton();
     QueueLengthSlider queueLengthSlider = new QueueLengthSlider();
     QueueButton queueButton = new QueueButton();
-    YesNoButton yesNoButton = new YesNoButton();
 
-    mainWindow = getWindow("Particle Destructor");
-    selectWindow = getWindow("Select");
+    mainWindow = getWindow();
+    selectWindow = getWindow();
 
 
     // Main window
+    addToWin(mainWindow, getImage("zap"), SIZE_S, SIZE_S, 1);
+    displayEnergyLabel = getLabel("");
+    addToWin(mainWindow, displayEnergyLabel, SIZE_L, SIZE_S, 1);
+    mainWindow.row();
+    separator(mainWindow, 2);
     for (BuildingType bt : BuildingType.values()) {
-      ImageButton ib = getImageButton("building_" + bt.ordinal());
-      ib.setUserObject(bt);
-      ib.addListener(buildingButtonHandler);
-      addToWin(mainWindow, ib, SIZE_L);
+      Image ib = new Image( Textures.getInstance().getTexture("building_" + bt.ordinal(), false) );
+      Container<Actor> cont = new Container<Actor>();
+      cont.setActor(ib);
+      cont.width( ib.getWidth() * 2 ).height( ib.getHeight() * 2 );
+      Button b = new Button(skin, "default");
+      b.add(cont);
+      b.setUserObject(bt);
+      b.addListener(buildingButtonHandler);
+      addToWin(mainWindow, b, SIZE_L, SIZE_L, 2);
       mainWindow.row();
     }
+    separator(mainWindow, 2);
+    Button select = getImageButton("select", "default", 0);
+    addToWin(mainWindow, select, SIZE_L, SIZE_M, 2);
+    mainWindow.row();
+    Button settings = getImageButton("select", "default", 0);
+    addToWin(mainWindow, settings, SIZE_L, SIZE_M, 2);
 
     // Selected window
     selectButton = new EnumMap<Colour, Button>(Colour.class);
     selectLabel = new EnumMap<Colour, Label>(Colour.class);
+    selectTick = getImageButton("tick");
+    selectCross = getImageButton("cross");
     for (Colour c : Colour.values()) {
-      Image image = getImage("ball_" + c.getString());
-      image.setWidth(SIZE_M);
-      image.setHeight(SIZE_M);
-      Button b = new Button(skin, "default");
-      Container<Actor> cont = new Container<Actor>();
-      cont.setActor(image);
-      cont.width(SIZE_M).height(SIZE_M);
-
-      b.setUserObject(c);
-      b.addListener(particleButtonHandler);
-      b.align(Align.center);
-      b.add(cont);
+      Button b = getImageButton("ball_" + c.getString(), "toggle", SIZE_M);
       selectButton.put(c, b); // Added to window dynamically
-
       Label lab = getLabel("");;
       selectLabel.put(c, lab);
-
     }
 
     // Building windows
-    buildingWindow = new EnumMap<BuildingType, Window>(BuildingType.class);
-    buildingWindowQSimple = new EnumMap<BuildingType, ImageButton>(BuildingType.class);
-    buildingWindowQSpiral = new EnumMap<BuildingType, ImageButton>(BuildingType.class);
+    buildingWindow = new EnumMap<BuildingType, Table>(BuildingType.class);
+    buildingWindowQSimple = new EnumMap<BuildingType, Button>(BuildingType.class);
+    buildingWindowQSpiral = new EnumMap<BuildingType, Button>(BuildingType.class);
     buildingWindowQSize = new EnumMap<BuildingType, Label>(BuildingType.class);
     for (final BuildingType bt : BuildingType.values()) {
-      Window bw = getWindow(bt.getString());
+      Table bw = getWindow();
       buildingWindow.put(bt, bw);
       for (int i = 0; i < BuildingType.N_MODES; ++i) {
         if (bt == BuildingType.kMINE) break;
@@ -190,39 +225,46 @@ public class UI {
         addToWin(bw, getLabel( ""+bt.getOutputEnergy(i)), SIZE_S);
         bw.row();
       }
-      ImageButton qSimple = getImageButton("queue_simple", "toggle");
+      separator(bw, 6);
+      /////////////////////
+      Button qSimple = getImageButton("queue_simple", "toggle", 0);
       buildingWindowQSimple.put(bt, qSimple);
       qSimple.setUserObject(QueueType.kSIMPLE);
-      addToWin(bw, qSimple, SIZE_L, 5);
-      bw.row();
-      ImageButton qSpiral = getImageButton("queue_spiral", "toggle");
+      addToWin(bw, qSimple, SIZE_L, SIZE_L, 3);
+      Button qSpiral = getImageButton("queue_spiral", "toggle", 0);
       buildingWindowQSpiral.put(bt, qSpiral);
       qSpiral.setUserObject(QueueType.kSPIRAL);
-      addToWin(bw, qSpiral, SIZE_L, 5);
+      addToWin(bw, qSpiral, SIZE_L, SIZE_L, 3);
       qSimple.addListener(queueButton);
       qSpiral.addListener(queueButton);
       bw.row();
+      separator(bw, 6);
       ///////////////////////
       Slider slider = new Slider(1, 99, 1, false, skin, "default-horizontal");
       slider.addListener(queueLengthSlider);
-      bw.add(slider).height(SIZE_S).width(SIZE_S*4).colspan(4);
+      bw.add(slider).height(SIZE_M).width(SIZE_L+SIZE_M+SIZE_S).colspan(5);
       Label sliderLabel = getLabel("");
       buildingWindowQSize.put(bt, sliderLabel);
       addToWin(bw, sliderLabel, SIZE_S);
       bw.row();
+      separator(bw, 6);
       ///////////////////////
-      ImageButton yes = getImageButton("tick");
-      yes.setUserObject(1);
-      yes.addListener(yesNoButton);
-      addToWin(bw, yes, SIZE_M, 2);
-      ImageButton no = getImageButton("cross");
-      no.setUserObject(0);
-      no.addListener(yesNoButton);
-      addToWin(bw, no, SIZE_M, 3);
+      addToWin(bw, getImageButton("tick"), SIZE_L, SIZE_M, 3);
+      addToWin(bw, getImageButton("cross"), SIZE_L, SIZE_M, 3);
     }
 
     showMain();
 
+  }
+
+  public void act(float delta) {
+    time += delta;
+    if (time < Param.FRAME_TIME) return;
+    time -= Param.FRAME_TIME;
+    if (Math.abs(displayEnergy - Param.PLAYER_ENERGY) > 1f) {
+      displayEnergy += (Param.PLAYER_ENERGY - displayEnergy) * 0.05f;
+      displayEnergyLabel.setText( formatter.format(displayEnergy) );
+    }
   }
 
   public void showBuildBuilding(BuildingType bt) {
@@ -233,12 +275,12 @@ public class UI {
       buildingWindowQSize.get(bt).setText("" + Param.QUEUE_SIZE);
     }
     table.add(buildingWindow.get(bt));
-    table.debugAll();
+    if (Param.DEBUG > 0) table.debugAll();
     uiMode = UIMode.kPLACE_BUILDING;
     buildingBeingPlaced = bt;
   }
 
-  public void doSelect(final Set<Sprite> selected) {
+  public void doSelectParticle(final Set<Sprite> selected) {
     Set<Colour> selectedColours = new HashSet<Colour>();
     int counter[] = new int[Colour.values().length];
     for (final Sprite s : selected) {
@@ -249,20 +291,25 @@ public class UI {
     selectWindow.clear();
     for (Colour c : selectedColours) {
       selectLabel.get(c).setText(Particle.getStringFromColour(c) + " (" + counter[c.ordinal()] + ")");
-      selectWindow.add(selectLabel.get(c)).width(SIZE_S*2).height(SIZE_S).pad(SIZE_S/PAD);
+      selectButton.get(c).setChecked(false);
+      addToWin(selectWindow, selectButton.get(c), SIZE_L, SIZE_M, 2);
       selectWindow.row();
-      addToWin(selectWindow, selectButton.get(c), SIZE_M);
+      addToWin(selectWindow, selectLabel.get(c), SIZE_L, SIZE_S, 2);
       selectWindow.row();
+      separator(selectWindow, 2);
     }
+    addToWin(selectWindow, selectTick, SIZE_L, SIZE_M, 1);
+    addToWin(selectWindow, selectCross, SIZE_L, SIZE_M, 1);
     table.clear();
     table.add(selectWindow);
-    table.debugAll();
+    if (Param.DEBUG > 0) table.debugAll();
     uiMode = UIMode.kSELECTING;
   }
 
   public void showMain() {
     table.clear();
     table.add( mainWindow );
+    if (Param.DEBUG > 0) table.debugAll();
     uiMode = UIMode.kNONE;
   }
 

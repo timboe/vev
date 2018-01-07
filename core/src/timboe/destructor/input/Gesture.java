@@ -41,8 +41,11 @@ public class Gesture implements GestureDetector.GestureListener {
       state.doRightClick();
     } else if (UI.getInstance().uiMode == UIMode.kPLACE_BUILDING) {
       state.placeBuilding();
-    } else if (!state.selectedSet.isEmpty()) {
-      state.doParticleMoveOrder((int)v3temp.x, (int)v3temp.y);
+    } else {
+      boolean selected = state.doParticleSelect(false); // rangeBased = false
+      if (!selected && !state.selectedSet.isEmpty()) {
+        state.doParticleMoveOrder((int) v3temp.x, (int) v3temp.y);
+      }
     }
     return false;
   }

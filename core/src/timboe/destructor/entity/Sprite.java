@@ -5,7 +5,6 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
-import com.badlogic.gdx.scenes.scene2d.Touchable;
 
 import timboe.destructor.Param;
 import timboe.destructor.Util;
@@ -26,18 +25,19 @@ public class Sprite extends Entity {
   public List<Tile> pathingList;
   private Vector2 velocity = new Vector2();
   public Vector2 nudgeDestination = new Vector2();
-  private List<Integer> walkSearchList = Arrays.asList(0,1,2,3);
+  private List<Integer> walkSearchRandom = Arrays.asList(0,1,2,3);
+  private final List<Integer> walkSearchReproducible = Arrays.asList(0,1,2,3);
   public Tile myTile;
 
   public Sprite(int x, int y, Tile t) {
     super(x, y, Param.TILE_S * Param.SPRITE_SCALE);
 
 
-    this.addListener(new InputListener() {
-      public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
-        Gdx.app.log("SPRITE","clicked");
-      }
-    });
+//    this.addListener(new InputListener() {
+//      public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
+//        Gdx.app.log("SPRITE","clicked");
+//      }
+//    });
 
     myTile = t;
   }
@@ -45,10 +45,10 @@ public class Sprite extends Entity {
   public void pathTo(Tile target, Set<Tile> solutionKnownFrom, Set<Sprite> doneSet) {
     if (target == null) return;
     if (myTile.getPathFindNeighbours().isEmpty()) {
-      Tile jumpTo = findPathingNearbyLocation(myTile);
+      Tile jumpTo = findPathingLocation(myTile, true, false); // Find nearby, reproducible TRUE, require parking FALSE
       jumpTo.tryRegSprite(this);
     }
-    if (target.getPathFindNeighbours().isEmpty()) target = findPathingNearbyLocation(target);
+    if (target.getPathFindNeighbours().isEmpty()) target = findPathingLocation(target, true, false); // Find nearby, reproducible TRUE, require parking FALSE
     pathingList = PathFinding.doAStar(myTile, target, solutionKnownFrom, doneSet);
     if (pathingList == null) Gdx.app.error("pathTo", "Warning, pathTo failed for " + this);
 //    Gdx.app.log("pathTo", "Pathed in " + (pathingList != null ? pathingList.size() : " NULL ") + " steps");
@@ -77,7 +77,8 @@ public class Sprite extends Entity {
       if (atDestination) { // Reached destination
         boolean wasParked = pathingList.remove(0).tryRegSprite(this);
         if (pathingList.isEmpty() && !wasParked) { // I cannot stay here! Find me somewhere else
-          doWanderFrom(next);
+          Tile newDest = findPathingLocation(next, false, true); // Wander from "next", random direction, needs parking
+          if (newDest != null) pathTo(newDest, null, null);
         }
       }
     } else if (!nudgeDestination.isZero()) { // Nudge
@@ -97,74 +98,53 @@ public class Sprite extends Entity {
     nudgeDestination.add(D == kSE || D == kNE ? Param.TILE_S : 0, D == kNW || D== kNE ? Param.TILE_S : 0);
   }
 
-  // If I end up on an invalid tile, or my destination is invalidated - find a new start/stop point
-  public static Tile findPathingNearbyLocation(final Tile t) {
-    int tryRadius = 0;
-    while (++tryRadius < Param.TILES_MAX) {
-      for (int x = t.coordinates.x - tryRadius; x <= t.coordinates.x + tryRadius; ++x) {
-        for (int y = t.coordinates.y - tryRadius; y <= t.coordinates.y + tryRadius; ++y) {
-          if (!Util.inBounds(x,y)) continue;
-          Tile tempTilePtr = World.getInstance().getTile(x, y);
-          if (tempTilePtr == t) continue; // Do not return self as option
-          if (tempTilePtr.mySprite != null) continue; // Building or queue or vegetation
-          if (tempTilePtr.level != t.level) continue; // Different level
-          if (!tempTilePtr.getPathFindNeighbours().isEmpty()) return tempTilePtr;
-        }
-      }
-    }
-    return null;
-  }
-
-  // Can I wander to this nearby space? is there room to park? (If so - initiate pathing, should be fast!)
-  private boolean tryWanderDest(int x, int y, int level, int sameHeight) {
+  // Check a (nearby) space for its connectedness, suitability for particle and if it has parking space
+  private Tile tryWanderDest(int x, int y, int level, int requireSameHeight, boolean requireParking) {
     Tile tempTilePtr = World.getInstance().getTile(x, y);
-    // mySprite check to avoid vegetation, queues or buildings
-    if (sameHeight == 1 && tempTilePtr.level != level) return false;
-    if (tempTilePtr.hasParkingSpace() && tempTilePtr.mySprite == null) {
-      pathTo( tempTilePtr, null, null );
-      return true;
-    }
-    return false;
+    if (tempTilePtr.mySprite != null) return null; // Building or queue or vegetation
+    if (tempTilePtr.getPathFindNeighbours().isEmpty()) return null; // Unpathable
+    if (requireSameHeight == 1 && tempTilePtr.level != level) return null; // Different elevation
+    if (requireParking && !tempTilePtr.hasParkingSpace()) return null;
+    return tempTilePtr;
   }
 
-  // I cannot park in my destination - find me a nearby spot. Note this randomises the direction
-  private void doWanderFrom(final Tile t) {
+  // Find a nearby spot. Note this randomises the direction if reproducible == false
+  public Tile findPathingLocation(final Tile t, final boolean reproducible, final boolean requireParking) {
     for (int sameHeight = 1; sameHeight >= 0; --sameHeight) { // Try and stay on the level
       int tryRadius = 0;
       while (++tryRadius < Param.TILES_MAX) {
-        // Try these four in random order
-        //      int invertX = Util.R.nextBoolean() ? 1 : -1, invertY = Util.R.nextBoolean() ? 1 : -1;
-        //      for (int x = t.coordinates.x - (invertX * tryRadius); x <= t.coordinates.x + (invertX * tryRadius); x += invertX) {
-        //        for (int y = t.coordinates.y - (invertY * tryRadius); y <= t.coordinates.y + (invertY * tryRadius); y += invertY) {
-        //          if (tryWanderDest(x, y)) return;
-        //        }
-        //      }
-        java.util.Collections.shuffle(walkSearchList); // TODO this is ugly
-        for (final Integer s : walkSearchList) {
+        if (!reproducible) java.util.Collections.shuffle(walkSearchRandom);
+        // TODO this is ugly - looking around outside of box radius tryRadius
+        for (final Integer s : reproducible ? walkSearchReproducible : walkSearchRandom) {
           if (s == 0) {
             for (int x = t.coordinates.x - tryRadius; x <= t.coordinates.x + tryRadius; ++x) {
               if (!Util.inBounds(x, t.coordinates.y + tryRadius)) break;
-              if (tryWanderDest(x, t.coordinates.y + tryRadius, t.level, sameHeight)) return;
+              Tile t2 = tryWanderDest(x, t.coordinates.y + tryRadius, t.level, sameHeight, requireParking);
+              if (t2 != null) return t2;
             }
           } else if (s == 1) {
             for (int x = t.coordinates.x - tryRadius; x <= t.coordinates.x + tryRadius; ++x) {
               if (!Util.inBounds(x, t.coordinates.y - tryRadius)) break;
-              if (tryWanderDest(x, t.coordinates.y - tryRadius, t.level, sameHeight)) return;
+              Tile t2 = tryWanderDest(x, t.coordinates.y - tryRadius, t.level, sameHeight, requireParking);
+              if (t2 != null) return t2;
             }
           } else if (s == 2) {
             for (int y = t.coordinates.y - tryRadius; y <= t.coordinates.y + tryRadius; ++y) {
               if (!Util.inBounds(t.coordinates.x + tryRadius, y)) break;
-              if (tryWanderDest(t.coordinates.x + tryRadius, y, t.level, sameHeight)) return;
+              Tile t2 = tryWanderDest(t.coordinates.x + tryRadius, y, t.level, sameHeight, requireParking);
+              if (t2 != null) return t2;
             }
           } else if (s == 3) {
             for (int y = t.coordinates.y - tryRadius; y <= t.coordinates.y + tryRadius; ++y) {
               if (!Util.inBounds(t.coordinates.x - tryRadius, y)) break;
-              if (tryWanderDest(t.coordinates.x - tryRadius, y, t.level, sameHeight)) return;
+              Tile t2 = tryWanderDest(t.coordinates.x - tryRadius, y, t.level, sameHeight, requireParking);
+              if (t2 != null) return t2;
             }
           }
         }
       }
     }
+    return null;
   }
 
   public void draw(ShapeRenderer sr) {
@@ -173,17 +153,10 @@ public class Sprite extends Entity {
       for (int i = 1; i < pathingList.size(); ++i) {
         Tile previous = pathingList.get(i-1);
         Tile current = pathingList.get(i);
-        sr.line(previous.centreScaleSprite, current.centreScaleSprite);
+        sr.rectLine(previous.centreScaleSprite.x, previous.centreScaleSprite.y, current.centreScaleSprite.x, current.centreScaleSprite.y, 2);
       }
     }
-    float off = Param.FRAME * 0.25f / (float)Math.PI;
-    final float xC = getX() + getWidth()/2f, yC = getY() + getHeight()/2f;
-    for (float a = (float)-Math.PI; a < Math.PI; a += 2f*Math.PI/3f) {
-      sr.line(xC + getWidth() * ((float) Math.cos(a + off)),
-              yC + getHeight() * ((float) Math.sin(a + off)),
-              xC + getWidth()/2f * ((float) Math.cos(a + off + Math.PI / 6f)),
-              yC + getHeight()/2f * ((float) Math.sin(a + off + Math.PI / 6f)));
-    }
+    super.draw(sr);
   }
 
 }
