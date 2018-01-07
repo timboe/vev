@@ -8,13 +8,13 @@ import java.util.Random;
 
 public class Sounds {
 
-  private Random R = new Random();
+  private final Random R = new Random();
 
   private final int nMove = 9;
-  private Sound move[] = new Sound[nMove];
-  private Sound foot = Gdx.audio.newSound(Gdx.files.internal("365810__fxkid2__cute-walk-run-c.wav"));
+  private final Sound[] move = new Sound[nMove];
+  private final Sound foot = Gdx.audio.newSound(Gdx.files.internal("365810__fxkid2__cute-walk-run-c.wav"));
 
-  private Music theme = Gdx.audio.newMusic(Gdx.files.internal("IsThatYouorAreYouYou.ogg"));
+  private final Music theme = Gdx.audio.newMusic(Gdx.files.internal("IsThatYouorAreYouYou.ogg"));
 
   private static Sounds ourInstance;
   public static Sounds getInstance() {

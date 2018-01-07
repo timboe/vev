@@ -6,7 +6,7 @@ import java.util.Random;
 
 public class Util {
 
-  public static Random R = new Random();
+  public static final Random R = new Random();
 
   // Why -2? It's to allow for an buffer for odd world sizes
   public static boolean inBounds(int x, int y) {

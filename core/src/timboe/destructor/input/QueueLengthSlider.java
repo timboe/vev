@@ -16,9 +16,9 @@ import timboe.destructor.manager.UI;
 public class QueueLengthSlider extends ChangeListener {
   @Override
   public void changed(ChangeEvent event, Actor actor) {
-    final int val = (int) ((Slider)actor).getValue();
-    Param.QUEUE_SIZE = val;
+    Param.QUEUE_SIZE = (int) ((Slider)actor).getValue();
     BuildingType bt = UI.getInstance().buildingBeingPlaced;
     UI.getInstance().buildingWindowQSize.get(bt).setText(""+Param.QUEUE_SIZE);
+    UI.getInstance().buildingWindowQPrice.get(bt).setText( UI.getInstance().formatter.format( bt.getCost() ) );
   }
 }

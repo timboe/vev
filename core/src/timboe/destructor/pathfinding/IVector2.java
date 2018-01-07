@@ -47,7 +47,7 @@ public class IVector2 implements Comparable {
     return "(" + x + "," + y + ")";
   }
 
-  public IVector2 clone() {
+  public IVector2 clone()  {
     return new IVector2(this);
   }
 }

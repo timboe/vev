@@ -26,15 +26,15 @@ public class Tile extends Entity implements Node {
   public TileType type; // Ground, building, foliage, queue, cliff, stairs
   public Cardinal direction; // If stairs, then my direction (EW or NS)
 
-  public List<Cardinal> pathFindDebug = new ArrayList<Cardinal>(); // Neighbours - but only used to draw debug gfx
-  public Set<Tile> pathFindNeighbours = new HashSet<Tile>(); // Neighbours - used in pathfinding
+  public final List<Cardinal> pathFindDebug = new ArrayList<Cardinal>(); // Neighbours - but only used to draw debug gfx
+  public final Set<Tile> pathFindNeighbours = new HashSet<Tile>(); // Neighbours - used in pathfinding
 
-  public Vector3 centreScaleTile = new Vector3(); // My centre in TILE coordinates
-  public Vector3 centreScaleSprite = new Vector3(); // My centre in SPRITE coordinated (scaled x2)
-  public IVector2 coordinates = new IVector2(); // X-Y tile grid coordinates
+  public final Vector3 centreScaleTile = new Vector3(); // My centre in TILE coordinates
+  public final Vector3 centreScaleSprite = new Vector3(); // My centre in SPRITE coordinated (scaled x2)
+  public final IVector2 coordinates = new IVector2(); // X-Y tile grid coordinates
 
-  public Set<Sprite> containedSprites = new HashSet<Sprite>(); // Moving sprites on this tile
-  public Map<Sprite, Cardinal> parkingSpaces = new HashMap<Sprite, Cardinal>(); // Four sprites allowed to "park" here
+  public final Set<Sprite> containedSprites = new HashSet<Sprite>(); // Moving sprites on this tile
+  public final Map<Sprite, Cardinal> parkingSpaces = new HashMap<Sprite, Cardinal>(); // Four sprites allowed to "park" here
   public Entity mySprite = null; // For buildings and foliage
 
   public Map<Cardinal, Tile> n8; // Neighbours, cached for speed
@@ -163,7 +163,8 @@ public class Tile extends Entity implements Node {
     }
     for (Sprite s : set) {
       Tile newDest = s.findPathingLocation(this, true, true); // Reproducible=True, requiresParking=True.
-      if (newDest != null) s.pathTo(newDest, null, null);
+      if (newDest != null) s.pathTo(newDest, null, null); // Try path to
+      if (s.pathingList == null && newDest != null) newDest.tryRegSprite(s); // Else go straight to
     }
   }
 

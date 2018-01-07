@@ -30,9 +30,9 @@ public class GameState {
 
   // UI interactions
 
-  public Vector3 selectStartScreen = new Vector3();
+  public final Vector3 selectStartScreen = new Vector3();
   public Vector3 selectStartWorld = new Vector3();
-  public Vector3 selectEndScreen = new Vector3();
+  public final Vector3 selectEndScreen = new Vector3();
   public Vector3 selectEndWorld = new Vector3();
 
   public Vector3 cursor = new Vector3();
@@ -51,10 +51,10 @@ public class GameState {
 
   private float tickTime = 0;
 
-  public Set<Sprite> particleSet = new HashSet<Sprite>(); // All movable sprites
-  public Set<Building> buildingSet = new HashSet<Building>(); // All buildings
+  public final Set<Sprite> particleSet = new HashSet<Sprite>(); // All movable sprites
+  public final Set<Building> buildingSet = new HashSet<Building>(); // All buildings
 
-  public Set<Sprite> selectedSet = new HashSet<Sprite>(); // Sub-set, selected sprites
+  public final Set<Sprite> selectedSet = new HashSet<Sprite>(); // Sub-set, selected sprites
   public Building selectedBuilding = null;
 
   private static GameState ourInstance;
@@ -108,45 +108,45 @@ public class GameState {
 
 
 
-    if (tickTime < 0.22) return; // Tick every second
-    tickTime -= 0.22;
+    if (tickTime < 5) return; // Tick every second
+    tickTime -= 5;
 
-      tryNewParticle();
+      tryNewParticles();
 
 
   }
 
-  public void tryNewParticle() {
+  public void tryNewParticles() {
     // Add a new sprite
-    double rAngle = -Math.PI + (R.nextFloat() * Math.PI * 2);
     List<Map.Entry<IVector2,ParticleEffect>> entries = new ArrayList<Map.Entry<IVector2,ParticleEffect>>(World.getInstance().warps.entrySet());
     Map.Entry<IVector2,ParticleEffect> rWarp = entries.get( R.nextInt(entries.size()) );
     IVector2 warp = rWarp.getKey();
-    ParticleEffect zap = rWarp.getValue();
+    rWarp.getValue().start();
+    Rectangle.tmp.set((warp.x - Param.WARP_SIZE / 2) * Param.TILE_S,
+        (warp.y - Param.WARP_SIZE / 2) * Param.TILE_S,
+        Param.WARP_SIZE * Param.TILE_S, Param.WARP_SIZE * Param.TILE_S);
+    if (Camera.getInstance().onScrean(Rectangle.tmp)) Camera.getInstance().addShake(5f);
 
-    int placeTry = 0;
-    do {
-      int tryX = (int) Math.round(warp.x + (2 * Param.WARP_SIZE / 3 * Math.cos(rAngle)));
-      int tryY = (int) Math.round(warp.y + (2 * Param.WARP_SIZE / 3 * Math.sin(rAngle)));
-      Tile tryTile = World.getInstance().getTile(tryX, tryY);
-      if (tryTile.getNeighbours().size() == 0) continue; // Non-pathable
-      Sprite s = new Sprite(tryX, tryY, tryTile);
-      s.moveBy(Param.TILE_S/2, Param.TILE_S/2);
-      s.pathTo(tryTile, null, null);
-      Colour c = Colour.random();
-      s.setTexture("ball_" + c.getString(), 6, false);
-      s.setUserObject(c);
-      spriteStage.addActor(s);
-      particleSet.add(s);
-      Rectangle r = new Rectangle((warp.x - Param.WARP_SIZE / 2) * Param.TILE_S,
-          (warp.y - Param.WARP_SIZE / 2) * Param.TILE_S,
-          Param.WARP_SIZE * Param.TILE_S, Param.WARP_SIZE * Param.TILE_S);
-      if (Camera.getInstance().onScrean(r)) {
-        //      Camera.getInstance().addShake(30f / Camera.getInstance().getZoom());
-      }
-      zap.start();
-      placeTry = Param.N_PATCH_TRIES; // To break the loop
-    } while (++placeTry < Param.N_PATCH_TRIES);
+    final int toPlace = Math.round(Util.clamp(Param.NEW_PARTICLE_MEAN + ((float)R.nextGaussian() * Param.NEW_PARTICLE_WIDTH), 1, Param.NEW_PARTICLE_MAX));
+    for (int tp = 0; tp < toPlace; ++tp) {
+      int placeTry = 0;
+      do {
+        double rAngle = -Math.PI + (R.nextFloat() * Math.PI * 2);
+        int tryX = (int) Math.round(warp.x + (2 * Param.WARP_SIZE / 3 * Math.cos(rAngle)));
+        int tryY = (int) Math.round(warp.y + (2 * Param.WARP_SIZE / 3 * Math.sin(rAngle)));
+        Tile tryTile = World.getInstance().getTile(tryX, tryY);
+        if (tryTile.getNeighbours().size() == 0) continue; // Non-pathable
+        Sprite s = new Sprite(tryX, tryY, tryTile);
+        s.moveBy(Param.TILE_S / 2, Param.TILE_S / 2);
+        s.pathTo(tryTile, null, null);
+        Colour c = Colour.random();
+        s.setTexture("ball_" + c.getString(), 6, false);
+        s.setUserObject(c);
+        spriteStage.addActor(s);
+        particleSet.add(s);
+        break;
+      } while (++placeTry < Param.N_PATCH_TRIES);
+    }
   }
 
   public void killSprite(Sprite s) {
@@ -156,27 +156,32 @@ public class GameState {
   }
 
   public boolean isSelecting() {
-    return selectStartWorld.dst(selectEndWorld) > 6; // Min pixels to count as a selection
+    UIMode mode = UI.getInstance().uiMode;
+    if ((mode == UIMode.kNONE || mode == UIMode.kWITH_PARTICLE_SELECTION) && selectStartWorld.dst(selectEndWorld) > 6) {
+      UI.getInstance().uiMode = UIMode.kMAKING_SELECTION;
+      UI.getInstance().selectParticlesButton.setChecked( true );
+    }
+    return (UI.getInstance().uiMode == UIMode.kMAKING_SELECTION);
   }
 
-  public boolean placeBuilding() {
-    if (!buildingLocationGood) return false;
+  public void placeBuilding() {
+    if (!buildingLocationGood) return;
     Building b = new Building(buildingLocation, UI.getInstance().buildingBeingPlaced);
     b.setTexture("build_3_3", 1, false);
     buildingStage.addActor(b);
     buildingSet.add(b);
     repath();
     UI.getInstance().showMain();
-    return true;
   }
 
   public void doRightClick() {
-    if (UI.getInstance().uiMode == UIMode.kPLACE_BUILDING) {
-      UI.getInstance().showMain();
-    } else if (selectedSet.size() > 0 || selectedBuilding != null) {
+    if (selectedSet.size() > 0 || selectedBuilding != null) {
       clearSelect();
-      UI.getInstance().showMain();
     }
+    selectEndWorld.setZero();
+    selectStartWorld.setZero();
+    UI.getInstance().showMain();
+
   }
 
 
@@ -189,7 +194,8 @@ public class GameState {
       }
     }
     selectedSet.removeAll(toRemove);
-    UI.getInstance().doSelectParticle(selectedSet);
+    if (selectedSet.isEmpty()) UI.getInstance().showMain();
+    else UI.getInstance().doSelectParticle(selectedSet);
   }
 
   private void clearSelect() {
@@ -212,8 +218,11 @@ public class GameState {
         s.selected = Rectangle.tmp.contains(s.getX() / Param.SPRITE_SCALE, s.getY() / Param.SPRITE_SCALE);
         if (s.selected) selectedSet.add(s);
       }
+      UI.getInstance().uiMode = UIMode.kNONE; // Remove "selecting"
+      UI.getInstance().selectParticlesButton.setChecked( false );
       if (!selectedSet.isEmpty()) UI.getInstance().doSelectParticle(selectedSet);
       selectStartWorld.setZero();
+      selectEndWorld.setZero();
       return !selectedSet.isEmpty();
 
     } else {
@@ -227,6 +236,7 @@ public class GameState {
           clearSelect();
           b.selected = true;
           selectedBuilding = b;
+          UI.getInstance().showBuildingInfo(b.getType());
           return true;
         }
       }

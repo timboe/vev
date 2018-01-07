@@ -1,13 +1,9 @@
 package timboe.destructor.input;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.physics.box2d.joints.GearJoint;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 
-import timboe.destructor.Param;
-import timboe.destructor.enums.QueueType;
-import timboe.destructor.enums.UIMode;
 import timboe.destructor.manager.GameState;
 import timboe.destructor.manager.UI;
 
@@ -26,7 +22,7 @@ public class YesNoButton extends ChangeListener {
         case kPLACE_BUILDING:
           GameState.getInstance().placeBuilding();
           break;
-        case kSELECTING:
+        case kWITH_PARTICLE_SELECTION:
           GameState.getInstance().reduceSelectedSet();
           break;
         default:

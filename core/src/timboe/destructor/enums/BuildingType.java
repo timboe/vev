@@ -3,6 +3,7 @@ package timboe.destructor.enums;
 import com.badlogic.gdx.Gdx;
 
 import timboe.destructor.Pair;
+import timboe.destructor.Param;
 import timboe.destructor.entity.Sprite;
 
 /**
@@ -16,9 +17,9 @@ public enum BuildingType {
   kZMQ,
   kMINE;
 
-  public static int N_MODES = 3;
+  public static final int N_MODES = 3;
 
-  Pair<Particle, Particle> returnValue = new Pair<Particle,Particle>();
+  final Pair<Particle, Particle> returnValue = new Pair<Particle,Particle>();
 
   public boolean accepts(Sprite s) {
     Colour c = (Colour) s.getUserObject();
@@ -37,6 +38,24 @@ public enum BuildingType {
       case kZMQ: return "Z/μ/q";
       case kMINE: return "Mine";
       default: return "?";
+    }
+  }
+
+  public float getCost() {
+    return Math.round(getBaseCost() + (getQueueCost() * Param.QUEUE_SIZE));
+  }
+
+  // TODO
+  public float getBaseCost() {
+    switch (this) {
+      default: return 10000;
+    }
+  }
+
+  // TODO
+  public float getQueueCost() {
+    switch (this) {
+      default: return 1000;
     }
   }
 
@@ -82,7 +101,7 @@ public enum BuildingType {
         if (mode == 0) return returnValue.set(Particle.kE,Particle.kE);
         if (mode == 1) return returnValue.set(null,null);
         if (mode == 2) return returnValue.set(null,null);
-      case kMINE: default: return null;
+      case kMINE: default: return returnValue.set(null,null);
     }
   }
 

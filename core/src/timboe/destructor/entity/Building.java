@@ -13,9 +13,14 @@ import timboe.destructor.pathfinding.OrderlyQueue;
 
 public class Building extends Entity {
 
-  private OrderlyQueue myQueue;
-  private BuildingType type;
-  private Tile centre;
+  private final OrderlyQueue myQueue;
+
+  public BuildingType getType() {
+    return type;
+  }
+
+  private final BuildingType type;
+  private final Tile centre;
   private float timeDissasemble;
   private float timeMove;
   public Sprite spriteProcessing = null;

@@ -26,9 +26,9 @@ import timboe.destructor.manager.World;
  */
 
 public class OrderlyQueue {
-  Tile queueStart;
+  final Tile queueStart;
   List<Tile> queue = new LinkedList<Tile>();
-  Building myBuilding;
+  final Building myBuilding;
 
   public OrderlyQueue(int x, int y, List<Tile> customQueue, Building b) {
     myBuilding = b;

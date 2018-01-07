@@ -31,7 +31,7 @@ public enum TileType {
   kCLIFF_EDGE_4,
   kCLIFF_3;
 
-  private static Random R = new Random();
+  private static final Random R = new Random();
 
   public static String getTextureString(TileType tt, Colour c) {
     return getTextureString(tt, c, Cardinal.kN, Colour.kBLACK, Cardinal.kN);

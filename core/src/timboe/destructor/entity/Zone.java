@@ -12,9 +12,10 @@ public class Zone extends Entity {
   public boolean hillWithinHill = false;
   public boolean hasTiberium = false;
   public boolean hasWarp = false;
-  public IVector2 lowerLeft = new IVector2();
-  public IVector2 upperRight = new IVector2();
-  public int w, h;
+  public final IVector2 lowerLeft = new IVector2();
+  public final IVector2 upperRight = new IVector2();
+  public final int w;
+  public final int h;
 
   public Zone(int x, int y) {
     tileColour = Colour.kRED;

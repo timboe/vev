@@ -19,9 +19,11 @@ public class Param {
   public static final int TILE_S = 16;
 
   public static final int SPRITE_SCALE = 2;
-  public static final float SPRITE_VELOCITY = 32f*2f;
-  public static final float SPRITE_AT_TARGET = 2f;
-
+  public static final float PARTICLE_VELOCITY = 32f*2f;
+  public static final float PARTICLE_AT_TARGET = 2f;
+  public static final float NEW_PARTICLE_MEAN = 25f;
+  public static final float NEW_PARTICLE_WIDTH = 10f;
+  public static final int NEW_PARTICLE_MAX = 100;
 
   public static final int MIN_GREEN_ZONE = 4;
   public static final int MAX_GREEN_ZONE = 6;
@@ -96,7 +98,7 @@ public class Param {
   public static int QUEUE_SIZE = 9;
   public static QueueType QUEUE_TYPE = QueueType.kSIMPLE;
 
-  public static float PLAYER_ENERGY = 10000000;
+  public static final float PLAYER_ENERGY = 1000000;
 
   //
 

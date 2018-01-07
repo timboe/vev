@@ -30,11 +30,11 @@ public class World {
   }
   public static void create() { ourInstance = new World(); }
   public void dispose() { ourInstance = null; }
-  private Random R = new Random();
-  private Vector<Zone> allZones = new Vector<Zone>();
-  public Map<IVector2, ParticleEffect> warps = new HashMap<IVector2, ParticleEffect>();
-  public Vector<IVector2> tiberium = new Vector<IVector2>();
-  public Vector<ParticleEffect> warpClouds = new Vector<ParticleEffect>();
+  private final Random R = new Random();
+  private final Vector<Zone> allZones = new Vector<Zone>();
+  public final Map<IVector2, ParticleEffect> warps = new HashMap<IVector2, ParticleEffect>();
+  public final Vector<IVector2> tiberium = new Vector<IVector2>();
+  public final Vector<ParticleEffect> warpClouds = new Vector<ParticleEffect>();
 
   private Tile[][] tiles;
   private Zone[][] zones;

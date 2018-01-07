@@ -1,10 +1,7 @@
 package timboe.destructor.entity;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.InputListener;
 
 import timboe.destructor.Param;
 import timboe.destructor.Util;
@@ -23,9 +20,9 @@ import static timboe.destructor.enums.Cardinal.kSE;
 public class Sprite extends Entity {
 
   public List<Tile> pathingList;
-  private Vector2 velocity = new Vector2();
-  public Vector2 nudgeDestination = new Vector2();
-  private List<Integer> walkSearchRandom = Arrays.asList(0,1,2,3);
+  private final Vector2 velocity = new Vector2();
+  public final Vector2 nudgeDestination = new Vector2();
+  private final List<Integer> walkSearchRandom = Arrays.asList(0,1,2,3);
   private final List<Integer> walkSearchReproducible = Arrays.asList(0,1,2,3);
   public Tile myTile;
 
@@ -61,8 +58,8 @@ public class Sprite extends Entity {
 
   private boolean doMove(float x, float y, float delta) {
     velocity.set(x - (getX() + getWidth()/2), y - (getY() + getWidth()/2));
-    boolean atDestination = (velocity.len() < Param.SPRITE_AT_TARGET);
-    velocity.setLength(Param.SPRITE_VELOCITY);
+    boolean atDestination = (velocity.len() < Param.PARTICLE_AT_TARGET);
+    velocity.setLength(Param.PARTICLE_VELOCITY);
     moveBy(velocity.x * delta, velocity.y * delta);
     return atDestination;
   }
@@ -145,18 +142,6 @@ public class Sprite extends Entity {
       }
     }
     return null;
-  }
-
-  public void draw(ShapeRenderer sr) {
-    if (!selected) return;
-    if (pathingList != null && pathingList.size() > 1) {
-      for (int i = 1; i < pathingList.size(); ++i) {
-        Tile previous = pathingList.get(i-1);
-        Tile current = pathingList.get(i);
-        sr.rectLine(previous.centreScaleSprite.x, previous.centreScaleSprite.y, current.centreScaleSprite.x, current.centreScaleSprite.y, 2);
-      }
-    }
-    super.draw(sr);
   }
 
 }

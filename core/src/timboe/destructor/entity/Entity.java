@@ -26,7 +26,7 @@ public class Entity extends Actor {
   public Rectangle boundingBox = new Rectangle();
   public boolean doTint = false;
 
-  public TextureRegion[] textureRegion = new TextureRegion[Param.MAX_FRAMES];
+  public final TextureRegion[] textureRegion = new TextureRegion[Param.MAX_FRAMES];
 
   public Entity(int x, int y, int scale) {
     construct(x, y, scale);
@@ -90,17 +90,27 @@ public class Entity extends Actor {
     batch.draw(textureRegion[frame],this.getX(),this.getY(),this.getOriginX(),this.getOriginY(),this.getWidth(),this.getHeight(),this.getScaleX(),this.getScaleY(),this.getRotation());
   }
 
-  public void draw(ShapeRenderer sr) {
+  public void drawSelected(ShapeRenderer sr) {
     if (!selected) return;
     float off = Param.FRAME * 0.25f / (float)Math.PI;
     final float xC = getX() + getWidth()/2f, yC = getY() + getHeight()/2f;
     for (float a = (float)-Math.PI; a < Math.PI; a += 2f*Math.PI/3f) {
-
       sr.rectLine(xC + getWidth() * ((float) Math.cos(a + off)),
           yC + getHeight() * ((float) Math.sin(a + off)),
           xC + getWidth()/2f * ((float) Math.cos(a + off + Math.PI / 6f)),
           yC + getHeight()/2f * ((float) Math.sin(a + off + Math.PI / 6f)),
           2);
     }
+  }
+
+  public void drawPath(ShapeRenderer sr) {
+    if (!selected) return;
+//    if (pathingList != null && pathingList.size() > 1) {
+//      for (int i = 1; i < pathingList.size(); ++i) {
+//        Tile previous = pathingList.get(i-1);
+//        Tile current = pathingList.get(i);
+//        sr.rectLine(previous.centreScaleSprite.x, previous.centreScaleSprite.y, current.centreScaleSprite.x, current.centreScaleSprite.y, 2);
+//      }
+//    }
   }
 }

@@ -17,11 +17,11 @@ import java.util.Map;
 
 public class Textures {
 
-  private Map<String, TextureRegion> flippedMap = new HashMap<String, TextureRegion>();
-  private Map<String, TextureRegion> retexturedMap = new HashMap<String, TextureRegion>();
+  private final Map<String, TextureRegion> flippedMap = new HashMap<String, TextureRegion>();
+  private final Map<String, TextureRegion> retexturedMap = new HashMap<String, TextureRegion>();
 
-  private TextureAtlas atlas = new TextureAtlas(Gdx.files.internal("sprites.txt"));
-  private TextureAtlas ui = new TextureAtlas(Gdx.files.internal("uiskin.atlas"));
+  private final TextureAtlas atlas = new TextureAtlas(Gdx.files.internal("sprites.txt"));
+  private final TextureAtlas ui = new TextureAtlas(Gdx.files.internal("uiskin.atlas"));
   private static Textures ourInstance;
 
   public static Textures getInstance() {

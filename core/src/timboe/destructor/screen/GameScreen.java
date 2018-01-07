@@ -8,7 +8,6 @@ import com.badlogic.gdx.graphics.g2d.ParticleEffect;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.ui.Button;
 
 import timboe.destructor.Param;
 import timboe.destructor.entity.Building;
@@ -23,11 +22,11 @@ import timboe.destructor.manager.World;
 
 public class GameScreen implements Screen {
 
-  private InputMultiplexer multiplexer = new InputMultiplexer();
-  private Handler handler = new Handler();
-  private Gesture gesture = new Gesture();
-  private GestureDetector gestureDetector = new GestureDetector(gesture);
-  private ShapeRenderer sr = new ShapeRenderer();
+  private final InputMultiplexer multiplexer = new InputMultiplexer();
+  private final Handler handler = new Handler();
+  private final Gesture gesture = new Gesture();
+  private final GestureDetector gestureDetector = new GestureDetector(gesture);
+  private final ShapeRenderer sr = new ShapeRenderer();
 
   private final Camera camera = Camera.getInstance();
   private final GameState state = GameState.getInstance();
@@ -73,16 +72,12 @@ public class GameScreen implements Screen {
     ////////////////////////////////////////////////
     camera.getTileViewport().apply();
 
-//    GameState.getInstance().getStage().getRoot().setCullingArea( Camera.getInstance().getCullBox() );
+//    GameState.getInstance().getStage().getRoot().setCullingArea( Camera.getInstance().getCullBoxTile() );
 
+    state.getTileStage().getRoot().setCullingArea( camera.getCullBoxTile() );
     state.getTileStage().draw();
-
     state.getBuildingStage().draw();
-
-    ////////////////////////////////////////////////
-
-
-    state.getWarpStage().draw();
+    state.getWarpStage().draw(); // Note - warp stage has different blending
 
     // TODO optimise additive mixed batching
     state.getWarpStage().getBatch().begin();
@@ -109,39 +104,47 @@ public class GameScreen implements Screen {
         } catch (Exception e) {
         }
       }
+      sr.setColor(0, 0, 1, 1);
+      sr.rect(camera.getCullBoxTile().getX(), camera.getCullBoxTile().getY(), camera.getCullBoxTile().getWidth(), camera.getCullBoxTile().getHeight());
+      sr.end();
+
+      sr.setProjectionMatrix(Camera.getInstance().getSpriteCamera().combined);
+      sr.begin(ShapeRenderer.ShapeType.Line);
+      sr.setColor(1, 1, 1, 1);
+      sr.rect(camera.getCullBoxSprite().getX(), camera.getCullBoxSprite().getY(), camera.getCullBoxSprite().getWidth(), camera.getCullBoxSprite().getHeight());
       sr.end();
     }
 
     ////////////////////////////////////////////////
     camera.getSpriteViewport().apply();
 
+    state.getSpriteStage().getRoot().setCullingArea( camera.getCullBoxSprite() );
+    state.getFoliageStage().getRoot().setCullingArea( camera.getCullBoxSprite() );
     state.getSpriteStage().draw();
     state.getFoliageStage().draw();
 
     sr.setProjectionMatrix(camera.getSpriteCamera().combined);
-    sr.begin(ShapeRenderer.ShapeType.Filled);
     sr.setColor(1, 0, 0, 1);
-    // Draw selected particles
-    for (Sprite s : state.particleSet) {
-      s.draw(sr);
-    }
+    sr.begin(ShapeRenderer.ShapeType.Filled);
+    for (Sprite s : state.particleSet) s.drawSelected(sr);
     sr.end();
 
     ////////////////////////////////////////////////
     camera.getTileViewport().apply();
 
     sr.setProjectionMatrix(camera.getTileCamera().combined);
-    sr.begin(ShapeRenderer.ShapeType.Filled);
     sr.setColor(1, 0, 0, 1);
-    for (Building b : state.buildingSet) {
-      b.draw(sr);
-    }
+    sr.begin(ShapeRenderer.ShapeType.Filled);
+    for (Building b : state.buildingSet) b.drawSelected(sr);
+    sr.end();
+    sr.begin(ShapeRenderer.ShapeType.Line);
+    for (Building b : state.buildingSet) b.drawPath(sr);
     sr.end();
 
     ////////////////////////////////////////////////
     camera.getUiViewport().apply();
 
-    if (!state.selectStartWorld.isZero()) { // Draw select box
+    if (state.isSelecting()) { // Draw select box
       sr.setProjectionMatrix(Camera.getInstance().getTileCamera().combined);
       sr.begin(ShapeRenderer.ShapeType.Line);
       sr.setColor(0, 1, 0, 1);
