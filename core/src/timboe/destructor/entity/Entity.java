@@ -8,8 +8,15 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.utils.Align;
+
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
+
 import timboe.destructor.Param;
+import timboe.destructor.enums.Cardinal;
 import timboe.destructor.enums.Colour;
+import timboe.destructor.enums.Particle;
 import timboe.destructor.manager.Textures;
 
 public class Entity extends Actor {
@@ -25,6 +32,16 @@ public class Entity extends Actor {
   public boolean selected;
   public Rectangle boundingBox = new Rectangle();
   public boolean doTint = false;
+
+  protected EnumMap<Particle, List<Tile>> buildingPathingLists;
+
+  public List<Tile> getPathingList() {
+    return pathingList;
+  }
+
+  protected List<Tile> pathingList; // Used by building and sprite
+  protected Particle pathingParticle; // Used only by building
+
 
   public final TextureRegion[] textureRegion = new TextureRegion[Param.MAX_FRAMES];
 
@@ -105,12 +122,79 @@ public class Entity extends Actor {
 
   public void drawPath(ShapeRenderer sr) {
     if (!selected) return;
-//    if (pathingList != null && pathingList.size() > 1) {
-//      for (int i = 1; i < pathingList.size(); ++i) {
-//        Tile previous = pathingList.get(i-1);
-//        Tile current = pathingList.get(i);
-//        sr.rectLine(previous.centreScaleSprite.x, previous.centreScaleSprite.y, current.centreScaleSprite.x, current.centreScaleSprite.y, 2);
-//      }
-//    }
+    drawList(pathingList, sr);
+    if (buildingPathingLists == null) return;
+    for (Particle p : Particle.values()) {
+      if (!buildingPathingLists.containsKey(p)) continue;
+      if (p == pathingParticle) continue; // we already drew this
+      drawList(buildingPathingLists.get(p), sr);
+    }
+  }
+
+  private void drawList(List<Tile> l, ShapeRenderer sr) {
+    if (l == null || l.size() == 0) return;
+    final int off = Param.FRAME / 2 % Param.TILE_S;
+    Tile fin = l.get( l.size() - 1 );
+    for (int i = 0; i < l.size(); ++i) {
+      Tile previous = null;
+      Tile current = l.get(i);
+      if (i == 0) {
+        for (Cardinal D : Cardinal.n8) {
+          if (current.n8.get(D).mySprite == this) {
+            previous = current.n8.get(D);
+            break;
+          }
+        }
+      } else {
+        previous = l.get(i - 1);
+      }
+      if (previous == null) continue;
+      sr.line(previous.centreScaleTile.x, previous.centreScaleTile.y,
+          current.centreScaleTile.x, current.centreScaleTile.y);
+      if (current == fin) break;
+      if (current == previous.n8.get(Cardinal.kN)) {
+        sr.line(previous.centreScaleTile.x, previous.centreScaleTile.y + off,
+            previous.centreScaleTile.x + 5, previous.centreScaleTile.y - 5 + off);
+        sr.line(previous.centreScaleTile.x, previous.centreScaleTile.y + off,
+            previous.centreScaleTile.x - 5, previous.centreScaleTile.y - 5 + off);
+      } else if (current == previous.n8.get(Cardinal.kS)) {
+        sr.line(previous.centreScaleTile.x, previous.centreScaleTile.y - off,
+            previous.centreScaleTile.x + 5, previous.centreScaleTile.y + 5 - off);
+        sr.line(previous.centreScaleTile.x, previous.centreScaleTile.y - off,
+            previous.centreScaleTile.x - 5, previous.centreScaleTile.y + 5 - off);
+      } else if (current == previous.n8.get(Cardinal.kE)) {
+        sr.line(previous.centreScaleTile.x + off, previous.centreScaleTile.y,
+            previous.centreScaleTile.x - 5 + off, previous.centreScaleTile.y - 5);
+        sr.line(previous.centreScaleTile.x + off, previous.centreScaleTile.y,
+            previous.centreScaleTile.x - 5 + off, previous.centreScaleTile.y + 5);
+      } else if (current == previous.n8.get(Cardinal.kW)) {
+        sr.line(previous.centreScaleTile.x - off, previous.centreScaleTile.y,
+            previous.centreScaleTile.x + 5 - off, previous.centreScaleTile.y - 5);
+        sr.line(previous.centreScaleTile.x - off, previous.centreScaleTile.y,
+            previous.centreScaleTile.x + 5 - off, previous.centreScaleTile.y + 5);
+      } else if (current == previous.n8.get(Cardinal.kNE)) {
+        sr.line(previous.centreScaleTile.x + off, previous.centreScaleTile.y + off,
+            previous.centreScaleTile.x + off - 7, previous.centreScaleTile.y + off);
+        sr.line(previous.centreScaleTile.x + off, previous.centreScaleTile.y + off,
+            previous.centreScaleTile.x + off, previous.centreScaleTile.y + off - 7);
+      } else if (current == previous.n8.get(Cardinal.kSW)) {
+        sr.line(previous.centreScaleTile.x - off, previous.centreScaleTile.y - off,
+            previous.centreScaleTile.x - off + 7, previous.centreScaleTile.y - off);
+        sr.line(previous.centreScaleTile.x - off, previous.centreScaleTile.y - off,
+            previous.centreScaleTile.x - off, previous.centreScaleTile.y - off + 7);
+      } else if (current == previous.n8.get(Cardinal.kNW)) {
+        sr.line(previous.centreScaleTile.x - off, previous.centreScaleTile.y + off,
+            previous.centreScaleTile.x - off, previous.centreScaleTile.y + off - 7);
+        sr.line(previous.centreScaleTile.x - off, previous.centreScaleTile.y + off,
+            previous.centreScaleTile.x - off + 7, previous.centreScaleTile.y + off);
+      } else if (current == previous.n8.get(Cardinal.kSE)) {
+        sr.line(previous.centreScaleTile.x + off, previous.centreScaleTile.y - off,
+            previous.centreScaleTile.x + off, previous.centreScaleTile.y - off + 7);
+        sr.line(previous.centreScaleTile.x + off, previous.centreScaleTile.y - off,
+            previous.centreScaleTile.x + off - 7, previous.centreScaleTile.y - off);
+      }
+    }
+    sr.rect(fin.getX(), fin.getY(), fin.getOriginX(), fin.getOriginY(),
+        fin.getWidth(), fin.getHeight(), 1f, 1f, 45f);
   }
 }

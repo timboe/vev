@@ -26,6 +26,7 @@ import java.util.Set;
 import timboe.destructor.LabelDF;
 import timboe.destructor.Pair;
 import timboe.destructor.Param;
+import timboe.destructor.entity.Building;
 import timboe.destructor.entity.Sprite;
 import timboe.destructor.enums.BuildingType;
 import timboe.destructor.enums.Colour;
@@ -79,6 +80,7 @@ public class UI {
 
   private EnumMap<BuildingType, Table> buildingSelectWindow;
   private EnumMap<BuildingType, ProgressBar> buildingSelectProgress;
+  public Building selectedBuilding;
 
 
   public EnumMap<Colour, Button> selectButton;
@@ -303,7 +305,7 @@ public class UI {
       for (int i = 0; i < BuildingType.N_MODES; ++i) {
         Particle p = bt.getOutputs(i).getKey(); // Key and value are always the same
         if (p == null) continue;
-        Button b = getImageButton("ball_" + p.getColourFromParticle().getString(), "default", SIZE_M);
+        Button b = getImageButton("ball_" + p.getColourFromParticle().getString(), "toggle", SIZE_M);
         Image arrow = getImage("arrow");
         Container<Actor> ac = new Container<Actor>(arrow);
         ac.width(SIZE_M).height(SIZE_M);
@@ -350,9 +352,10 @@ public class UI {
     buildingBeingPlaced = bt;
   }
 
-  public void showBuildingInfo(BuildingType bt) {
+  public void showBuildingInfo(Building b) {
     table.clear();
-    table.add(buildingSelectWindow.get(bt));
+    selectedBuilding = b;
+    table.add(buildingSelectWindow.get(b.getType()));
     if (Param.DEBUG > 0) table.debugAll();
     uiMode = UIMode.kWITH_BUILDING_SELECTION;
   }

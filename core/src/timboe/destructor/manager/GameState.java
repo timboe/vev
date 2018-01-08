@@ -38,7 +38,8 @@ public class GameState {
   public Vector3 cursor = new Vector3();
 
   private boolean buildingLocationGood = false;
-  private Tile buildingLocation;
+
+  private Tile placeLocation;
 
   private Stage tileStage;
   private Stage spriteStage;
@@ -96,14 +97,26 @@ public class GameState {
       Tile t = null;
       if (Util.inBounds((int)cursor.x, (int)cursor.y)) t = World.getInstance().getTile(cursor.x, cursor.y);
       if (t != null && t.n8 != null && t.n8.get(kSW).n8 != null) {
-        buildingLocation = t;
+        placeLocation = t;
         buildingLocationGood = t.setBuildableHighlight();
         for (Cardinal D : Cardinal.n8) buildingLocationGood &= t.n8.get(D).setBuildableHighlight();
         buildingLocationGood &= t.n8.get(kSW).n8.get(kS).setBuildableHighlight();
         if (buildingLocationGood) OrderlyQueue.hintQueue(t.n8.get(kSW).n8.get(kS));
         t.n8.get(kSW).n8.get(kS).setBuildableHighlight(); // Re-apply green tint here
       }
+    } else if (UI.getInstance().uiMode == UIMode.kWITH_BUILDING_SELECTION) { // TODO && editing selection
+      cursor.set(Gdx.input.getX(), Gdx.input.getY(), 0);
+      cursor = Camera.getInstance().unproject(cursor);
+      cursor.scl(1f / (float) Param.TILE_S);
+      Tile t = null; //TODO move this (and above) to somewhere else
+      if (Util.inBounds((int)cursor.x, (int)cursor.y)) t = World.getInstance().getTile(cursor.x, cursor.y);
+      if (t != null && !t.getPathFindNeighbours().isEmpty()) {
+        placeLocation = t;
+        UI.getInstance().selectedBuilding.updateDemoPathingList(null, t); // TODO 1st argument should NOT be null
+      }
     }
+
+
 
 
 
@@ -111,12 +124,12 @@ public class GameState {
     if (tickTime < 5) return; // Tick every second
     tickTime -= 5;
 
-      tryNewParticles();
+      tryNewParticles(false);
 
 
   }
 
-  public void tryNewParticles() {
+  public void tryNewParticles(boolean stressTest) {
     // Add a new sprite
     List<Map.Entry<IVector2,ParticleEffect>> entries = new ArrayList<Map.Entry<IVector2,ParticleEffect>>(World.getInstance().warps.entrySet());
     Map.Entry<IVector2,ParticleEffect> rWarp = entries.get( R.nextInt(entries.size()) );
@@ -127,7 +140,8 @@ public class GameState {
         Param.WARP_SIZE * Param.TILE_S, Param.WARP_SIZE * Param.TILE_S);
     if (Camera.getInstance().onScrean(Rectangle.tmp)) Camera.getInstance().addShake(5f);
 
-    final int toPlace = Math.round(Util.clamp(Param.NEW_PARTICLE_MEAN + ((float)R.nextGaussian() * Param.NEW_PARTICLE_WIDTH), 1, Param.NEW_PARTICLE_MAX));
+    int toPlace = Math.round(Util.clamp(Param.NEW_PARTICLE_MEAN + ((float)R.nextGaussian() * Param.NEW_PARTICLE_WIDTH), 1, Param.NEW_PARTICLE_MAX));
+    if (stressTest) toPlace = 100000;
     for (int tp = 0; tp < toPlace; ++tp) {
       int placeTry = 0;
       do {
@@ -166,7 +180,7 @@ public class GameState {
 
   public void placeBuilding() {
     if (!buildingLocationGood) return;
-    Building b = new Building(buildingLocation, UI.getInstance().buildingBeingPlaced);
+    Building b = new Building(placeLocation, UI.getInstance().buildingBeingPlaced);
     b.setTexture("build_3_3", 1, false);
     buildingStage.addActor(b);
     buildingSet.add(b);
@@ -236,7 +250,7 @@ public class GameState {
           clearSelect();
           b.selected = true;
           selectedBuilding = b;
-          UI.getInstance().showBuildingInfo(b.getType());
+          UI.getInstance().showBuildingInfo(b);
           return true;
         }
       }
@@ -285,7 +299,7 @@ public class GameState {
         if (pathed.contains(s)) continue; // Already done in another loop
         if (doRepath) { // DOING REPATH
 
-          if (s.pathingList == null || s.pathingList.isEmpty()) continue;
+          if (s.getPathingList() == null || s.getPathingList().isEmpty()) continue;
           if (firstSprite == null) {
             firstSprite = s;
             target = s.getDestination();
@@ -312,7 +326,7 @@ public class GameState {
           continue;
         }
 
-        if (s != firstSprite && firstSprite.pathingList == null) { // Pathing failed for the firstSprite :(
+        if (s != firstSprite && firstSprite.getPathingList() == null) { // Pathing failed for the firstSprite :(
           // Hence it will (very likley) fail here too. And failed pathing is EXPENSIVE
           // So don't run it.
           pathed.add(s);
@@ -321,9 +335,9 @@ public class GameState {
 
         s.pathTo(target, solutionKnownFrom, doneSet);
         pathed.add(s);
-        if (s.pathingList != null) {
+        if (s.getPathingList() != null) {
           doneSet.add(s);
-          solutionKnownFrom.addAll(s.pathingList);
+          solutionKnownFrom.addAll(s.getPathingList());
         }
       }
     } while (anotherRoundNeeded);

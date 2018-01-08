@@ -1,11 +1,18 @@
 package timboe.destructor.entity;
 
+import com.badlogic.gdx.Gdx;
+
+import java.util.EnumMap;
+import java.util.List;
+
 import timboe.destructor.Pair;
 import timboe.destructor.enums.BuildingType;
 import timboe.destructor.enums.Cardinal;
+import timboe.destructor.enums.Particle;
 import timboe.destructor.enums.TileType;
 import timboe.destructor.manager.World;
 import timboe.destructor.pathfinding.OrderlyQueue;
+import timboe.destructor.pathfinding.PathFinding;
 
 /**
  * Created by Tim on 28/12/2017.
@@ -21,12 +28,14 @@ public class Building extends Entity {
 
   private final BuildingType type;
   private final Tile centre;
+  private Tile pathingStartPoint;
   private float timeDissasemble;
   private float timeMove;
   public Sprite spriteProcessing = null;
 
   public Building(Tile t, BuildingType type) {
     super(t.coordinates.x - 1, t.coordinates.y - 1);
+    buildingPathingLists = new EnumMap<Particle, List<Tile>>(Particle.class);
     this.type = type;
     centre = t;
     centre.setBuilding(this);
@@ -36,6 +45,21 @@ public class Building extends Entity {
     // Move any sprites which are here
     moveOn();
     myQueue.moveOn();
+    updatePathingStartPoint();
+  }
+
+  public void updatePathingStartPoint() {
+    pathingStartPoint = Sprite.findPathingLocation(centre, true, false); //reproducible=True, requireParking=False
+    if (pathingStartPoint == null) {
+      Gdx.app.error("updatePathingStartPoint", "Building could not find a pathing start point!");
+      return;
+    }
+    // TODO update all pathingLists to use this now start point
+  }
+
+  public void updateDemoPathingList(Particle p, Tile t) {
+    if (getPathingDestination() != t) pathingList = PathFinding.doAStar(pathingStartPoint, t, null, null);
+    pathingParticle = p;
   }
 
 

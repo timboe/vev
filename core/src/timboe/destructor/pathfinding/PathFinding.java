@@ -60,8 +60,8 @@ public class PathFinding {
 
         List<Tile> otherSolution = null;
         for (Sprite done : doneSet) {
-          if (done.pathingList.contains(current)) {
-            otherSolution = done.pathingList;
+          if (done.getPathingList().contains(current)) {
+            otherSolution = done.getPathingList();
             break;
           }
         }

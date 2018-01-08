@@ -19,11 +19,10 @@ import static timboe.destructor.enums.Cardinal.kSE;
 
 public class Sprite extends Entity {
 
-  public List<Tile> pathingList;
   private final Vector2 velocity = new Vector2();
   public final Vector2 nudgeDestination = new Vector2();
-  private final List<Integer> walkSearchRandom = Arrays.asList(0,1,2,3);
-  private final List<Integer> walkSearchReproducible = Arrays.asList(0,1,2,3);
+  private static final List<Integer> walkSearchRandom = Arrays.asList(0,1,2,3);
+  private static final List<Integer> walkSearchReproducible = Arrays.asList(0,1,2,3);
   public Tile myTile;
 
   public Sprite(int x, int y, Tile t) {
@@ -96,47 +95,46 @@ public class Sprite extends Entity {
   }
 
   // Check a (nearby) space for its connectedness, suitability for particle and if it has parking space
-  private Tile tryWanderDest(int x, int y, int level, int requireSameHeight, boolean requireParking) {
+  private static Tile tryWanderDest(int x, int y, int level, boolean requireSameHeight, boolean requireParking) {
     Tile tempTilePtr = World.getInstance().getTile(x, y);
     if (tempTilePtr.mySprite != null) return null; // Building or queue or vegetation
     if (tempTilePtr.getPathFindNeighbours().isEmpty()) return null; // Unpathable
-    if (requireSameHeight == 1 && tempTilePtr.level != level) return null; // Different elevation
+    if (requireSameHeight && tempTilePtr.level != level) return null; // Different elevation
     if (requireParking && !tempTilePtr.hasParkingSpace()) return null;
     return tempTilePtr;
   }
 
   // Find a nearby spot. Note this randomises the direction if reproducible == false
-  public Tile findPathingLocation(final Tile t, final boolean reproducible, final boolean requireParking) {
-    for (int sameHeight = 1; sameHeight >= 0; --sameHeight) { // Try and stay on the level
-      int tryRadius = 0;
-      while (++tryRadius < Param.TILES_MAX) {
-        if (!reproducible) java.util.Collections.shuffle(walkSearchRandom);
-        // TODO this is ugly - looking around outside of box radius tryRadius
-        for (final Integer s : reproducible ? walkSearchReproducible : walkSearchRandom) {
-          if (s == 0) {
-            for (int x = t.coordinates.x - tryRadius; x <= t.coordinates.x + tryRadius; ++x) {
-              if (!Util.inBounds(x, t.coordinates.y + tryRadius)) break;
-              Tile t2 = tryWanderDest(x, t.coordinates.y + tryRadius, t.level, sameHeight, requireParking);
-              if (t2 != null) return t2;
-            }
-          } else if (s == 1) {
-            for (int x = t.coordinates.x - tryRadius; x <= t.coordinates.x + tryRadius; ++x) {
-              if (!Util.inBounds(x, t.coordinates.y - tryRadius)) break;
-              Tile t2 = tryWanderDest(x, t.coordinates.y - tryRadius, t.level, sameHeight, requireParking);
-              if (t2 != null) return t2;
-            }
-          } else if (s == 2) {
-            for (int y = t.coordinates.y - tryRadius; y <= t.coordinates.y + tryRadius; ++y) {
-              if (!Util.inBounds(t.coordinates.x + tryRadius, y)) break;
-              Tile t2 = tryWanderDest(t.coordinates.x + tryRadius, y, t.level, sameHeight, requireParking);
-              if (t2 != null) return t2;
-            }
-          } else if (s == 3) {
-            for (int y = t.coordinates.y - tryRadius; y <= t.coordinates.y + tryRadius; ++y) {
-              if (!Util.inBounds(t.coordinates.x - tryRadius, y)) break;
-              Tile t2 = tryWanderDest(t.coordinates.x - tryRadius, y, t.level, sameHeight, requireParking);
-              if (t2 != null) return t2;
-            }
+  public static Tile findPathingLocation(final Tile t, final boolean reproducible, final boolean requireParking) {
+    int tryRadius = 0;
+    while (++tryRadius < Param.TILES_MAX) {
+      boolean sameHeight = (tryRadius < Param.TILES_MAX / 4); // TODO tune radius at which we should try and get the same height
+      if (!reproducible) java.util.Collections.shuffle(walkSearchRandom);
+      // TODO this is ugly - looking around outside of box radius tryRadius
+      for (final Integer s : reproducible ? walkSearchReproducible : walkSearchRandom) {
+        if (s == 0) {
+          for (int x = t.coordinates.x - tryRadius; x <= t.coordinates.x + tryRadius; ++x) {
+            if (!Util.inBounds(x, t.coordinates.y + tryRadius)) break;
+            Tile t2 = tryWanderDest(x, t.coordinates.y + tryRadius, t.level, sameHeight, requireParking);
+            if (t2 != null) return t2;
+          }
+        } else if (s == 1) {
+          for (int x = t.coordinates.x - tryRadius; x <= t.coordinates.x + tryRadius; ++x) {
+            if (!Util.inBounds(x, t.coordinates.y - tryRadius)) break;
+            Tile t2 = tryWanderDest(x, t.coordinates.y - tryRadius, t.level, sameHeight, requireParking);
+            if (t2 != null) return t2;
+          }
+        } else if (s == 2) {
+          for (int y = t.coordinates.y - tryRadius; y <= t.coordinates.y + tryRadius; ++y) {
+            if (!Util.inBounds(t.coordinates.x + tryRadius, y)) break;
+            Tile t2 = tryWanderDest(t.coordinates.x + tryRadius, y, t.level, sameHeight, requireParking);
+            if (t2 != null) return t2;
+          }
+        } else if (s == 3) {
+          for (int y = t.coordinates.y - tryRadius; y <= t.coordinates.y + tryRadius; ++y) {
+            if (!Util.inBounds(t.coordinates.x - tryRadius, y)) break;
+            Tile t2 = tryWanderDest(t.coordinates.x - tryRadius, y, t.level, sameHeight, requireParking);
+            if (t2 != null) return t2;
           }
         }
       }
