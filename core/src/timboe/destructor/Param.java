@@ -94,13 +94,20 @@ public class Param {
   public static final int DISPLAY_X = Gdx.graphics.getWidth();
   public static final int DISPLAY_Y = Gdx.graphics.getHeight();
 
+  public static final float PLAYER_ENERGY = 1000000;
+
+  public static final Color PARTICLE_H = new Color(60/255f, 52/255f, 123/255f, 1f);
+  public static final Color PARTICLE_W = new Color(206 / 255f, 101 / 255f, 80 / 255f, 1f);
+  public static final Color PARTICLE_Z = new Color(101 / 255f, 143 / 255f, 135 / 255f, 1f);
+  public static final Color PARTICLE_E = new Color(220/255f, 138/255f, 92/255f, 1f);
+  public static final Color PARTICLE_M = new Color(147 / 255f, 178 / 255f, 155 / 255f, 1f);
+  public static final Color PARTICLE_Q = new Color(64/255f, 141/255f, 174/255f, 1f);
+
+  public static int DEBUG = 0;
+
+  // Mutable
 
   public static int QUEUE_SIZE = 9;
   public static QueueType QUEUE_TYPE = QueueType.kSIMPLE;
 
-  public static final float PLAYER_ENERGY = 1000000;
-
-  //
-
-  public static int DEBUG = 0;
 }

@@ -36,6 +36,7 @@ import timboe.destructor.enums.UIMode;
 import timboe.destructor.input.BuildingButton;
 import timboe.destructor.input.QueueButton;
 import timboe.destructor.input.QueueLengthSlider;
+import timboe.destructor.input.StandingOrderButton;
 import timboe.destructor.input.YesNoButton;
 
 public class UI {
@@ -49,6 +50,9 @@ public class UI {
 
   public UIMode uiMode = UIMode.kNONE;
   public BuildingType buildingBeingPlaced = null;
+  public boolean doingPlacement = false;
+  public Building selectedBuilding;
+  public Particle selectedBuildingStandingOrderParticle;
 
   private final int SIZE_S = 32;
   private final int SIZE_M = 2*SIZE_S;
@@ -80,8 +84,7 @@ public class UI {
 
   private EnumMap<BuildingType, Table> buildingSelectWindow;
   private EnumMap<BuildingType, ProgressBar> buildingSelectProgress;
-  public Building selectedBuilding;
-
+  public EnumMap<BuildingType, EnumMap<Particle, Button>> buildingSelectStandingOrder;
 
   public EnumMap<Colour, Button> selectButton;
   private EnumMap<Colour, Label> selectLabel;
@@ -198,14 +201,13 @@ public class UI {
     if (!dfShader.isCompiled()) Gdx.app.error("fontShader", "compilation failed:\n" + dfShader.getLog());
     skin = new Skin(Gdx.files.internal("uiskin.json"));
     skin.addRegions(Textures.getInstance().getUIAtlas());
-//    skin.getFont("default-font").getData().setScale(2f);
 
     GameState.getInstance().getUIStage().addActor(table);
 
-//    ParticleButton particleButtonHandler = new ParticleButton();
     BuildingButton buildingButtonHandler = new BuildingButton();
     QueueLengthSlider queueLengthSlider = new QueueLengthSlider();
     QueueButton queueButton = new QueueButton();
+    StandingOrderButton standingOrderButton = new StandingOrderButton();
 
     mainWindow = getWindow();
     selectWindow = getWindow();
@@ -232,7 +234,6 @@ public class UI {
     separator(mainWindow, 2);
     selectParticlesButton = getImageButton("select", "toggle", 0);
     addToWin(mainWindow, selectParticlesButton, SIZE_L, SIZE_L, 1);
-//    mainWindow.row();
     Button settings = getImageButton("select", "default", 0);
     addToWin(mainWindow, settings, SIZE_L, SIZE_L, 1);
 
@@ -296,7 +297,9 @@ public class UI {
     // Building info windows
     buildingSelectWindow = new EnumMap<BuildingType, Table>(BuildingType.class);
     buildingSelectProgress = new EnumMap<BuildingType, ProgressBar>(BuildingType.class);
+    buildingSelectStandingOrder = new EnumMap<BuildingType, EnumMap<Particle, Button>>(BuildingType.class);
     for (final BuildingType bt : BuildingType.values()) {
+      buildingSelectStandingOrder.put(bt, new EnumMap<Particle, Button>(Particle.class));
       Table bw = getWindow();
       buildingSelectWindow.put(bt, bw);
       addBuildingBlurb(bw, bt);
@@ -306,6 +309,9 @@ public class UI {
         Particle p = bt.getOutputs(i).getKey(); // Key and value are always the same
         if (p == null) continue;
         Button b = getImageButton("ball_" + p.getColourFromParticle().getString(), "toggle", SIZE_M);
+        b.setUserObject(new Pair<BuildingType, Particle>(bt,p));
+        b.addListener(standingOrderButton);
+        buildingSelectStandingOrder.get(bt).put(p, b);
         Image arrow = getImage("arrow");
         Container<Actor> ac = new Container<Actor>(arrow);
         ac.width(SIZE_M).height(SIZE_M);
@@ -349,6 +355,7 @@ public class UI {
     table.add(buildingWindow.get(bt));
     if (Param.DEBUG > 0) table.debugAll();
     uiMode = UIMode.kPLACE_BUILDING;
+    doingPlacement = true;
     buildingBeingPlaced = bt;
   }
 
@@ -356,6 +363,10 @@ public class UI {
     table.clear();
     selectedBuilding = b;
     table.add(buildingSelectWindow.get(b.getType()));
+    for (Particle p : Particle.values()) {
+      if (!buildingSelectStandingOrder.get(b.getType()).containsKey(p)) continue;
+      buildingSelectStandingOrder.get(b.getType()).get(p).setChecked(false);
+    }
     if (Param.DEBUG > 0) table.debugAll();
     uiMode = UIMode.kWITH_BUILDING_SELECTION;
   }
@@ -388,6 +399,11 @@ public class UI {
     table.add( mainWindow );
     if (Param.DEBUG > 0) table.debugAll();
     uiMode = UIMode.kNONE;
+    doingPlacement = false;
+    if (selectedBuilding != null) selectedBuilding.cancelUpdatePathingList();
+    selectedBuilding = null;
+    selectedBuildingStandingOrderParticle = null;
+    buildingBeingPlaced = null;
   }
 
 }

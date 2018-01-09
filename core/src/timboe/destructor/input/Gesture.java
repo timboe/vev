@@ -35,12 +35,15 @@ public class Gesture implements GestureDetector.GestureListener {
   public boolean tap(float x, float y, int count, int button) {
     Gdx.app.log("tap","tap "+x+","+"y");
     GameState state = GameState.getInstance();
+    UI ui = UI.getInstance();
     v3temp.set(x, y, 0);
     v3temp = Camera.getInstance().unproject(v3temp);
     if (button == Input.Buttons.RIGHT) {
       state.doRightClick();
-    } else if (UI.getInstance().uiMode == UIMode.kPLACE_BUILDING) {
+    } else if (ui.uiMode == UIMode.kPLACE_BUILDING) {
       state.placeBuilding();
+    } else if (ui.uiMode == UIMode.kWITH_BUILDING_SELECTION && ui.doingPlacement) {
+      state.doConfirmStandingOrder();
     } else {
       boolean selected = state.doParticleSelect(false); // rangeBased = false
       if (!selected && !state.selectedSet.isEmpty()) {

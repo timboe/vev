@@ -122,18 +122,22 @@ public class Entity extends Actor {
 
   public void drawPath(ShapeRenderer sr) {
     if (!selected) return;
-    drawList(pathingList, sr);
-    if (buildingPathingLists == null) return;
+    if (pathingList != null) { // in-progress
+      sr.setColor(pathingParticle.getHighlightColour());
+      drawList(pathingList, sr, pathingParticle.getStandingOrderOffset());
+    }
+    if (buildingPathingLists == null) return; // If not building
     for (Particle p : Particle.values()) {
       if (!buildingPathingLists.containsKey(p)) continue;
       if (p == pathingParticle) continue; // we already drew this
-      drawList(buildingPathingLists.get(p), sr);
+      sr.setColor( p.getHighlightColour() );
+      drawList(buildingPathingLists.get(p), sr, p.getStandingOrderOffset());
     }
   }
 
-  private void drawList(List<Tile> l, ShapeRenderer sr) {
+  private void drawList(List<Tile> l, ShapeRenderer sr, int standingOrderOffset) {
     if (l == null || l.size() == 0) return;
-    final int off = Param.FRAME / 2 % Param.TILE_S;
+    final int off = ((Param.FRAME / 2) + standingOrderOffset) % Param.TILE_S;
     Tile fin = l.get( l.size() - 1 );
     for (int i = 0; i < l.size(); ++i) {
       Tile previous = null;

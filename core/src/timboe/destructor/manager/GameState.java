@@ -13,8 +13,10 @@ import timboe.destructor.Util;
 import timboe.destructor.entity.Building;
 import timboe.destructor.entity.Sprite;
 import timboe.destructor.entity.Tile;
+import timboe.destructor.enums.BuildingType;
 import timboe.destructor.enums.Cardinal;
 import timboe.destructor.enums.Colour;
+import timboe.destructor.enums.Particle;
 import timboe.destructor.enums.UIMode;
 import timboe.destructor.pathfinding.IVector2;
 import timboe.destructor.pathfinding.OrderlyQueue;
@@ -89,43 +91,36 @@ public class GameState {
     buildingStage.act(delta);
     // Tile stage is static - does not need to be acted
 
+    cursor.set(Gdx.input.getX(), Gdx.input.getY(), 0);
+    cursor = Camera.getInstance().unproject(cursor);
+    cursor.scl(1f / (float) Param.TILE_S);
+    Tile cursorTile = null;
+    if (Util.inBounds((int)cursor.x, (int)cursor.y)) cursorTile = World.getInstance().getTile(cursor.x, cursor.y);
 
-    if (UI.getInstance().uiMode == UIMode.kPLACE_BUILDING) {
-      cursor.set(Gdx.input.getX(), Gdx.input.getY(), 0);
-      cursor = Camera.getInstance().unproject(cursor);
-      cursor.scl(1f / (float) Param.TILE_S);
-      Tile t = null;
-      if (Util.inBounds((int)cursor.x, (int)cursor.y)) t = World.getInstance().getTile(cursor.x, cursor.y);
-      if (t != null && t.n8 != null && t.n8.get(kSW).n8 != null) {
-        placeLocation = t;
-        buildingLocationGood = t.setBuildableHighlight();
-        for (Cardinal D : Cardinal.n8) buildingLocationGood &= t.n8.get(D).setBuildableHighlight();
-        buildingLocationGood &= t.n8.get(kSW).n8.get(kS).setBuildableHighlight();
-        if (buildingLocationGood) OrderlyQueue.hintQueue(t.n8.get(kSW).n8.get(kS));
-        t.n8.get(kSW).n8.get(kS).setBuildableHighlight(); // Re-apply green tint here
-      }
-    } else if (UI.getInstance().uiMode == UIMode.kWITH_BUILDING_SELECTION) { // TODO && editing selection
-      cursor.set(Gdx.input.getX(), Gdx.input.getY(), 0);
-      cursor = Camera.getInstance().unproject(cursor);
-      cursor.scl(1f / (float) Param.TILE_S);
-      Tile t = null; //TODO move this (and above) to somewhere else
-      if (Util.inBounds((int)cursor.x, (int)cursor.y)) t = World.getInstance().getTile(cursor.x, cursor.y);
-      if (t != null && !t.getPathFindNeighbours().isEmpty()) {
-        placeLocation = t;
-        UI.getInstance().selectedBuilding.updateDemoPathingList(null, t); // TODO 1st argument should NOT be null
+    if (UI.getInstance().doingPlacement) {
+      if (UI.getInstance().uiMode == UIMode.kPLACE_BUILDING) {
+        if (cursorTile != null && cursorTile.n8 != null && cursorTile.n8.get(kSW).n8 != null) {
+          placeLocation = cursorTile;
+          buildingLocationGood = cursorTile.setBuildableHighlight();
+          for (Cardinal D : Cardinal.n8) buildingLocationGood &= cursorTile.n8.get(D).setBuildableHighlight();
+          buildingLocationGood &= cursorTile.n8.get(kSW).n8.get(kS).setBuildableHighlight();
+          if (buildingLocationGood) OrderlyQueue.hintQueue(cursorTile.n8.get(kSW).n8.get(kS));
+          cursorTile.n8.get(kSW).n8.get(kS).setBuildableHighlight(); // Re-apply green tint here
+        }
+      } else if (UI.getInstance().uiMode == UIMode.kWITH_BUILDING_SELECTION) {
+        if (cursorTile != null && !cursorTile.getPathFindNeighbours().isEmpty()) {
+          placeLocation = mapPathingDestination(cursorTile); //TODO this is broken? why?
+          if (placeLocation != null) {
+            UI.getInstance().selectedBuilding.updateDemoPathingList(UI.getInstance().selectedBuildingStandingOrderParticle, placeLocation);
+          }
+        }
       }
     }
-
-
-
-
-
 
     if (tickTime < 5) return; // Tick every second
     tickTime -= 5;
 
-      tryNewParticles(false);
-
+    tryNewParticles(false);
 
   }
 
@@ -195,7 +190,17 @@ public class GameState {
     selectEndWorld.setZero();
     selectStartWorld.setZero();
     UI.getInstance().showMain();
+  }
 
+  public void doConfirmStandingOrder() {
+    BuildingType bt = UI.getInstance().selectedBuilding.getType();
+    UI.getInstance().selectedBuilding.updatePathingList(); // Save the pathing list
+    UI.getInstance().doingPlacement = false;
+    // Set all buttons to false
+    for (Particle p : Particle.values()) {
+      if (!UI.getInstance().buildingSelectStandingOrder.get(bt).containsKey(p)) continue;
+      UI.getInstance().buildingSelectStandingOrder.get(bt).get(p).setChecked(false);
+    }
   }
 
 
@@ -273,14 +278,20 @@ public class GameState {
     pathingInternal(null, true);
   }
 
+  public Tile mapPathingDestination(Tile target) {
+    if (target.mySprite != null && target.mySprite.getClass() == Building.class) {
+      return ((Building)target.mySprite).getPathingDestination();
+    } else if (target.getPathFindNeighbours().isEmpty()) {
+      return null; // Cannot path here
+    }
+    return target;
+  }
+
   public void doParticleMoveOrder(int x, int y) {
     if (!Util.inBounds(x / Param.TILE_S, y / Param.TILE_S)) return;
     Tile target = World.getInstance().getTile(x / Param.TILE_S, y / Param.TILE_S);
-    if (target.mySprite != null && target.mySprite.getClass() == Building.class) {
-      target = ((Building)target.mySprite).getPathingDestination();
-    } else if (target.getPathFindNeighbours().isEmpty()) {
-      return; // Cannot path here
-    }
+    target = mapPathingDestination(target);
+    if (target == null) return;
     pathingInternal(target, false);
   }
 

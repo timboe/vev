@@ -1,5 +1,9 @@
 package timboe.destructor.enums;
 
+import com.badlogic.gdx.graphics.Color;
+
+import timboe.destructor.Param;
+
 /**
  * Created by Tim on 01/01/2018.
  */
@@ -11,6 +15,9 @@ public enum Particle {
   kE,
   kM,
   kQ;
+
+
+
 
   public String getString() {
     switch (this) {
@@ -33,6 +40,30 @@ public enum Particle {
       case kGREEN: return kM;
       case kBLUE: return kQ;
       default: return null;
+    }
+  }
+
+  public Color getHighlightColour() {
+    switch (this) {
+      case kH: return Param.PARTICLE_H;
+      case kW: return Param.PARTICLE_W;
+      case kZ: return Param.PARTICLE_Z;
+      case kE: return Param.PARTICLE_E;
+      case kM: return Param.PARTICLE_M;
+      case kQ: return Param.PARTICLE_Q;
+      default: return null;
+    }
+  }
+
+  public int getStandingOrderOffset() {
+    switch (this) {
+      case kH: return 0;
+      case kW: return 2;
+      case kZ: return 4;
+      case kE: return 6;
+      case kM: return 8;
+      case kQ: return 10;
+      default: return 0;
     }
   }
 

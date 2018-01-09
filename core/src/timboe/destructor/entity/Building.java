@@ -9,7 +9,6 @@ import timboe.destructor.Pair;
 import timboe.destructor.enums.BuildingType;
 import timboe.destructor.enums.Cardinal;
 import timboe.destructor.enums.Particle;
-import timboe.destructor.enums.TileType;
 import timboe.destructor.manager.World;
 import timboe.destructor.pathfinding.OrderlyQueue;
 import timboe.destructor.pathfinding.PathFinding;
@@ -29,7 +28,7 @@ public class Building extends Entity {
   private final BuildingType type;
   private final Tile centre;
   private Tile pathingStartPoint;
-  private float timeDissasemble;
+  private float timeDisassemble;
   private float timeMove;
   public Sprite spriteProcessing = null;
 
@@ -62,6 +61,27 @@ public class Building extends Entity {
     pathingParticle = p;
   }
 
+  public void updatePathingList() {
+    if (pathingParticle == null) {
+      Gdx.app.error("updatePathingList","Called with pathingParticle = null?!");
+      return;
+    }
+    if (pathingList == null) {
+      Gdx.app.error("updatePathingList","Called with pathingList = null?!");
+      return;
+    }
+    Gdx.app.log("updatePathingList","Set pathing " + pathingParticle + " to " + pathingList.get(0).toString());
+    buildingPathingLists.put(pathingParticle, pathingList);
+    pathingList = null;
+    pathingParticle = null;
+  }
+
+  public void cancelUpdatePathingList() {
+    pathingParticle = null;
+    pathingList = null;
+  }
+
+
 
   public Pair<Tile, Cardinal> getFreeLocationInQueue(Sprite s) {
     if (!type.accepts(s)) return null;
@@ -83,13 +103,13 @@ public class Building extends Entity {
   @Override
   public void act(float delta) {
     timeMove += delta;
-    timeDissasemble += delta;
+    timeDisassemble += delta;
     if (timeMove > 0.2f) {
       timeMove -= 0.2f;
       myQueue.moveAlongMoveAlong();
     }
-    if (timeDissasemble < 1f) return;
-    timeDissasemble -= 1f;
+    if (timeDisassemble < 1f) return;
+    timeDisassemble -= 1f;
     spriteProcessing = null; // Kill it
   }
 
