@@ -16,7 +16,7 @@ public class DestructorGame extends Game {
 		UI.create();
 
 		GameState.getInstance().setGame(this);
-		World.getInstance().generate();
+//		World.getInstance().generate();
 		GameState.getInstance().setToGameScreen();
 	}
 	

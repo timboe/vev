@@ -314,8 +314,6 @@ public class UI {
       buildingSelectStandingOrder.put(bt, new EnumMap<Particle, Button>(Particle.class));
       Table bw = getWindow();
       buildingSelectWindow.put(bt, bw);
-      addBuildingBlurb(bw, bt);
-      separator(bw, 6);
       //////////////////////
       if (bt == BuildingType.kWARP) {
         for (Particle p : Particle.values()) {
@@ -324,6 +322,8 @@ public class UI {
           bw.row();
         }
       } else {
+        addBuildingBlurb(bw, bt);
+        separator(bw, 6);
         for (int i = 0; i < BuildingType.N_MODES; ++i) {
           Particle p = bt.getOutputs(i).getKey(); // Key and value are always the same
           if (p == null) continue;
@@ -331,16 +331,17 @@ public class UI {
           addToWin(bw, b, SIZE_L+SIZE_M, SIZE_L, 6);
           bw.row();
         }
+        separator(bw, 6);
+        //////////////////////
+        ProgressBar progressBar = new ProgressBar(0, 100, 1, false, skin, "default-horizontal");
+        addToWin(bw, progressBar, SIZE_L+SIZE_L, SIZE_M, 6);
+        bw.row();
+        addToWin(bw, getImageButton("clock"), SIZE_L, SIZE_L, 3);
+        addToWin(bw, getImageButton("wrecking"), SIZE_L, SIZE_L, 3);
       }
-      separator(bw, 6);
-      //////////////////////
-      ProgressBar progressBar = new ProgressBar(0, 100, 1, false, skin, "default-horizontal");
-      addToWin(bw, progressBar, SIZE_L+SIZE_L, SIZE_M, 6);
-      bw.row();
-      addToWin(bw, getImageButton("clock"), SIZE_L, SIZE_L, 6);
       bw.row();
       separator(bw, 6);
-      addToWin(bw, getImageButton("wrecking"), SIZE_L, SIZE_L, 3);
+      addToWin(bw, getImageButton("tick"), SIZE_L, SIZE_L, 3);
       addToWin(bw, getImageButton("cross"), SIZE_L, SIZE_L, 3);
     }
 

@@ -37,11 +37,16 @@ public class World {
   public final Map<IVector2, ParticleEffect> warps = new HashMap<IVector2, ParticleEffect>();
   public final Vector<IVector2> tiberium = new Vector<IVector2>();
   public final Vector<ParticleEffect> warpClouds = new Vector<ParticleEffect>();
+  private boolean generated = false;
 
   private Tile[][] tiles;
   private Zone[][] zones;
 
   private World() {
+  }
+
+  public boolean getGenerated() {
+    return generated;
   }
 
   public Tile getTile(float x, float y) { return getTile((int)x, (int)y); }
@@ -54,6 +59,7 @@ public class World {
 
   private void reset() {
     GameState.getInstance().reset();
+    generated = false;
     warps.clear();
     warpClouds.clear();
     tiberium.clear();
@@ -114,6 +120,7 @@ public class World {
     UI.getInstance().reset();
     GameState.getInstance().getGameScreen().setMultiplexerInputs();
     Gdx.app.log("World","Generation finished, try " + worldTry);
+    generated = true;
     for (int y = Param.ZONES_Y-1; y >= 0; --y) Gdx.app.log( "",(zones[0][y].tileColour == Colour.kRED ? "R " : "G ") + (zones[1][y].tileColour == Colour.kRED ? "R " : "G ") + (zones[2][y].tileColour == Colour.kRED ? "R " : "G ") );
     for (int y = Param.ZONES_Y-1; y >= 0; --y) Gdx.app.log( "",zones[0][y].level + " " + zones[1][y].level + " " + zones[2][y].level);
 

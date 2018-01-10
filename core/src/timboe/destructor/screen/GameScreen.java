@@ -65,6 +65,8 @@ public class GameScreen implements Screen {
     ++Param.FRAME;
     delta = Math.min(delta, Param.FRAME_TIME * 10); // Do not let this get too extreme
     renderClear();
+
+    if (!world.getGenerated()) return;
     camera.update(delta);
     state.act(delta);
     ui.act(delta);
@@ -98,8 +100,11 @@ public class GameScreen implements Screen {
       sr.begin(ShapeRenderer.ShapeType.Line);
       sr.setColor(1, 1, 1, 1);
       for (Actor A : state.getTileStage().getActors()) {
-        Tile T = (Tile) A;
-        T.renderDebug(sr);
+        try {
+          Tile T = (Tile) A;
+          T.renderDebug(sr);
+        } catch (Exception e) {
+        }
       }
       sr.setColor(0, 0, 1, 1);
       sr.rect(camera.getCullBoxTile().getX(), camera.getCullBoxTile().getY(), camera.getCullBoxTile().getWidth(), camera.getCullBoxTile().getHeight());
@@ -137,6 +142,7 @@ public class GameScreen implements Screen {
     sr.begin(ShapeRenderer.ShapeType.Line);
     Gdx.graphics.getGL20().glLineWidth(4f / camera.getZoom());
     for (Building b : state.buildingSet) b.drawPath(sr);
+    Gdx.graphics.getGL20().glLineWidth(2f); // Default?
     sr.end();
 
     ////////////////////////////////////////////////
