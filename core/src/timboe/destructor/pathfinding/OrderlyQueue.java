@@ -38,7 +38,7 @@ public class OrderlyQueue {
     repath();
   }
 
-  public Tile getPathingDestination() {
+  public Tile getQueuePathingTarget() {
     return queue.get( queue.size()-1 );
   }
 

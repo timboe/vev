@@ -82,7 +82,12 @@ public class Entity extends Actor {
     this.frames = frames;
   }
 
-  private void setTexture(TextureRegion r, int frame) {
+  public Tile getDestination() {
+    if (pathingList == null || pathingList.isEmpty()) return null;
+    return pathingList.get( pathingList.size() - 1 );
+  }
+
+  protected void setTexture(TextureRegion r, int frame) {
     textureRegion[frame] = r;
     setWidth(textureRegion[frame].getRegionWidth());
     setHeight(textureRegion[frame].getRegionHeight());
@@ -112,8 +117,8 @@ public class Entity extends Actor {
     float off = Param.FRAME * 0.25f / (float)Math.PI;
     final float xC = getX() + getWidth()/2f, yC = getY() + getHeight()/2f;
     for (float a = (float)-Math.PI; a < Math.PI; a += 2f*Math.PI/3f) {
-      sr.rectLine(xC + getWidth() * ((float) Math.cos(a + off)),
-          yC + getHeight() * ((float) Math.sin(a + off)),
+      sr.rectLine(xC + getWidth()/2f * ((float) Math.cos(a + off)),
+          yC + getHeight()/2f * ((float) Math.sin(a + off)),
           xC + getWidth()/2f * ((float) Math.cos(a + off + Math.PI / 6f)),
           yC + getHeight()/2f * ((float) Math.sin(a + off + Math.PI / 6f)),
           2);

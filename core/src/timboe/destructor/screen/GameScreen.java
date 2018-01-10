@@ -98,11 +98,8 @@ public class GameScreen implements Screen {
       sr.begin(ShapeRenderer.ShapeType.Line);
       sr.setColor(1, 1, 1, 1);
       for (Actor A : state.getTileStage().getActors()) {
-        try {
-          Tile T = (Tile) A;
-          T.renderDebug(sr);
-        } catch (Exception e) {
-        }
+        Tile T = (Tile) A;
+        T.renderDebug(sr);
       }
       sr.setColor(0, 0, 1, 1);
       sr.rect(camera.getCullBoxTile().getX(), camera.getCullBoxTile().getY(), camera.getCullBoxTile().getWidth(), camera.getCullBoxTile().getHeight());
@@ -138,6 +135,7 @@ public class GameScreen implements Screen {
     for (Building b : state.buildingSet) b.drawSelected(sr);
     sr.end();
     sr.begin(ShapeRenderer.ShapeType.Line);
+    Gdx.graphics.getGL20().glLineWidth(4f / camera.getZoom());
     for (Building b : state.buildingSet) b.drawPath(sr);
     sr.end();
 

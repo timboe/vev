@@ -6,6 +6,7 @@ import java.util.EnumMap;
 import java.util.List;
 
 import timboe.destructor.Pair;
+import timboe.destructor.Param;
 import timboe.destructor.enums.BuildingType;
 import timboe.destructor.enums.Cardinal;
 import timboe.destructor.enums.Particle;
@@ -19,11 +20,7 @@ import timboe.destructor.pathfinding.PathFinding;
 
 public class Building extends Entity {
 
-  private final OrderlyQueue myQueue;
-
-  public BuildingType getType() {
-    return type;
-  }
+  private OrderlyQueue myQueue = null;
 
   private final BuildingType type;
   private final Tile centre;
@@ -33,10 +30,12 @@ public class Building extends Entity {
   public Sprite spriteProcessing = null;
 
   public Building(Tile t, BuildingType type) {
-    super(t.coordinates.x - 1, t.coordinates.y - 1);
+    super(t.coordinates.x - (type == BuildingType.kWARP ? (Param.WARP_SIZE/2) - 2 : 1),
+          t.coordinates.y - (type == BuildingType.kWARP ? (Param.WARP_SIZE/2) - 2 : 1));
     buildingPathingLists = new EnumMap<Particle, List<Tile>>(Particle.class);
     this.type = type;
     centre = t;
+    if (type == BuildingType.kWARP) return; // Warp does not need anything below
     centre.setBuilding(this);
     for (Cardinal D : Cardinal.n8) centre.n8.get(D).setBuilding(this);
     repath();
@@ -47,8 +46,13 @@ public class Building extends Entity {
     updatePathingStartPoint();
   }
 
+  public BuildingType getType() {
+    return type;
+  }
+
   public void updatePathingStartPoint() {
-    pathingStartPoint = Sprite.findPathingLocation(centre, true, false); //reproducible=True, requireParking=False
+    boolean requireSameHeight = (type != BuildingType.kWARP);
+    pathingStartPoint = Sprite.findPathingLocation(centre, true, false, requireSameHeight); //reproducible=True, requireParking=False
     if (pathingStartPoint == null) {
       Gdx.app.error("updatePathingStartPoint", "Building could not find a pathing start point!");
       return;
@@ -57,7 +61,8 @@ public class Building extends Entity {
   }
 
   public void updateDemoPathingList(Particle p, Tile t) {
-    if (getPathingDestination() != t) pathingList = PathFinding.doAStar(pathingStartPoint, t, null, null);
+    if (getDestination() != t) pathingList = PathFinding.doAStar(pathingStartPoint, t, null, null);
+    // The "pathingList" holds our speculative/demo destination
     pathingParticle = p;
   }
 
@@ -88,8 +93,8 @@ public class Building extends Entity {
     return myQueue.getFreeLocationInQueue();
   }
 
-  public Tile getPathingDestination() {
-    return myQueue.getPathingDestination();
+  public Tile getQueuePathingTarget() {
+    return myQueue.getQueuePathingTarget();
   }
 
   // Moves on any sprites under the building

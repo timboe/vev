@@ -2,6 +2,7 @@ package timboe.destructor.manager;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.ParticleEffect;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
@@ -12,6 +13,7 @@ import timboe.destructor.Util;
 import timboe.destructor.entity.Entity;
 import timboe.destructor.entity.Sprite;
 import timboe.destructor.entity.Tile;
+import timboe.destructor.entity.Warp;
 import timboe.destructor.entity.Zone;
 import timboe.destructor.enums.Cardinal;
 import timboe.destructor.enums.Colour;
@@ -40,7 +42,6 @@ public class World {
   private Zone[][] zones;
 
   private World() {
-    generate();
   }
 
   public Tile getTile(float x, float y) { return getTile((int)x, (int)y); }
@@ -107,13 +108,11 @@ public class World {
       if (success) success = addPatch(true, Param.FOREST_SIZE, Param.MIN_FORESTS, Param.MAX_FORESTS);
       if (success) success = addFoliage();
       if (success) success = doPathGrid();
+      if (success) success = finaliseWarp();
     }
     applyTileGraphics();
-    GameScreen gs = GameState.getInstance().getGameScreen();
-    if (gs != null) { // Null on 1st round, not instantiated yet
-      UI.getInstance().reset();
-      gs.setMultiplexerInputs();
-    }
+    UI.getInstance().reset();
+    GameState.getInstance().getGameScreen().setMultiplexerInputs();
     Gdx.app.log("World","Generation finished, try " + worldTry);
     for (int y = Param.ZONES_Y-1; y >= 0; --y) Gdx.app.log( "",(zones[0][y].tileColour == Colour.kRED ? "R " : "G ") + (zones[1][y].tileColour == Colour.kRED ? "R " : "G ") + (zones[2][y].tileColour == Colour.kRED ? "R " : "G ") );
     for (int y = Param.ZONES_Y-1; y >= 0; --y) Gdx.app.log( "",zones[0][y].level + " " + zones[1][y].level + " " + zones[2][y].level);
@@ -178,7 +177,15 @@ public class World {
     return s;
   }
 
-  private boolean addWarp() {
+  private boolean finaliseWarp() {
+    for (Actor a : GameState.getInstance().getWarpStage().getActors()) {
+      ((Warp)a).updatePathingStartPoint();
+    }
+    return true;
+  }
+
+
+    private boolean addWarp() {
     int fTry = 0, fPlaced = 0;
     do {
       final int _x = Param.WARP_SIZE + R.nextInt(Param.TILES_X - Param.WARP_SIZE*2); // Twice as far from edge
@@ -212,19 +219,9 @@ public class World {
         }
       }
 
-      addWarpGfx(_x, _y, false, Param.WARP_ROTATE_SPEED * 1, 0);
-      addWarpGfx(_x, _y, false, Param.WARP_ROTATE_SPEED * 2, 90);
-      addWarpGfx(_x, _y, true, -Param.WARP_ROTATE_SPEED * 1, 0);
-      Tile lastWarpTile = addWarpGfx(_x, _y, true, -Param.WARP_ROTATE_SPEED * 2, -90);
-
-//      lastWarpTile.setBounds(0, 0, lastWarpTile.textureRegion[0].getRegionWidth(), lastWarpTile.textureRegion[0].getRegionHeight());
-      lastWarpTile.setTouchable(Touchable.enabled);
-      lastWarpTile.addListener(new InputListener() {
-        public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
-          Gdx.app.log("WARP","clicked");
-        }
-      });
-
+      Warp w = new Warp(tiles[_x][_y]);
+      GameState.getInstance().getWarpStage().addActor(w);
+      GameState.getInstance().buildingSet.add(w);
 
       ParticleEffect clouds = new ParticleEffect();
       clouds.load(Gdx.files.internal("hell_portal_effect.txt"), Textures.getInstance().getAtlas());
@@ -237,6 +234,7 @@ public class World {
       zap.setPosition(Param.TILE_S * _x + Param.TILE_S/2, Param.TILE_S * _y);
       zap.allowCompletion();
 
+      // TODO - get rid of me?
       warps.put(new IVector2(_x,_y), zap);
 
     } while (++fTry < Param.N_PATCH_TRIES && fPlaced < Param.MAX_WARP);
@@ -245,16 +243,6 @@ public class World {
       return false;
     }
     return true;
-  }
-
-  private Tile addWarpGfx(final int x, final int y, final boolean flipped, final float speed, final float initialR) {
-    Tile warp = new Tile(x - Param.WARP_SIZE/2 + 2, y - Param.WARP_SIZE/2 + 2);
-    warp.setTexture("void", 1, flipped);
-    warp.setUserObject(speed);
-    warp.rotateBy(initialR);
-    warp.moveBy(0, -Param.TILE_S/2);
-    GameState.getInstance().getWarpStage().addActor(warp);
-    return warp;
   }
 
   private boolean tryPatchOfStuff(final int _x, final int _y, final boolean isForest, final int patchSize) { // Otherwise, is Tiberium

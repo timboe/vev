@@ -15,7 +15,8 @@ public enum BuildingType {
   kHWM,
   kWEQ,
   kZMQ,
-  kMINE;
+  kMINE,
+  kWARP;
 
   public static final int N_MODES = 3;
 

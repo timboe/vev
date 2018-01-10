@@ -73,6 +73,7 @@ public class UI {
   LabelDF displayEnergyLabel;
 
   private final YesNoButton yesNoButton = new YesNoButton();
+  private final StandingOrderButton standingOrderButton = new StandingOrderButton();
 
   public Button selectParticlesButton;
 
@@ -92,7 +93,6 @@ public class UI {
   private Button selectCross;
 
   private UI() {
-    reset();
   }
 
   private void separator(Table w, int colspan) {
@@ -151,8 +151,20 @@ public class UI {
     w.add(a).colspan(colspan).width(sizeX).height(sizeY).pad(SIZE_S/4);
   }
 
+  private Button addStandingOrderButton(BuildingType bt, Particle p) {
+    Button b = getImageButton("ball_" + p.getColourFromParticle().getString(), "toggle", SIZE_M);
+    b.setUserObject(new Pair<BuildingType, Particle>(bt, p));
+    b.addListener(standingOrderButton);
+    buildingSelectStandingOrder.get(bt).put(p, b);
+    Image arrow = getImage("arrow");
+    Container<Actor> ac = new Container<Actor>(arrow);
+    ac.width(SIZE_M).height(SIZE_M);
+    b.add(ac);
+    return b;
+  }
+
   private void addBuildingBlurb(Table bw, BuildingType bt) {
-    if (bt == BuildingType.kMINE) return;
+    if (bt == BuildingType.kMINE || bt == BuildingType.kWARP) return;
     for (int i = 0; i < BuildingType.N_MODES; ++i) {
       HorizontalGroup hg = new HorizontalGroup();
       Particle from = bt.getInput(i);
@@ -207,7 +219,6 @@ public class UI {
     BuildingButton buildingButtonHandler = new BuildingButton();
     QueueLengthSlider queueLengthSlider = new QueueLengthSlider();
     QueueButton queueButton = new QueueButton();
-    StandingOrderButton standingOrderButton = new StandingOrderButton();
 
     mainWindow = getWindow();
     selectWindow = getWindow();
@@ -220,6 +231,7 @@ public class UI {
     mainWindow.row();
     separator(mainWindow, 2);
     for (BuildingType bt : BuildingType.values()) {
+      if (bt == BuildingType.kWARP) continue;
       Image ib = new Image( Textures.getInstance().getTexture("building_" + bt.ordinal(), false) );
       Container<Actor> cont = new Container<Actor>();
       cont.setActor(ib);
@@ -305,19 +317,20 @@ public class UI {
       addBuildingBlurb(bw, bt);
       separator(bw, 6);
       //////////////////////
-      for (int i = 0; i < BuildingType.N_MODES; ++i) {
-        Particle p = bt.getOutputs(i).getKey(); // Key and value are always the same
-        if (p == null) continue;
-        Button b = getImageButton("ball_" + p.getColourFromParticle().getString(), "toggle", SIZE_M);
-        b.setUserObject(new Pair<BuildingType, Particle>(bt,p));
-        b.addListener(standingOrderButton);
-        buildingSelectStandingOrder.get(bt).put(p, b);
-        Image arrow = getImage("arrow");
-        Container<Actor> ac = new Container<Actor>(arrow);
-        ac.width(SIZE_M).height(SIZE_M);
-        b.add(ac);
-        addToWin(bw, b, SIZE_L, SIZE_M, 6);
-        bw.row();
+      if (bt == BuildingType.kWARP) {
+        for (Particle p : Particle.values()) {
+          Button b = addStandingOrderButton(bt, p);
+          addToWin(bw, b, SIZE_L+SIZE_M, SIZE_L, 6);
+          bw.row();
+        }
+      } else {
+        for (int i = 0; i < BuildingType.N_MODES; ++i) {
+          Particle p = bt.getOutputs(i).getKey(); // Key and value are always the same
+          if (p == null) continue;
+          Button b = addStandingOrderButton(bt, p);
+          addToWin(bw, b, SIZE_L+SIZE_M, SIZE_L, 6);
+          bw.row();
+        }
       }
       separator(bw, 6);
       //////////////////////

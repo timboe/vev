@@ -280,7 +280,7 @@ public class GameState {
 
   public Tile mapPathingDestination(Tile target) {
     if (target.mySprite != null && target.mySprite.getClass() == Building.class) {
-      return ((Building)target.mySprite).getPathingDestination();
+      return ((Building)target.mySprite).getQueuePathingTarget();
     } else if (target.getPathFindNeighbours().isEmpty()) {
       return null; // Cannot path here
     }

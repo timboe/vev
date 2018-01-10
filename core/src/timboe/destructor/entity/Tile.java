@@ -162,7 +162,7 @@ public class Tile extends Entity implements Node {
       }
     }
     for (Sprite s : set) {
-      Tile newDest = s.findPathingLocation(this, true, true); // Reproducible=True, requiresParking=True.
+      Tile newDest = s.findPathingLocation(this, true, true, true); // Reproducible=True, requiresParking=True, requireSameHeight=True.
       if (newDest != null) s.pathTo(newDest, null, null); // Try path to
       if (s.pathingList == null && newDest != null) newDest.tryRegSprite(s); // Else go straight to
     }
@@ -206,12 +206,6 @@ public class Tile extends Entity implements Node {
       }
       sr.rect(x1, y1, getWidth()/4, getHeight()/4);
     }
-  }
-
-  @Override
-  public void act(float delta) {
-    // So far - this will only be called on WARPs
-    rotateBy((Float)getUserObject() * delta);
   }
 
   @Override
