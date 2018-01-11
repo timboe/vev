@@ -87,8 +87,8 @@ public class UI {
   private EnumMap<BuildingType, ProgressBar> buildingSelectProgress;
   public EnumMap<BuildingType, EnumMap<Particle, Button>> buildingSelectStandingOrder;
 
-  public EnumMap<Colour, Button> selectButton;
-  private EnumMap<Colour, Label> selectLabel;
+  public EnumMap<Particle, Button> selectButton;
+  private EnumMap<Particle, Label> selectLabel;
   private Button selectTick;
   private Button selectCross;
 
@@ -250,17 +250,17 @@ public class UI {
     addToWin(mainWindow, settings, SIZE_L, SIZE_L, 1);
 
     // Selected window
-    selectButton = new EnumMap<Colour, Button>(Colour.class);
-    selectLabel = new EnumMap<Colour, Label>(Colour.class);
+    selectButton = new EnumMap<Particle, Button>(Particle.class);
+    selectLabel = new EnumMap<Particle, Label>(Particle.class);
     selectTick = getImageButton("tick");
     selectCross = getImageButton("cross");
-    for (Colour c : Colour.values()) {
-      Button b = getImageButton("ball_" + c.getString(), "toggle", SIZE_M);
+    for (Particle p : Particle.values()) {
+      Button b = getImageButton("ball_" + p.getColourFromParticle().getString(), "toggle", SIZE_M);
       Label lab = getLabel("");
       b.row();
       b.add(lab);
-      selectButton.put(c, b); // Added to window dynamically
-      selectLabel.put(c, lab);
+      selectButton.put(p, b); // Added to window dynamically
+      selectLabel.put(p, lab);
     }
 
     // Building build windows
@@ -386,18 +386,17 @@ public class UI {
   }
 
   public void doSelectParticle(final Set<Sprite> selected) {
-    Set<Colour> selectedColours = new HashSet<Colour>();
-    int counter[] = new int[Colour.values().length];
+    Set<Particle> selectedParticles = new HashSet<Particle>();
+    int counter[] = new int[Particle.values().length];
     for (final Sprite s : selected) {
-      Colour c = (Colour) s.getUserObject();
-      selectedColours.add(c);
-      ++counter[c.ordinal()];
+      selectedParticles.add((Particle) s.getUserObject());
+      ++counter[((Particle) s.getUserObject()).ordinal()];
     }
     selectWindow.clear();
-    for (Colour c : selectedColours) {
-      selectLabel.get(c).setText(Particle.getStringFromColour(c) + " (" + counter[c.ordinal()] + ")");
-      selectButton.get(c).setChecked(false);
-      addToWin(selectWindow, selectButton.get(c), SIZE_L+SIZE_M, SIZE_L, 2);
+    for (Particle p : selectedParticles) {
+      selectLabel.get(p).setText(p.getString() + " (" + counter[p.ordinal()] + ")");
+      selectButton.get(p).setChecked(false);
+      addToWin(selectWindow, selectButton.get(p), SIZE_L+SIZE_M, SIZE_L, 2);
       selectWindow.row();
     }
     addToWin(selectWindow, selectTick, SIZE_L, SIZE_L, 1);

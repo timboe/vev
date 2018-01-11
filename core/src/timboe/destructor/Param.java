@@ -54,6 +54,7 @@ public class Param {
   public static final int MAX_WARP = 3;
   public static final float WARP_TRANSPARENCY = 0.5f;
   public static final float WARP_ROTATE_SPEED = 3f;
+  public static final float WARP_SHAKE = 5f;
 
   public static final int N_TIBERIUM = 4; // Number of sprites
   public static final int N_BALLS = 6; // number of sprites

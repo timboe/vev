@@ -1,6 +1,12 @@
 package timboe.destructor.enums;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Random;
 
 import timboe.destructor.Param;
 
@@ -16,8 +22,13 @@ public enum Particle {
   kM,
   kQ;
 
+  private static final List<Particle> values = Collections.unmodifiableList(Arrays.asList(values()));
+  private static final int size = values.size();
+  private static final Random R = new Random();
 
-
+  public static Particle random() {
+    return values.get(R.nextInt(size));
+  }
 
   public String getString() {
     switch (this) {
@@ -51,7 +62,9 @@ public enum Particle {
       case kE: return Param.PARTICLE_E;
       case kM: return Param.PARTICLE_M;
       case kQ: return Param.PARTICLE_Q;
-      default: return null;
+      default:
+        Gdx.app.error("getHighlightColour","Unknown particle " + getString());
+        return null;
     }
   }
 

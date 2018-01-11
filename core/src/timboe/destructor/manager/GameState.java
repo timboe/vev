@@ -13,6 +13,7 @@ import timboe.destructor.Util;
 import timboe.destructor.entity.Building;
 import timboe.destructor.entity.Sprite;
 import timboe.destructor.entity.Tile;
+import timboe.destructor.entity.Warp;
 import timboe.destructor.enums.BuildingType;
 import timboe.destructor.enums.Cardinal;
 import timboe.destructor.enums.Colour;
@@ -126,36 +127,18 @@ public class GameState {
 
   public void tryNewParticles(boolean stressTest) {
     // Add a new sprite
-    List<Map.Entry<IVector2,ParticleEffect>> entries = new ArrayList<Map.Entry<IVector2,ParticleEffect>>(World.getInstance().warps.entrySet());
-    Map.Entry<IVector2,ParticleEffect> rWarp = entries.get( R.nextInt(entries.size()) );
-    IVector2 warp = rWarp.getKey();
+    List<Map.Entry<Warp,ParticleEffect>> entries = new ArrayList<Map.Entry<Warp,ParticleEffect>>(World.getInstance().warps.entrySet());
+    Map.Entry<Warp,ParticleEffect> rWarp = entries.get( R.nextInt(entries.size()) );
+    Warp warp = rWarp.getKey();
     rWarp.getValue().start();
-    Rectangle.tmp.set((warp.x - Param.WARP_SIZE / 2) * Param.TILE_S,
-        (warp.y - Param.WARP_SIZE / 2) * Param.TILE_S,
+    Rectangle.tmp.set((warp.coordinates.x - Param.WARP_SIZE / 2) * Param.TILE_S,
+        (warp.coordinates.y - Param.WARP_SIZE / 2) * Param.TILE_S,
         Param.WARP_SIZE * Param.TILE_S, Param.WARP_SIZE * Param.TILE_S);
-    if (Camera.getInstance().onScrean(Rectangle.tmp)) Camera.getInstance().addShake(5f);
+    Camera.getInstance().addShake( Rectangle.tmp, Param.WARP_SHAKE );
 
     int toPlace = Math.round(Util.clamp(Param.NEW_PARTICLE_MEAN + ((float)R.nextGaussian() * Param.NEW_PARTICLE_WIDTH), 1, Param.NEW_PARTICLE_MAX));
     if (stressTest) toPlace = 100000;
-    for (int tp = 0; tp < toPlace; ++tp) {
-      int placeTry = 0;
-      do {
-        double rAngle = -Math.PI + (R.nextFloat() * Math.PI * 2);
-        int tryX = (int) Math.round(warp.x + (2 * Param.WARP_SIZE / 3 * Math.cos(rAngle)));
-        int tryY = (int) Math.round(warp.y + (2 * Param.WARP_SIZE / 3 * Math.sin(rAngle)));
-        Tile tryTile = World.getInstance().getTile(tryX, tryY);
-        if (tryTile.getNeighbours().size() == 0) continue; // Non-pathable
-        Sprite s = new Sprite(tryX, tryY, tryTile);
-        s.moveBy(Param.TILE_S / 2, Param.TILE_S / 2);
-        s.pathTo(tryTile, null, null);
-        Colour c = Colour.random();
-        s.setTexture("ball_" + c.getString(), 6, false);
-        s.setUserObject(c);
-        spriteStage.addActor(s);
-        particleSet.add(s);
-        break;
-      } while (++placeTry < Param.N_PATCH_TRIES);
-    }
+    warp.newParticles(toPlace);
   }
 
   public void killSprite(Sprite s) {
@@ -416,4 +399,7 @@ public class GameState {
   }
 
 
+  public Set<Sprite> getParticleSet() {
+    return particleSet;
+  }
 }

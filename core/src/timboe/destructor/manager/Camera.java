@@ -92,7 +92,8 @@ public class Camera {
     return tileCamera.unproject(v);
   }
 
-  public void addShake(float amount) {
+  public void addShake(Rectangle r, float amount) {
+    if (!onScrean(r)) return;
     shake += amount;
   }
 

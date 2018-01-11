@@ -25,8 +25,8 @@ public class Sprite extends Entity {
   private static final List<Integer> walkSearchReproducible = Arrays.asList(0,1,2,3);
   public Tile myTile;
 
-  public Sprite(int x, int y, Tile t) {
-    super(x, y, Param.TILE_S * Param.SPRITE_SCALE);
+  public Sprite(Tile t) {
+    super(t.coordinates.x, t.coordinates.y, Param.TILE_S * Param.SPRITE_SCALE);
 
 
 //    this.addListener(new InputListener() {

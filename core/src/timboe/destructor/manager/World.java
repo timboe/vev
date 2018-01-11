@@ -34,7 +34,7 @@ public class World {
   public void dispose() { ourInstance = null; }
   private final Random R = new Random();
   private final Vector<Zone> allZones = new Vector<Zone>();
-  public final Map<IVector2, ParticleEffect> warps = new HashMap<IVector2, ParticleEffect>();
+  public final Map<Warp, ParticleEffect> warps = new HashMap<Warp, ParticleEffect>();
   public final Vector<IVector2> tiberium = new Vector<IVector2>();
   public final Vector<ParticleEffect> warpClouds = new Vector<ParticleEffect>();
   private boolean generated = false;
@@ -177,7 +177,7 @@ public class World {
   }
 
   private Sprite newSprite(int x, int y, String name, boolean isFoliage) {
-    Sprite s = new Sprite(x, y, tiles[x][y]);
+    Sprite s = new Sprite(tiles[x][y]);
     if (isFoliage) GameState.getInstance().getFoliageStage().addActor(s);
     else GameState.getInstance().getSpriteStage().addActor(s);
     s.setTexture(name, 1, R.nextBoolean());
@@ -241,8 +241,7 @@ public class World {
       zap.setPosition(Param.TILE_S * _x + Param.TILE_S/2, Param.TILE_S * _y);
       zap.allowCompletion();
 
-      // TODO - get rid of me?
-      warps.put(new IVector2(_x,_y), zap);
+      warps.put(w, zap);
 
     } while (++fTry < Param.N_PATCH_TRIES && fPlaced < Param.MAX_WARP);
     if (fPlaced < Param.MIN_WARP) {

@@ -3,13 +3,17 @@ package timboe.destructor.entity;
 import com.badlogic.gdx.Gdx;
 
 import java.util.EnumMap;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import timboe.destructor.Pair;
 import timboe.destructor.Param;
 import timboe.destructor.enums.BuildingType;
 import timboe.destructor.enums.Cardinal;
 import timboe.destructor.enums.Particle;
+import timboe.destructor.manager.GameState;
 import timboe.destructor.manager.World;
 import timboe.destructor.pathfinding.OrderlyQueue;
 import timboe.destructor.pathfinding.PathFinding;
@@ -28,6 +32,7 @@ public class Building extends Entity {
   private float timeDisassemble;
   private float timeMove;
   public Sprite spriteProcessing = null;
+  private EnumMap<Particle, List<Sprite>> holdingPen = new EnumMap<Particle, List<Sprite>>(Particle.class);
 
   public Building(Tile t, BuildingType type) {
     super(t.coordinates.x - (type == BuildingType.kWARP ? (Param.WARP_SIZE/2) - 2 : 1),
@@ -35,6 +40,7 @@ public class Building extends Entity {
     buildingPathingLists = new EnumMap<Particle, List<Tile>>(Particle.class);
     this.type = type;
     centre = t;
+    for (Particle p : Particle.values()) holdingPen.put(p, new LinkedList<Sprite>());
     if (type == BuildingType.kWARP) return; // Warp does not need anything below
     centre.setBuilding(this);
     for (Cardinal D : Cardinal.n8) centre.n8.get(D).setBuilding(this);
@@ -51,8 +57,7 @@ public class Building extends Entity {
   }
 
   public void updatePathingStartPoint() {
-    boolean requireSameHeight = (type != BuildingType.kWARP);
-    pathingStartPoint = Sprite.findPathingLocation(centre, true, false, requireSameHeight); //reproducible=True, requireParking=False
+    pathingStartPoint = Sprite.findPathingLocation(centre, true, false, false); //reproducible=True, requireParking=False
     if (pathingStartPoint == null) {
       Gdx.app.error("updatePathingStartPoint", "Building could not find a pathing start point!");
       return;
@@ -60,8 +65,12 @@ public class Building extends Entity {
     // TODO update all pathingLists to use this now start point
   }
 
+  protected Tile getPathingStartPoint(Particle p) {
+    return pathingStartPoint;
+  }
+
   public void updateDemoPathingList(Particle p, Tile t) {
-    if (getDestination() != t) pathingList = PathFinding.doAStar(pathingStartPoint, t, null, null);
+    if (getDestination() != t) pathingList = PathFinding.doAStar(getPathingStartPoint(p), t, null, null);
     // The "pathingList" holds our speculative/demo destination
     pathingParticle = p;
   }
@@ -108,14 +117,38 @@ public class Building extends Entity {
   @Override
   public void act(float delta) {
     timeMove += delta;
-    timeDisassemble += delta;
     if (timeMove > 0.2f) {
       timeMove -= 0.2f;
-      myQueue.moveAlongMoveAlong();
+      if (myQueue != null) myQueue.moveAlongMoveAlong();
+      for (Particle p : Particle.values()) {
+        if (holdingPen.get(p).isEmpty()) continue;
+        Sprite s = holdingPen.get(p).remove(0);
+        GameState.getInstance().getSpriteStage().addActor(s);
+        GameState.getInstance().getParticleSet().add(s);
+      }
     }
+    if (spriteProcessing == null) return;
+    timeDisassemble += delta;
     if (timeDisassemble < 1f) return;
     timeDisassemble -= 1f;
+    Pair<Particle,Particle> myDecay = type.getOutputs( (Particle) spriteProcessing.getUserObject() );
+    placeParticle( myDecay.getKey() );
+    placeParticle( myDecay.getValue() );
     spriteProcessing = null; // Kill it
+  }
+
+  protected void placeParticle(Particle p) {
+    if (p == null) return;
+    Sprite s = new Sprite(getPathingStartPoint(p));
+    s.moveBy(Param.TILE_S / 2, Param.TILE_S / 2);
+
+    List<Tile> pList = getPathingList(p); // Do I have a standing order?
+    if (pList == null) s.pathTo(getPathingStartPoint(p), null, null);
+    else s.pathingList = new LinkedList<Tile>(pList); // Clone
+
+    s.setTexture("ball_" + p.getColourFromParticle().getString(), 6, false);
+    s.setUserObject(p);
+    holdingPen.get(p).add(s); // Don't throw into world all at once
   }
 
   // Updates the pathing grid

@@ -74,9 +74,10 @@ public class GameScreen implements Screen {
     ////////////////////////////////////////////////
     camera.getTileViewport().apply();
 
-//    GameState.getInstance().getStage().getRoot().setCullingArea( Camera.getInstance().getCullBoxTile() );
-
     state.getTileStage().getRoot().setCullingArea( camera.getCullBoxTile() );
+    state.getBuildingStage().getRoot().setCullingArea( camera.getCullBoxTile() );
+    state.getWarpStage().getRoot().setCullingArea( camera.getCullBoxTile() );
+
     state.getTileStage().draw();
     state.getBuildingStage().draw();
     state.getWarpStage().draw(); // Note - warp stage has different blending
@@ -139,10 +140,10 @@ public class GameScreen implements Screen {
     sr.begin(ShapeRenderer.ShapeType.Filled);
     for (Building b : state.buildingSet) b.drawSelected(sr);
     sr.end();
-    sr.begin(ShapeRenderer.ShapeType.Line);
-    Gdx.graphics.getGL20().glLineWidth(4f / camera.getZoom());
+    sr.begin(ShapeRenderer.ShapeType.Filled);
+//    Gdx.graphics.getGL20().glLineWidth(4f / camera.getZoom());
     for (Building b : state.buildingSet) b.drawPath(sr);
-    Gdx.graphics.getGL20().glLineWidth(2f); // Default?
+//    Gdx.graphics.getGL20().glLineWidth(2f); // Default?
     sr.end();
 
     ////////////////////////////////////////////////

@@ -31,7 +31,6 @@ public class Tile extends Entity implements Node {
 
   public final Vector3 centreScaleTile = new Vector3(); // My centre in TILE coordinates
   public final Vector3 centreScaleSprite = new Vector3(); // My centre in SPRITE coordinated (scaled x2)
-  public final IVector2 coordinates = new IVector2(); // X-Y tile grid coordinates
 
   public final Set<Sprite> containedSprites = new HashSet<Sprite>(); // Moving sprites on this tile
   public final Map<Sprite, Cardinal> parkingSpaces = new HashMap<Sprite, Cardinal>(); // Four sprites allowed to "park" here
@@ -46,7 +45,6 @@ public class Tile extends Entity implements Node {
     super(x, y);
     setType(TileType.kGROUND, kBLACK, 0);
     mask = false;
-    coordinates.set(x,y);
     centreScaleTile.set(getX() + getHeight()/2, getY() + getHeight()/2, 0); // Tile scale
     centreScaleSprite.set(centreScaleTile);
     centreScaleSprite.scl(Param.SPRITE_SCALE); // Sprite scale

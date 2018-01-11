@@ -23,7 +23,7 @@ public enum BuildingType {
   final Pair<Particle, Particle> returnValue = new Pair<Particle,Particle>();
 
   public boolean accepts(Sprite s) {
-    Colour c = (Colour) s.getUserObject();
+    Colour c = ((Particle) s.getUserObject()).getColourFromParticle();
     Particle p = Particle.getParticleFromColour(c);
     for (int i = 0; i < N_MODES; ++i) {
       if (getInput(i) == p) return true;
@@ -81,6 +81,13 @@ public enum BuildingType {
         if (mode == 2) return Particle.kQ;
       case kMINE: default: return null;
     }
+  }
+
+  public Pair<Particle,Particle> getOutputs(Particle p) {
+    for (int i = 0; i < N_MODES; ++i) {
+      if (getInput(i) == p) return getOutputs(i);
+    }
+    return null;
   }
 
   public Pair<Particle,Particle> getOutputs(int mode) {

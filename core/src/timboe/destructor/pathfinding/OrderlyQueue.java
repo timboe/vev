@@ -99,7 +99,7 @@ public class OrderlyQueue {
       Cardinal D = queueStart;
       do {
         if (t.parkingSpaces.containsValue(D)) { // Someone is here - go for the previous place
-          Gdx.app.log("getFreeLocationInQueue","Accepted sprite to "+t.coordinates+" "+D.getString());
+          Gdx.app.debug("getFreeLocationInQueue","Accepted sprite to "+t.coordinates+" "+D.getString());
           if (previousT != null) return new Pair<Tile, Cardinal>(previousT, previousD);
           return null;
         } else { // We can put the sprite here! Make a note
