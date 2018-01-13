@@ -4,9 +4,13 @@ package timboe.destructor.manager;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.ParticleEffect;
+import com.badlogic.gdx.graphics.g2d.ParticleEffectPool;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.utils.Array;
+
+import sun.security.krb5.internal.PAData;
 import timboe.destructor.DestructorGame;
 import timboe.destructor.Param;
 import timboe.destructor.Util;
@@ -16,10 +20,9 @@ import timboe.destructor.entity.Tile;
 import timboe.destructor.entity.Warp;
 import timboe.destructor.enums.BuildingType;
 import timboe.destructor.enums.Cardinal;
-import timboe.destructor.enums.Colour;
 import timboe.destructor.enums.Particle;
+import timboe.destructor.enums.QueueType;
 import timboe.destructor.enums.UIMode;
-import timboe.destructor.pathfinding.IVector2;
 import timboe.destructor.pathfinding.OrderlyQueue;
 import timboe.destructor.screen.GameScreen;
 import timboe.destructor.screen.TitleScreen;
@@ -51,9 +54,21 @@ public class GameState {
   private Stage uiStage;
   private Stage buildingStage;
 
+  public int queueSize;
+  public QueueType queueType;
+
   private final Random R = new Random();
 
   private float tickTime = 0;
+
+  public float playerEnergy;
+  public float warpEnergy;
+
+  private float warpSpawnTime;
+  private float newParticlesMean;
+  private float newParticlesWidth;
+
+  public int debug;
 
   public final Set<Sprite> particleSet = new HashSet<Sprite>(); // All movable sprites
   public final Set<Building> buildingSet = new HashSet<Building>(); // All buildings
@@ -66,6 +81,9 @@ public class GameState {
     return ourInstance;
   }
   public static void create() { ourInstance = new GameState(); }
+
+  public ParticleEffectPool dustEffectPool;
+  public Array<ParticleEffectPool.PooledEffect> dustEffects;
 
   private TitleScreen theTitleScreen;
   private GameScreen theGameScreen;
@@ -118,11 +136,16 @@ public class GameState {
       }
     }
 
-    if (tickTime < 5) return; // Tick every second
-    tickTime -= 5;
+    if (tickTime < warpSpawnTime) return;
+    tickTime -= warpSpawnTime;
+    if (warpSpawnTime > Param.WARP_SPAWN_TIME_MIN) {
+      warpSpawnTime -= Param.WARP_SPAWN_TIME_REDUCTION;
+      newParticlesMean += Param.WARP_SPAWN_MEAN_INCREASE;
+      newParticlesWidth += Param.WARP_SPAWN_WIDTH_INCREASE;
+      Gdx.app.log("act","Warp: new SpawnTime: "+warpSpawnTime + " meanP: " + newParticlesMean + " widthP: " + newParticlesWidth);
+    }
 
     tryNewParticles(false);
-
   }
 
   public void tryNewParticles(boolean stressTest) {
@@ -130,38 +153,43 @@ public class GameState {
     List<Map.Entry<Warp,ParticleEffect>> entries = new ArrayList<Map.Entry<Warp,ParticleEffect>>(World.getInstance().warps.entrySet());
     Map.Entry<Warp,ParticleEffect> rWarp = entries.get( R.nextInt(entries.size()) );
     Warp warp = rWarp.getKey();
-    rWarp.getValue().start();
-    Rectangle.tmp.set((warp.coordinates.x - Param.WARP_SIZE / 2) * Param.TILE_S,
-        (warp.coordinates.y - Param.WARP_SIZE / 2) * Param.TILE_S,
-        Param.WARP_SIZE * Param.TILE_S, Param.WARP_SIZE * Param.TILE_S);
-    Camera.getInstance().addShake( Rectangle.tmp, Param.WARP_SHAKE );
 
-    int toPlace = Math.round(Util.clamp(Param.NEW_PARTICLE_MEAN + ((float)R.nextGaussian() * Param.NEW_PARTICLE_WIDTH), 1, Param.NEW_PARTICLE_MAX));
+    int toPlace = Math.round(Util.clamp(newParticlesMean + ((float)R.nextGaussian() * newParticlesWidth), 1, Param.NEW_PARTICLE_MAX));
     if (stressTest) toPlace = 100000;
-    warp.newParticles(toPlace);
+    boolean placed = warp.newParticles(toPlace);
+
+    if (placed) {
+      rWarp.getValue().start();
+      Rectangle.tmp.set((warp.coordinates.x - Param.WARP_SIZE / 2) * Param.TILE_S,
+          (warp.coordinates.y - Param.WARP_SIZE / 2) * Param.TILE_S,
+          Param.WARP_SIZE * Param.TILE_S, Param.WARP_SIZE * Param.TILE_S);
+      Camera.getInstance().addShake(Rectangle.tmp, Param.WARP_SHAKE);
+    }
+  }
+
+  public void dustEffect(Tile t) {
+    ParticleEffectPool.PooledEffect e = dustEffectPool.obtain();
+    e.setPosition(t.centreScaleTile.x, t.centreScaleTile.y);
+    dustEffects.add(e);
   }
 
   public void killSprite(Sprite s) {
     particleSet.remove(s);
     selectedSet.remove(s);
+    dustEffect(s.myTile);
     s.remove(); // From its renderer
   }
 
   public boolean isSelecting() {
-    UIMode mode = UI.getInstance().uiMode;
-    if ((mode == UIMode.kNONE || mode == UIMode.kWITH_PARTICLE_SELECTION) && selectStartWorld.dst(selectEndWorld) > 6) {
-      UI.getInstance().uiMode = UIMode.kMAKING_SELECTION;
-      UI.getInstance().selectParticlesButton.setChecked( true );
-    }
-    return (UI.getInstance().uiMode == UIMode.kMAKING_SELECTION);
+    return (!UI.getInstance().doingPlacement && selectStartWorld.dst(selectEndWorld) > 6);
   }
 
   public void placeBuilding() {
     if (!buildingLocationGood) return;
     Building b = new Building(placeLocation, UI.getInstance().buildingBeingPlaced);
-    b.setTexture("build_3_3", 1, false);
     buildingStage.addActor(b);
     buildingSet.add(b);
+    playerEnergy += UI.getInstance().buildingBeingPlaced.getCost();
     repath();
     UI.getInstance().showMain();
   }
@@ -177,7 +205,7 @@ public class GameState {
 
   public void doConfirmStandingOrder() {
     BuildingType bt = UI.getInstance().selectedBuilding.getType();
-    UI.getInstance().selectedBuilding.updatePathingList(); // Save the pathing list
+    UI.getInstance().selectedBuilding.savePathingList(); // Save the pathing list
     UI.getInstance().doingPlacement = false;
     // Set all buttons to false
     for (Particle p : Particle.values()) {
@@ -187,10 +215,12 @@ public class GameState {
   }
 
 
-  public void reduceSelectedSet() {
+  public void reduceSelectedSet(Particle p, boolean invert) {
     Set<Sprite> toRemove = new HashSet<Sprite>();
     for (Sprite s : selectedSet) {
-      if (!UI.getInstance().selectButton.get( s.getUserObject() ).isChecked()) {
+      boolean removeMe = (s.getParticle() != p);
+      if (invert) removeMe = !removeMe;
+      if (removeMe) {
         toRemove.add(s);
         s.selected = false;
       }
@@ -311,13 +341,12 @@ public class GameState {
 
           if (!s.selected) continue; // If move order, critter must be selected
           if (firstSprite == null) firstSprite = s;
+          if (Math.hypot(s.getX() - firstSprite.getX(), s.getY() - firstSprite.getY()) > Param.TILE_S * Param.WARP_SIZE) { // TODO try and make this larger to improve performance
+            // Do this (and any others far away or different target) in another iteration of the do loop
+            anotherRoundNeeded = true;
+            continue;
+          }
 
-        }
-
-        if (Math.hypot(s.getX() - firstSprite.getX(), s.getY() - firstSprite.getY()) > Param.TILE_S * Param.WARP_SIZE) { // TODO try and make this larger to improve performance
-          // Do this (and any others far away or different target) in another iteration of the do loop
-          anotherRoundNeeded = true;
-          continue;
         }
 
         if (s != firstSprite && firstSprite.getPathingList() == null) { // Pathing failed for the firstSprite :(
@@ -337,6 +366,10 @@ public class GameState {
     } while (anotherRoundNeeded);
     Gdx.app.log("pathingInternal","Pathing of " + pathed.size() + " sprites took " + rounds + " rounds");
     if (!doRepath && pathed.size() > 0) Sounds.getInstance().moveOrder();
+
+    if (doRepath) {
+      for (Building b : buildingSet) b.doRepath();
+    }
   }
 
 
@@ -384,6 +417,18 @@ public class GameState {
     warpStage.getBatch().setColor(warpStageC);
     particleSet.clear();
     buildingSet.clear();
+    dustEffects = new Array<ParticleEffectPool.PooledEffect>();
+    ParticleEffect dustEffect = new ParticleEffect();
+    dustEffect.load(Gdx.files.internal("dust_effect.txt"), Textures.getInstance().getAtlas());
+    dustEffectPool = new ParticleEffectPool(dustEffect, 10, 100);
+    playerEnergy = Param.PLAYER_STARTING_ENERGY;
+    warpEnergy = Param.WARP_STARTING_ENERGY;
+    debug = Param.DEBUG_INTIAL;
+    queueType = Param.QUEUE_INITIAL_TYPE;
+    queueSize = Param.QUEUE_INITIAL_SIZE;
+    warpSpawnTime = Param.WARP_SPAWN_TIME_INITIAL;
+    newParticlesMean = Param.NEW_PARTICLE_MEAN;
+    newParticlesWidth = Param.NEW_PARTICLE_WIDTH;
   }
 
   public void dispose() {

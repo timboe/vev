@@ -92,6 +92,19 @@ public enum Particle {
     }
   }
 
+  // TODO tweak
+  public int getCreateEnergy() {
+    switch (this) {
+      case kH: return 25;
+      case kW: return 25;
+      case kZ: return 25;
+      case kE: return 25;
+      case kM: return 25;
+      case kQ: return 25;
+      default: return 0;
+    }
+  }
+
   public static String getStringFromColour(Colour c) {
     return getParticleFromColour(c).getString();
   }

@@ -8,6 +8,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 
 /**
  * Created by Tim on 06/01/2018.
+ * Use distance-field shader to render label text
+ * Causes flush - use sparingly
  * https://stackoverflow.com/questions/36517050/libgdx-custom-shader-for-textbutton-font
  */
 

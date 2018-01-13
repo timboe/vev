@@ -27,7 +27,7 @@ import timboe.destructor.manager.World;
 
 public class OrderlyQueue {
   final Tile queueStart;
-  List<Tile> queue = new LinkedList<Tile>();
+  private List<Tile> queue = new LinkedList<Tile>();
   final Building myBuilding;
 
   public OrderlyQueue(int x, int y, List<Tile> customQueue, Building b) {
@@ -37,6 +37,12 @@ public class OrderlyQueue {
     queueStart = queue.get(0);
     repath();
   }
+
+
+  public List<Tile> getQueue() {
+    return queue;
+  }
+
 
   public Tile getQueuePathingTarget() {
     return queue.get( queue.size()-1 );
@@ -58,6 +64,7 @@ public class OrderlyQueue {
             // Is the sprite *actually here*
             if (myBuilding.spriteProcessing == null && s.nudgeDestination.isZero()) { // Arrived
               if (toRemove != null) Gdx.app.error("moveAlongMoveAlong", "should only ever be one toRemove");
+              // Goodby - this particle is now DEAD
               toRemove = s; // from its tile
               GameState.getInstance().killSprite(s); // from the game manager
               myBuilding.spriteProcessing = s; // Now the last ref to the sprite is held only by the building
@@ -138,10 +145,10 @@ public class OrderlyQueue {
   }
 
   public static void hintQueue(final Tile start) {
-    switch (Param.QUEUE_TYPE) {
+    switch (GameState.getInstance().queueType) {
       case kSIMPLE: hintSimpleQueue(start); break;
       case kSPIRAL: hintSpiralQueue(start); break;
-      default: Gdx.app.error("hintQueue","Unknown - " + Param.QUEUE_TYPE);
+      default: Gdx.app.error("hintQueue","Unknown - " + GameState.getInstance().queueType);
     }
   }
 
@@ -150,7 +157,7 @@ public class OrderlyQueue {
     int step = 0, move = 3, toAdd =3;
     boolean inc = true;
     Cardinal D = Cardinal.kE;
-    while (step++ < Param.QUEUE_SIZE) {
+    while (step++ < GameState.getInstance().queueSize) {
       if (!t.buildable()) return;
       t.setHighlightColour(Param.HIGHLIGHT_YELLOW);
       t = t.n8.get(D);
@@ -166,7 +173,7 @@ public class OrderlyQueue {
   private static void hintSimpleQueue(final Tile start) {
     int step = 0, x = start.coordinates.x, y = start.coordinates.y, move = 3;
     World w = World.getInstance();
-    while (step++ < Param.QUEUE_SIZE) {
+    while (step++ < GameState.getInstance().queueSize) {
       if (!Util.inBounds(x,y) || !w.getTile(x,y).buildable()) return;
       w.getTile(x,y).setHighlightColour(Param.HIGHLIGHT_YELLOW);
       if (Math.abs(move) > 1) {
@@ -180,10 +187,10 @@ public class OrderlyQueue {
   }
 
   public void doQueue(int xStart, int yStart) {
-    switch (Param.QUEUE_TYPE) {
+    switch (GameState.getInstance().queueType) {
       case kSIMPLE: doSimpleQueue(xStart, yStart); break;
       case kSPIRAL: doSpiralQueue(xStart, yStart); break;
-      default: Gdx.app.error("hintQueue","Unknown - " + Param.QUEUE_TYPE);
+      default: Gdx.app.error("hintQueue","Unknown - " + GameState.getInstance().queueType);
     }
     queue.get( queue.size()-1 ).type = TileType.kGROUND; // Re-set to ground to make pathable
   }
@@ -193,7 +200,7 @@ public class OrderlyQueue {
     int step = 0, move = 3, toAdd =3;
     boolean inc = true;
     Cardinal D = Cardinal.kE, previousD = Cardinal.kN;
-    while (step++ < Param.QUEUE_SIZE) {
+    while (step++ < GameState.getInstance().queueSize) {
       if (!t.buildable()) return;
       Cardinal from, to;
       if (D == previousD) {
@@ -230,7 +237,7 @@ public class OrderlyQueue {
     v.add(new Pair<Cardinal, Cardinal>(Cardinal.kW, Cardinal.kN));
     v.add(new Pair<Cardinal, Cardinal>(Cardinal.kW, Cardinal.kE));
     v.add(new Pair<Cardinal, Cardinal>(Cardinal.kS, Cardinal.kE));
-    while (step++ < Param.QUEUE_SIZE) {
+    while (step++ < GameState.getInstance().queueSize) {
       Cardinal D = getExitLocation(v.get(element).getValue());
       boolean isClockwise = getQueueClockwise(v.get(element).getKey(), v.get(element).getValue());
       Tile t = w.getTile(x, y);
@@ -272,24 +279,5 @@ public class OrderlyQueue {
   private Cardinal getExitLocation(Cardinal to) {
     if (to == Cardinal.kN || to == Cardinal.kE) return Cardinal.kNE;
     return Cardinal.kSW;
-//
-//    if      (from == Cardinal.kE && to == Cardinal.kN) return Cardinal.kNE;
-//    else if (from == Cardinal.kE && to == Cardinal.kS) return Cardinal.kSE;
-//
-//    else if (from == Cardinal.kW && to == Cardinal.kN) return Cardinal.kNE;
-//    else if (from == Cardinal.kW && to == Cardinal.kS) return Cardinal.kSW;
-//
-//    else if (from == Cardinal.kE && to == Cardinal.kW) return Cardinal.kSW;
-//    else if (from == Cardinal.kW && to == Cardinal.kE) return Cardinal.kNE;
-//    else if (from == Cardinal.kN && to == Cardinal.kS) return Cardinal.kSW;
-//    else if (from == Cardinal.kS && to == Cardinal.kN) return Cardinal.kNE;
-//
-//
-//    else if (from == Cardinal.kS && to == Cardinal.kW) return Cardinal.kSW;
-//    else if (from == Cardinal.kS && to == Cardinal.kE) return Cardinal.kNE;
-//
-//
-//    else if (from == Cardinal.kN && to == Cardinal.kE) return Cardinal.kNE;
-//    else if (from == Cardinal.kN && to == Cardinal.kW) return Cardinal.kSW;
   }
 }

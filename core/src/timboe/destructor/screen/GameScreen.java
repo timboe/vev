@@ -4,7 +4,9 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.ParticleEffect;
+import com.badlogic.gdx.graphics.g2d.ParticleEffectPool;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -66,13 +68,16 @@ public class GameScreen implements Screen {
     delta = Math.min(delta, Param.FRAME_TIME * 10); // Do not let this get too extreme
     renderClear();
 
-    if (!world.getGenerated()) return;
+    if (!world.getGenerated()) {
+      world.act(delta);
+      return;
+    }
     camera.update(delta);
     state.act(delta);
     ui.act(delta);
 
     ////////////////////////////////////////////////
-    camera.getTileViewport().apply();
+    // Tiles, buildings and warps
 
     state.getTileStage().getRoot().setCullingArea( camera.getCullBoxTile() );
     state.getBuildingStage().getRoot().setCullingArea( camera.getCullBoxTile() );
@@ -82,21 +87,10 @@ public class GameScreen implements Screen {
     state.getBuildingStage().draw();
     state.getWarpStage().draw(); // Note - warp stage has different blending
 
-    // TODO optimise additive mixed batching
-    state.getWarpStage().getBatch().begin();
-    for (ParticleEffect e : world.warpClouds) {
-      e.update(delta);
-      e.draw(state.getWarpStage().getBatch());
-    }
-    for (ParticleEffect e : world.warps.values()) {
-      e.update(delta);
-      if (!e.isComplete()) e.draw(state.getWarpStage().getBatch());
-    }
-    state.getWarpStage().getBatch().end();
-
     ////////////////////////////////////////////////
+    // Debug render
 
-    if (Param.DEBUG > 2) {
+    if (GameState.getInstance().debug > 2) {
       sr.setProjectionMatrix(Camera.getInstance().getTileCamera().combined);
       sr.begin(ShapeRenderer.ShapeType.Line);
       sr.setColor(1, 1, 1, 1);
@@ -119,35 +113,53 @@ public class GameScreen implements Screen {
     }
 
     ////////////////////////////////////////////////
-    camera.getSpriteViewport().apply();
+    // Particles & Foliage (x2 zoom)
 
     state.getSpriteStage().getRoot().setCullingArea( camera.getCullBoxSprite() );
     state.getFoliageStage().getRoot().setCullingArea( camera.getCullBoxSprite() );
     state.getSpriteStage().draw();
     state.getFoliageStage().draw();
 
+    ////////////////////////////////////////////////
+    // FX
+
+    // TODO optimise additive mixed batching
+    Batch batch = state.getTileStage().getBatch();
+    batch.begin();
+    for (ParticleEffect e : world.warpClouds) {
+      e.draw(batch, delta);
+    }
+    for (ParticleEffect e : world.warps.values()) {
+      if (!e.isComplete()) e.draw(batch, delta);
+    }
+    for (int i = state.dustEffects.size - 1; i >= 0; i--) {
+      ParticleEffectPool.PooledEffect e = state.dustEffects.get(i);
+      e.draw(batch, delta);
+      if (e.isComplete()) {
+        e.free();
+        state.dustEffects.removeIndex(i);
+      }
+    }
+    batch.end();
+
+    ////////////////////////////////////////////////
+    // Building select and pathing
+
+    sr.setProjectionMatrix(camera.getTileCamera().combined);
+    sr.begin(ShapeRenderer.ShapeType.Filled);
+    for (Building b : state.buildingSet) {
+      b.drawSelected(sr);
+      b.drawPath(sr);
+    }
+    sr.end();
+
     sr.setProjectionMatrix(camera.getSpriteCamera().combined);
-    sr.setColor(1, 0, 0, 1);
     sr.begin(ShapeRenderer.ShapeType.Filled);
     for (Sprite s : state.particleSet) s.drawSelected(sr);
     sr.end();
 
     ////////////////////////////////////////////////
-    camera.getTileViewport().apply();
-
-    sr.setProjectionMatrix(camera.getTileCamera().combined);
-    sr.setColor(1, 0, 0, 1);
-    sr.begin(ShapeRenderer.ShapeType.Filled);
-    for (Building b : state.buildingSet) b.drawSelected(sr);
-    sr.end();
-    sr.begin(ShapeRenderer.ShapeType.Filled);
-//    Gdx.graphics.getGL20().glLineWidth(4f / camera.getZoom());
-    for (Building b : state.buildingSet) b.drawPath(sr);
-//    Gdx.graphics.getGL20().glLineWidth(2f); // Default?
-    sr.end();
-
-    ////////////////////////////////////////////////
-    camera.getUiViewport().apply();
+    // Select box
 
     if (state.isSelecting()) { // Draw select box
       sr.setProjectionMatrix(Camera.getInstance().getTileCamera().combined);
@@ -159,6 +171,9 @@ public class GameScreen implements Screen {
 
       sr.end();
     }
+
+    ////////////////////////////////////////////////
+    // UI
 
     state.getUIStage().draw();
   }

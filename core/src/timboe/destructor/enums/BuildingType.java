@@ -5,6 +5,7 @@ import com.badlogic.gdx.Gdx;
 import timboe.destructor.Pair;
 import timboe.destructor.Param;
 import timboe.destructor.entity.Sprite;
+import timboe.destructor.manager.GameState;
 
 /**
  * Created by Tim on 28/12/2017.
@@ -43,7 +44,7 @@ public enum BuildingType {
   }
 
   public float getCost() {
-    return Math.round(getBaseCost() + (getQueueCost() * Param.QUEUE_SIZE));
+    return Math.round(getBaseCost() + (getQueueCost() * GameState.getInstance().queueSize));
   }
 
   // TODO
@@ -111,6 +112,13 @@ public enum BuildingType {
         if (mode == 2) return returnValue.set(null,null);
       case kMINE: default: return returnValue.set(null,null);
     }
+  }
+
+  public int getOutputEnergy(Particle p) {
+    for (int i = 0; i < N_MODES; ++i) {
+      if (getInput(i) == p) return getOutputEnergy(i);
+    }
+    return 0;
   }
 
   public int getOutputEnergy(int mode) {

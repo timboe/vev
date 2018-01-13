@@ -1,6 +1,8 @@
 package timboe.destructor.pathfinding;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.g2d.ParticleEmitter;
+
 import timboe.destructor.entity.Sprite;
 import timboe.destructor.entity.Tile;
 
@@ -26,6 +28,7 @@ public class PathFinding {
    * @return Shortest path from start to goal, or null if none found
    */
   public static <T extends Node<T>> LinkedList<T> doAStar(T start, T goal, Set<T> solutionKnownFrom, Set<Sprite> doneSet) {
+    if (goal == null) Gdx.app.error("PathFinding", "Called with goal = " + goal + " start = " + start);
     if (goal.getNeighbours().size() == 0) return null;
 
     Set<T> closed = new HashSet<T>();

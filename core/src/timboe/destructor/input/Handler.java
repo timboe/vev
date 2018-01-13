@@ -31,8 +31,8 @@ public class Handler extends InputAdapter {
   @Override
   public boolean keyUp (int keycode) {
     if (keycode == Input.Keys.D) {
-      if (++Param.DEBUG == 4) Param.DEBUG = 0;
-      GameState.getInstance().getTileStage().setDebugAll( Param.DEBUG > 1 );
+      if (++GameState.getInstance().debug == 4) GameState.getInstance().debug = 0;
+      GameState.getInstance().getTileStage().setDebugAll( GameState.getInstance().debug > 1 );
     } else if (keycode == Input.Keys.N) {
       World.getInstance().generate();
     } else if (keycode == Input.Keys.G) {

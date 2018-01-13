@@ -6,7 +6,6 @@ package timboe.destructor.enums;
 
 public enum UIMode {
   kNONE,
-  kMAKING_SELECTION,
   kWITH_PARTICLE_SELECTION,
   kWITH_BUILDING_SELECTION,
   kPLACE_BUILDING

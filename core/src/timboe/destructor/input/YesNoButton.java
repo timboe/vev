@@ -22,8 +22,8 @@ public class YesNoButton extends ChangeListener {
         case kPLACE_BUILDING:
           GameState.getInstance().placeBuilding();
           break;
-        case kWITH_PARTICLE_SELECTION:
-          GameState.getInstance().reduceSelectedSet();
+        case kWITH_BUILDING_SELECTION:
+          GameState.getInstance().doConfirmStandingOrder();
           break;
         default:
           Gdx.app.error("YesNoButton", "YES is not defined for this ui mode" + UI.getInstance().uiMode.toString());

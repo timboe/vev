@@ -40,6 +40,7 @@ public class Tile extends Entity implements Node {
 
   public Cardinal queueExit; // Which sub-space is my last
   public boolean queueClockwise; // If true, clockwise - if false, counterclockwise
+  private String queueTex; // Delayed rendering
 
   public Tile(int x, int y) {
     super(x, y);
@@ -69,10 +70,14 @@ public class Tile extends Entity implements Node {
   public void setQueue(Cardinal from, Cardinal to, Building b, Cardinal queueExit, boolean queueClockwise) {
     type = TileType.kQUEUE;
     removeSprite();
-    setTexture("queue_"+tileColour.getString()+"_"+from.getString()+"_"+to.getString(), 1, false);
+    queueTex = "queue_"+tileColour.getString()+"_"+from.getString()+"_"+to.getString();
     this.queueExit = queueExit;
     this.queueClockwise = queueClockwise;
     mySprite = b;
+  }
+
+  public void setQueueTexture() {
+    setTexture(queueTex, 1, false);
   }
 
   public boolean buildable() {

@@ -6,6 +6,8 @@ import com.badlogic.gdx.math.Vector2;
 import timboe.destructor.Param;
 import timboe.destructor.Util;
 import timboe.destructor.enums.Cardinal;
+import timboe.destructor.enums.Particle;
+import timboe.destructor.manager.Sounds;
 import timboe.destructor.manager.World;
 import timboe.destructor.pathfinding.PathFinding;
 
@@ -24,30 +26,29 @@ public class Sprite extends Entity {
   private static final List<Integer> walkSearchRandom = Arrays.asList(0,1,2,3);
   private static final List<Integer> walkSearchReproducible = Arrays.asList(0,1,2,3);
   public Tile myTile;
+  private float idleTime;
+  private final float boredTime = 10f + (Param.PARTICLE_BORED_TIME * Util.R.nextFloat()); // Leave at least 10 seconds
 
   public Sprite(Tile t) {
     super(t.coordinates.x, t.coordinates.y, Param.TILE_S * Param.SPRITE_SCALE);
-
-
-//    this.addListener(new InputListener() {
-//      public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
-//        Gdx.app.log("SPRITE","clicked");
-//      }
-//    });
-
     myTile = t;
+  }
+
+  public Particle getParticle() {
+    return (Particle) getUserObject();
   }
 
   public void pathTo(Tile target, Set<Tile> solutionKnownFrom, Set<Sprite> doneSet) {
     if (target == null) return;
     if (myTile.getPathFindNeighbours().isEmpty()) {
       Tile jumpTo = findPathingLocation(myTile, true, false, true); // Find nearby, reproducible TRUE, require parking FALSE, sameHeight TRUE
-      jumpTo.tryRegSprite(this);
+      if (jumpTo != null) jumpTo.tryRegSprite(this);
     }
     if (target.getPathFindNeighbours().isEmpty()) target = findPathingLocation(target, true, false, true); // Find nearby, reproducible TRUE, require parking FALSE, sameHeight TRUE
-    pathingList = PathFinding.doAStar(myTile, target, solutionKnownFrom, doneSet);
+    pathingList = (myTile != null && target != null ? PathFinding.doAStar(myTile, target, solutionKnownFrom, doneSet) : null);
     if (pathingList == null) Gdx.app.error("pathTo", "Warning, pathTo failed for " + this);
-//    Gdx.app.log("pathTo", "Pathed in " + (pathingList != null ? pathingList.size() : " NULL ") + " steps");
+    idleTime = 0;
+    Gdx.app.debug("pathTo", "Pathed in " + (pathingList != null ? pathingList.size() : " NULL ") + " steps");
   }
 
   private boolean doMove(float x, float y, float delta) {
@@ -62,7 +63,7 @@ public class Sprite extends Entity {
   public void act(float delta) {
     time += delta;
     // Pathing
-    if(pathingList != null && !pathingList.isEmpty()) { // We've got some walkin' to do
+    if (pathingList != null && !pathingList.isEmpty()) { // We've got some walkin' to do
       Tile next = pathingList.get(0);
       boolean atDestination = doMove(next.centreScaleSprite.x, next.centreScaleSprite.y, delta);
       if (atDestination) { // Reached destination
@@ -75,18 +76,26 @@ public class Sprite extends Entity {
     } else if (!nudgeDestination.isZero()) { // Nudge
       boolean atDestination = doMove(nudgeDestination.x, nudgeDestination.y, delta);
       if (atDestination) nudgeDestination.setZero();
+    } else if (myTile.mySprite == null) { // I.e. I am not in a queue, otherwise this would be a building
+      idleTime += delta;
     }
     if (frames == 1 || time < Param.ANIM_TIME) return;
     time -= Param.ANIM_TIME;
+    if (idleTime > boredTime && Util.R.nextFloat() < Param.PARTICLE_WANDER_CHANCE) {
+      int newX = (int) Util.clamp(myTile.coordinates.x - (Param.PARTICLE_WANDER_R/2) + Util.R.nextInt(Param.PARTICLE_WANDER_R), 1, Param.TILES_X - 2);
+      int newY = (int) Util.clamp(myTile.coordinates.y - (Param.PARTICLE_WANDER_R/2) + Util.R.nextInt(Param.PARTICLE_WANDER_R), 1, Param.TILES_Y - 2);
+      pathTo(World.getInstance().getTile(newX, newY), null, null);
+    }
     if (++frame == frames) {
       frame = 0;
-//      Sounds.getInstance().foot();
+      Sounds.getInstance().foot();
     }
   }
 
   public void setNudgeDestination(Tile t, Cardinal D) {
     nudgeDestination.set(t.getX() * Param.SPRITE_SCALE + getWidth()/2, t.getY() * Param.SPRITE_SCALE + getHeight()/2);
     nudgeDestination.add(D == kSE || D == kNE ? Param.TILE_S : 0, D == kNW || D== kNE ? Param.TILE_S : 0);
+    idleTime = 0;
   }
 
   // Check a (nearby) space for its connectedness, suitability for particle and if it has parking space
@@ -135,6 +144,7 @@ public class Sprite extends Entity {
         }
       }
     }
+    Gdx.app.error("findPathingLocation","Failed to find anywhere good for " + t.coordinates.toString() + " :(");
     return null;
   }
 

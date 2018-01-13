@@ -447,6 +447,19 @@
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
+            <key type="filename">large/clock.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>16,16,32,32</rect>
+                <key>scale9Paddings</key>
+                <rect>16,16,32,32</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
             <key type="filename">large/lightning_1.png</key>
             <key type="filename">large/tree_g_0.png</key>
             <key type="filename">large/tree_g_2.png</key>
@@ -469,6 +482,7 @@
             <key type="filename">large/queue_simple.png</key>
             <key type="filename">large/queue_spiral.png</key>
             <key type="filename">large/void.png</key>
+            <key type="filename">large/wrecking.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
                 <point_f>0.5,0.5</point_f>
@@ -478,6 +492,32 @@
                 <rect>32,32,64,64</rect>
                 <key>scale9Paddings</key>
                 <rect>32,32,64,64</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">large/select.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>16,8,32,16</rect>
+                <key>scale9Paddings</key>
+                <rect>16,8,32,16</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">large/separator.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>32,1,64,2</rect>
+                <key>scale9Paddings</key>
+                <rect>32,1,64,2</rect>
                 <key>scale9FromFile</key>
                 <false/>
             </struct>

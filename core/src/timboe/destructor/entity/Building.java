@@ -3,13 +3,12 @@ package timboe.destructor.entity;
 import com.badlogic.gdx.Gdx;
 
 import java.util.EnumMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
 import timboe.destructor.Pair;
 import timboe.destructor.Param;
+import timboe.destructor.Util;
 import timboe.destructor.enums.BuildingType;
 import timboe.destructor.enums.Cardinal;
 import timboe.destructor.enums.Particle;
@@ -29,10 +28,12 @@ public class Building extends Entity {
   private final BuildingType type;
   private final Tile centre;
   private Tile pathingStartPoint;
-  private float timeDisassemble;
-  private float timeMove;
+  private float timeDisassemble, timeMove, timeBuild, timeHoldingPen, nextReleaseTime;
   public Sprite spriteProcessing = null;
   private EnumMap<Particle, List<Sprite>> holdingPen = new EnumMap<Particle, List<Sprite>>(Particle.class);
+  private int built;
+  private boolean updateBuildingTexture;
+  private float dissasembleTime = 1f; //TODO real value here
 
   public Building(Tile t, BuildingType type) {
     super(t.coordinates.x - (type == BuildingType.kWARP ? (Param.WARP_SIZE/2) - 2 : 1),
@@ -41,14 +42,17 @@ public class Building extends Entity {
     this.type = type;
     centre = t;
     for (Particle p : Particle.values()) holdingPen.put(p, new LinkedList<Sprite>());
+    setTexture("build_3_3", 1, false);
+    built = 0;
     if (type == BuildingType.kWARP) return; // Warp does not need anything below
+    ////////////////////////////////////////////////////////////////////////////
     centre.setBuilding(this);
     for (Cardinal D : Cardinal.n8) centre.n8.get(D).setBuilding(this);
-    repath();
+    updatePathingGrid();
     myQueue = new OrderlyQueue(centre.coordinates.x - 1, centre.coordinates. y - 2, null, this);
+    built = myQueue.getQueue().size();
     // Move any sprites which are here
     moveOn();
-    myQueue.moveOn();
     updatePathingStartPoint();
   }
 
@@ -62,7 +66,18 @@ public class Building extends Entity {
       Gdx.app.error("updatePathingStartPoint", "Building could not find a pathing start point!");
       return;
     }
-    // TODO update all pathingLists to use this now start point
+  }
+
+  // Loop over the "demo" pathing and all stored pathing lists -
+  public void updatePathingDestinations() {
+    if (pathingList != null) {
+      pathingList = PathFinding.doAStar(getPathingStartPoint(pathingParticle), getDestination(), null, null);
+    }
+    for (Particle p : Particle.values()) {
+      if (getBuildingPathingList(p) != null) {
+        buildingPathingLists.put(p, PathFinding.doAStar(getPathingStartPoint(p), getBuildingDestination(p), null, null) );
+      }
+    }
   }
 
   protected Tile getPathingStartPoint(Particle p) {
@@ -75,16 +90,16 @@ public class Building extends Entity {
     pathingParticle = p;
   }
 
-  public void updatePathingList() {
+  public void savePathingList() {
     if (pathingParticle == null) {
-      Gdx.app.error("updatePathingList","Called with pathingParticle = null?!");
+      Gdx.app.log("savePathingList","Called with pathingParticle = null. Maybe OK was chosen with no pathing list in progress?");
       return;
     }
     if (pathingList == null) {
-      Gdx.app.error("updatePathingList","Called with pathingList = null?!");
+      Gdx.app.error("savePathingList","Called with pathingList = null?!");
       return;
     }
-    Gdx.app.log("updatePathingList","Set pathing " + pathingParticle + " to " + pathingList.get(0).toString());
+    Gdx.app.log("savePathingList","Set pathing " + pathingParticle + " to " + pathingList.get(0).toString());
     buildingPathingLists.put(pathingParticle, pathingList);
     pathingList = null;
     pathingParticle = null;
@@ -95,10 +110,8 @@ public class Building extends Entity {
     pathingList = null;
   }
 
-
-
   public Pair<Tile, Cardinal> getFreeLocationInQueue(Sprite s) {
-    if (!type.accepts(s)) return null;
+    if (!type.accepts(s) || built > 0) return null;
     return myQueue.getFreeLocationInQueue();
   }
 
@@ -108,32 +121,65 @@ public class Building extends Entity {
 
   // Moves on any sprites under the building
   private void moveOn() {
+    myQueue.moveOn();
     centre.moveOnSprites();
     for (Cardinal D1 : Cardinal.n8) {
       centre.n8.get(D1).moveOnSprites();
     }
   }
 
+  private void build(float delta) {
+    timeBuild += delta;
+    if (timeBuild < Param.BUILD_TIME) return;
+    timeBuild -= Param.BUILD_TIME;
+    if (--built == 0)  {
+      GameState.getInstance().dustEffect( centre );
+      for (Cardinal D : Cardinal.n8) GameState.getInstance().dustEffect( centre.n8.get(D) );
+      updateBuildingTexture = true;
+      // Introduce a small delay to let the cloud get into place
+    }
+    myQueue.getQueue().get(built).setQueueTexture();
+    GameState.getInstance().dustEffect( myQueue.getQueue().get(built) );
+  }
+
   @Override
   public void act(float delta) {
+    if (built > 0) {
+      build(delta);
+      return;
+    }
+
     timeMove += delta;
-    if (timeMove > 0.2f) {
-      timeMove -= 0.2f;
+    if (timeMove > Param.BUILDING_QUEUE_MOVE_TIME) {
+      timeMove -= Param.BUILDING_QUEUE_MOVE_TIME;
       if (myQueue != null) myQueue.moveAlongMoveAlong();
+      if (updateBuildingTexture) {
+        setTexture("building_" + type.ordinal(), 1, false);
+        updateBuildingTexture = false;
+      }
+    }
+
+    timeHoldingPen += delta;
+    if (timeHoldingPen > nextReleaseTime) {
+      timeHoldingPen -= nextReleaseTime;
+      nextReleaseTime = Util.R.nextFloat() * Param.NEW_PARTICLE_TIME;
       for (Particle p : Particle.values()) {
         if (holdingPen.get(p).isEmpty()) continue;
         Sprite s = holdingPen.get(p).remove(0);
         GameState.getInstance().getSpriteStage().addActor(s);
         GameState.getInstance().getParticleSet().add(s);
+        GameState.getInstance().dustEffect(s.myTile);
       }
     }
+
     if (spriteProcessing == null) return;
     timeDisassemble += delta;
-    if (timeDisassemble < 1f) return;
-    timeDisassemble -= 1f;
-    Pair<Particle,Particle> myDecay = type.getOutputs( (Particle) spriteProcessing.getUserObject() );
-    placeParticle( myDecay.getKey() );
-    placeParticle( myDecay.getValue() );
+    if (timeDisassemble < dissasembleTime) return;
+    timeDisassemble -= dissasembleTime;
+    Pair<Particle,Particle> myDecay = type.getOutputs( spriteProcessing.getParticle() );
+    placeParticle( myDecay.getKey() ); // Output #1
+    placeParticle( myDecay.getValue() ); // Output #2
+    GameState.getInstance().playerEnergy += type.getOutputEnergy( spriteProcessing.getParticle() );
     spriteProcessing = null; // Kill it
   }
 
@@ -142,7 +188,7 @@ public class Building extends Entity {
     Sprite s = new Sprite(getPathingStartPoint(p));
     s.moveBy(Param.TILE_S / 2, Param.TILE_S / 2);
 
-    List<Tile> pList = getPathingList(p); // Do I have a standing order?
+    List<Tile> pList = getBuildingPathingList(p); // Do I have a standing order?
     if (pList == null) s.pathTo(getPathingStartPoint(p), null, null);
     else s.pathingList = new LinkedList<Tile>(pList); // Clone
 
@@ -151,8 +197,15 @@ public class Building extends Entity {
     holdingPen.get(p).add(s); // Don't throw into world all at once
   }
 
+  // Update my pathing orders as the world map has changed
+  public void doRepath() {
+    updatePathingStartPoint();
+    updatePathingDestinations();
+
+  }
+
   // Updates the pathing grid
-  private void repath() {
+  private void updatePathingGrid() {
     World w = World.getInstance();
     w.updateTilePathfinding(centre);
     for (Cardinal D1 : Cardinal.n8) {

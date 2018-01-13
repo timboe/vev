@@ -7,6 +7,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import timboe.destructor.Param;
 import timboe.destructor.enums.BuildingType;
 import timboe.destructor.enums.QueueType;
+import timboe.destructor.manager.GameState;
 import timboe.destructor.manager.UI;
 
 /**
@@ -16,9 +17,9 @@ import timboe.destructor.manager.UI;
 public class QueueButton extends ChangeListener {
   @Override
   public void changed(ChangeEvent event, Actor actor) {
-    Param.QUEUE_TYPE = (QueueType)actor.getUserObject();
+    GameState.getInstance().queueType = (QueueType)actor.getUserObject();
     BuildingType bt = UI.getInstance().buildingBeingPlaced;
-    UI.getInstance().buildingWindowQSimple.get(bt).setChecked(Param.QUEUE_TYPE == QueueType.kSIMPLE);
-    UI.getInstance().buildingWindowQSpiral.get(bt).setChecked(Param.QUEUE_TYPE == QueueType.kSPIRAL);
+    UI.getInstance().buildingWindowQSimple.get(bt).setChecked(GameState.getInstance().queueType == QueueType.kSIMPLE);
+    UI.getInstance().buildingWindowQSpiral.get(bt).setChecked(GameState.getInstance().queueType == QueueType.kSPIRAL);
   }
 }

@@ -17,6 +17,7 @@ import timboe.destructor.Param;
 import timboe.destructor.enums.Cardinal;
 import timboe.destructor.enums.Colour;
 import timboe.destructor.enums.Particle;
+import timboe.destructor.manager.GameState;
 import timboe.destructor.manager.Textures;
 import timboe.destructor.pathfinding.IVector2;
 
@@ -68,17 +69,20 @@ public class Entity extends Actor {
     textureRegion[0] = null;
   }
 
-  public void setTexture(final String name, final int frames, boolean flipped) {
+  public boolean setTexture(final String name, final int frames, boolean flipped) {
+    boolean ok = true;
     for (int frame = 0; frame < frames; ++frame) {
       final String texName = name + (frames > 1 ? "_" + frame : "");
       TextureRegion r = Textures.getInstance().getTexture(texName, flipped);
       if (r == null) {
         Gdx.app.error("setTexture", "Texture error " + texName);
         r = Textures.getInstance().getTexture("missing3", false);
+        ok = false;
       }
       setTexture(r, frame);
     }
     this.frames = frames;
+    return ok;
   }
 
   public Tile getDestination() {
@@ -86,7 +90,13 @@ public class Entity extends Actor {
     return pathingList.get( pathingList.size() - 1 );
   }
 
-  public List<Tile> getPathingList(Particle p) {
+  public Tile getBuildingDestination(Particle p) {
+    if (buildingPathingLists.get(p) == null || buildingPathingLists.get(p).isEmpty()) return null;
+    final int s = buildingPathingLists.get(p).size();
+    return buildingPathingLists.get(p).get( s - 1 );
+  }
+
+  public List<Tile> getBuildingPathingList(Particle p) {
     return buildingPathingLists.get(p);
   }
 
@@ -117,6 +127,7 @@ public class Entity extends Actor {
 
   public void drawSelected(ShapeRenderer sr) {
     if (!selected) return;
+    sr.setColor(1, 0, 0, 1);
     float off = Param.FRAME * 0.25f / (float)Math.PI;
     final float xC = getX() + getWidth()/2f, yC = getY() + getHeight()/2f;
     for (float a = (float)-Math.PI; a < Math.PI; a += 2f*Math.PI/3f) {
@@ -129,7 +140,7 @@ public class Entity extends Actor {
   }
 
   public void drawPath(ShapeRenderer sr) {
-    if (!selected) return;
+    if (!selected && GameState.getInstance().debug == 0) return;
     if (pathingList != null) { // in-progress
       sr.setColor(pathingParticle.getHighlightColour());
       drawList(pathingList, sr, pathingParticle.getStandingOrderOffset());
@@ -152,7 +163,7 @@ public class Entity extends Actor {
       Tile current = l.get(i);
       if (i == 0) {
         for (Cardinal D : Cardinal.n8) {
-          if (current.n8.get(D).mySprite == this) {
+          if (current.n8.get(D).mySprite == this) { // This connects to the queue too.... TODO change
             previous = current.n8.get(D);
             break;
           }
