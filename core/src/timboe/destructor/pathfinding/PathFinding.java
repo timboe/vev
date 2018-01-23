@@ -3,6 +3,7 @@ package timboe.destructor.pathfinding;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.ParticleEmitter;
 
+import timboe.destructor.Pair;
 import timboe.destructor.entity.Sprite;
 import timboe.destructor.entity.Tile;
 
@@ -16,6 +17,8 @@ import java.util.*;
  */
 public class PathFinding {
 
+  private static PathingCache cache = new PathingCache();
+
   /**
    * A Star pathfinding. Note that the heuristic has to be monotonic:
    * {@code h(x) <=
@@ -27,9 +30,15 @@ public class PathFinding {
    *            Goal node
    * @return Shortest path from start to goal, or null if none found
    */
-  public static <T extends Node<T>> LinkedList<T> doAStar(T start, T goal, Set<T> solutionKnownFrom, Set<Sprite> doneSet) {
-    if (goal == null) Gdx.app.error("PathFinding", "Called with goal = " + goal + " start = " + start);
+  public static <T extends Node<T>> LinkedList<T> doAStar(T start, T goal, Set<T> solutionKnownFrom, Set<Sprite> doneSet, PathingCache<T> cache) {
+    if (goal == null || start == null) Gdx.app.error("PathFinding", "Called with goal = " + goal + " start = " + start);
     if (goal.getNeighbours().size() == 0) return null;
+
+    //TODO this still isn't working properly :(
+//    LinkedList<T> cacheHit = cache.getCacheHit(start, goal);
+//    if (cacheHit != null) {
+//      return cacheHit;
+//    }
 
     Set<T> closed = new HashSet<T>();
     Map<T, T> fromMap = new HashMap<T, T>();
@@ -37,7 +46,6 @@ public class PathFinding {
     Map<T, Double> gScore = new HashMap<T, Double>();
     final Map<T, Double> fScore = new HashMap<T, Double>();
     PriorityQueue<T> open = new PriorityQueue<T>(11, new Comparator<T>() {
-
       public int compare(T nodeA, T nodeB) {
         return Double.compare(fScore.get(nodeA), fScore.get(nodeB));
       }
@@ -51,12 +59,11 @@ public class PathFinding {
       T current = open.poll();
       if (current.equals(goal)) { // I found it on my own
 
-//        Gdx.app.error("pathFinding","TOTAL pathfind");
         while (current != null) {
           route.add(0, current);
-//          Gdx.app.error("  ADD T - ",((Tile)current).x + "," + ((Tile)current).y);
           current = fromMap.get(current);
         }
+        cache.addToCache(start, goal, route);
         return route;
 
       } else if (solutionKnownFrom != null && solutionKnownFrom.contains(current)) { // Someone else knows how to take it from here
@@ -88,6 +95,7 @@ public class PathFinding {
 //          Gdx.app.error("  ADD - U",((Tile)current).x + "," + ((Tile)current).y);
           current = fromMap.get(current);
         }
+        cache.addToCache(start, goal, route);
         return route;
       }
 

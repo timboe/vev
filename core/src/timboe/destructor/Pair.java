@@ -1,5 +1,7 @@
 package timboe.destructor;
 
+import timboe.destructor.entity.Tile;
+
 public class Pair<A, B> {
   private A first;
   private B second;
@@ -19,7 +21,6 @@ public class Pair<A, B> {
     this.second = second;
     return this;
   }
-
 
   public A getKey() {
       return first;

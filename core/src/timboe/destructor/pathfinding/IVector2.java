@@ -1,5 +1,7 @@
 package timboe.destructor.pathfinding;
 
+import java.util.Map;
+
 public class IVector2 implements Comparable {
   public int x;
   public int y;
@@ -27,6 +29,10 @@ public class IVector2 implements Comparable {
   public void set(IVector2 v) {
     this.x = v.x;
     this.y = v.y;
+  }
+
+  public float dst(IVector2 v) {
+    return (float)Math.hypot(this.x - v.x, this.y - v.y);
   }
 
   @Override

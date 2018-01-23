@@ -14,6 +14,7 @@ import timboe.destructor.enums.Cardinal;
 import timboe.destructor.enums.Particle;
 import timboe.destructor.manager.GameState;
 import timboe.destructor.manager.World;
+import timboe.destructor.pathfinding.IVector2;
 import timboe.destructor.pathfinding.OrderlyQueue;
 import timboe.destructor.pathfinding.PathFinding;
 
@@ -34,6 +35,7 @@ public class Building extends Entity {
   private int built;
   private boolean updateBuildingTexture;
   private float dissasembleTime = 1f; //TODO real value here
+  private Patch myTiberiumPatch;
 
   public Building(Tile t, BuildingType type) {
     super(t.coordinates.x - (type == BuildingType.kWARP ? (Param.WARP_SIZE/2) - 2 : 1),
@@ -49,11 +51,25 @@ public class Building extends Entity {
     centre.setBuilding(this);
     for (Cardinal D : Cardinal.n8) centre.n8.get(D).setBuilding(this);
     updatePathingGrid();
-    myQueue = new OrderlyQueue(centre.coordinates.x - 1, centre.coordinates. y - 2, null, this);
-    built = myQueue.getQueue().size();
+    updatePathingStartPoint();
+    if (type != BuildingType.kMINE) {
+      myQueue = new OrderlyQueue(centre.coordinates.x - 1, centre.coordinates.y - 2, null, this);
+      built = myQueue.getQueue().size();
+    } else {
+      built = 1;
+      for (Patch p : World.getInstance().tiberium) {
+        if (myTiberiumPatch == null || p.coordinates.dst(coordinates) < myTiberiumPatch.coordinates.dst(coordinates)) {
+          myTiberiumPatch = p;
+        }
+      }
+      updateDemoPathingList(Particle.kH, World.getInstance().getTile(
+          myTiberiumPatch.coordinates.x + (-Param.WARP_SIZE/2) + Util.R.nextInt( Param.WARP_SIZE ),
+          myTiberiumPatch.coordinates.y + (-Param.WARP_SIZE/2) + Util.R.nextInt( Param.WARP_SIZE )
+          ));
+      savePathingList();
+    }
     // Move any sprites which are here
     moveOn();
-    updatePathingStartPoint();
   }
 
   public BuildingType getType() {
@@ -71,11 +87,11 @@ public class Building extends Entity {
   // Loop over the "demo" pathing and all stored pathing lists -
   public void updatePathingDestinations() {
     if (pathingList != null) {
-      pathingList = PathFinding.doAStar(getPathingStartPoint(pathingParticle), getDestination(), null, null);
+      pathingList = PathFinding.doAStar(getPathingStartPoint(pathingParticle), getDestination(), null, null, GameState.getInstance().pathingCache);
     }
     for (Particle p : Particle.values()) {
       if (getBuildingPathingList(p) != null) {
-        buildingPathingLists.put(p, PathFinding.doAStar(getPathingStartPoint(p), getBuildingDestination(p), null, null) );
+        buildingPathingLists.put(p, PathFinding.doAStar(getPathingStartPoint(p), getBuildingDestination(p), null, null, GameState.getInstance().pathingCache) );
       }
     }
   }
@@ -85,7 +101,7 @@ public class Building extends Entity {
   }
 
   public void updateDemoPathingList(Particle p, Tile t) {
-    if (getDestination() != t) pathingList = PathFinding.doAStar(getPathingStartPoint(p), t, null, null);
+    if (getDestination() != t) pathingList = PathFinding.doAStar(getPathingStartPoint(p), t, null, null, GameState.getInstance().pathingCache);
     // The "pathingList" holds our speculative/demo destination
     pathingParticle = p;
   }
@@ -121,11 +137,17 @@ public class Building extends Entity {
 
   // Moves on any sprites under the building
   private void moveOn() {
-    myQueue.moveOn();
+    if (myQueue != null) myQueue.moveOn();
     centre.moveOnSprites();
     for (Cardinal D1 : Cardinal.n8) {
       centre.n8.get(D1).moveOnSprites();
     }
+  }
+
+  private void addTruck() {
+    // This can be NULL as WARP will never call this
+    Truck t = new Truck(getPathingStartPoint(null), this);
+    GameState.getInstance().getSpriteStage().addActor(t);
   }
 
   private void build(float delta) {
@@ -136,10 +158,13 @@ public class Building extends Entity {
       GameState.getInstance().dustEffect( centre );
       for (Cardinal D : Cardinal.n8) GameState.getInstance().dustEffect( centre.n8.get(D) );
       updateBuildingTexture = true;
+      if (type == BuildingType.kMINE) addTruck();
       // Introduce a small delay to let the cloud get into place
     }
-    myQueue.getQueue().get(built).setQueueTexture();
-    GameState.getInstance().dustEffect( myQueue.getQueue().get(built) );
+    if (myQueue != null) {
+      myQueue.getQueue().get(built).setQueueTexture();
+      GameState.getInstance().dustEffect(myQueue.getQueue().get(built));
+    }
   }
 
   @Override
@@ -165,10 +190,14 @@ public class Building extends Entity {
       nextReleaseTime = Util.R.nextFloat() * Param.NEW_PARTICLE_TIME;
       for (Particle p : Particle.values()) {
         if (holdingPen.get(p).isEmpty()) continue;
-        Sprite s = holdingPen.get(p).remove(0);
-        GameState.getInstance().getSpriteStage().addActor(s);
-        GameState.getInstance().getParticleSet().add(s);
-        GameState.getInstance().dustEffect(s.myTile);
+        int N = holdingPen.get(p).size() > 5 ? holdingPen.get(p).size() / 10 : 1; // If lots - place lots at a time
+        for (int i = 0; i < N; ++i) {
+          Sprite s = holdingPen.get(p).remove(0);
+          s.moveBy( Util.R.nextInt(Param.TILE_S ), Util.R.nextInt(Param.TILE_S )  );
+          GameState.getInstance().getSpriteStage().addActor(s);
+          GameState.getInstance().getParticleSet().add(s);
+          GameState.getInstance().dustEffect(s.myTile);
+        }
       }
     }
 
@@ -189,7 +218,7 @@ public class Building extends Entity {
     s.moveBy(Param.TILE_S / 2, Param.TILE_S / 2);
 
     List<Tile> pList = getBuildingPathingList(p); // Do I have a standing order?
-    if (pList == null) s.pathTo(getPathingStartPoint(p), null, null);
+    if (pList == null) s.pathTo( s.findPathingLocation(getPathingStartPoint(p), true, true, true), null, null);  // random direction=True, needs parking=True, requireSameHeight=True
     else s.pathingList = new LinkedList<Tile>(pList); // Clone
 
     s.setTexture("ball_" + p.getColourFromParticle().getString(), 6, false);
@@ -201,7 +230,6 @@ public class Building extends Entity {
   public void doRepath() {
     updatePathingStartPoint();
     updatePathingDestinations();
-
   }
 
   // Updates the pathing grid

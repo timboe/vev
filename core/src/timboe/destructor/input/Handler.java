@@ -8,6 +8,7 @@ import timboe.destructor.Param;
 import timboe.destructor.enums.Particle;
 import timboe.destructor.manager.Camera;
 import timboe.destructor.manager.GameState;
+import timboe.destructor.manager.Sounds;
 import timboe.destructor.manager.World;
 
 public class Handler extends InputAdapter {
@@ -35,6 +36,8 @@ public class Handler extends InputAdapter {
       GameState.getInstance().getTileStage().setDebugAll( GameState.getInstance().debug > 1 );
     } else if (keycode == Input.Keys.N) {
       World.getInstance().generate();
+    } else if (keycode == Input.Keys.M) {
+      Sounds.getInstance().toggleMusic();
     } else if (keycode == Input.Keys.G) {
       GameState.getInstance().tryNewParticles(true);
     } else if (keycode == Input.Keys.ENTER) {

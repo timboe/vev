@@ -1,5 +1,6 @@
 package timboe.destructor;
 
+import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 
@@ -72,7 +73,8 @@ public class Param {
 
   public static final int N_TIBERIUM = 4; // Number of sprites
   public static final int N_BALLS = 6; // number of sprites
-  public static final int MAX_FRAMES = Math.max(N_TIBERIUM, N_BALLS);
+  public static final int N_TRUCK = 8;
+  public static final int MAX_FRAMES = Math.max(N_TIBERIUM, Math.max(N_BALLS, N_TRUCK));
 
   public static final float HILL_IN_HILL_PROB = .2f;
   public static final float STAIRS_PROB = .8f;
@@ -120,6 +122,8 @@ public class Param {
   public static final Color PARTICLE_Q = new Color(64/255f, 141/255f, 174/255f, 1f);
 
   public static final int DEBUG_INTIAL = 0;
+  private static final boolean FAKE_ANDROID = true;
+  public static final boolean IS_ANDROID = FAKE_ANDROID || Gdx.app.getType() == Application.ApplicationType.Android;
 
   public static final int QUEUE_INITIAL_SIZE = 9;
   public static final QueueType QUEUE_INITIAL_TYPE = QueueType.kSIMPLE;

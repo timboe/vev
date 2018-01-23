@@ -116,7 +116,8 @@ public class Camera {
   }
 
   public void translate(float x, float y) {
-    desiredPos.add(x, y);
+
+    desiredPos.add(x * currentZoom, y * currentZoom);
   }
 
   public void velocity(float x, float y) {

@@ -7,6 +7,7 @@ import timboe.destructor.Param;
 import timboe.destructor.Util;
 import timboe.destructor.enums.Cardinal;
 import timboe.destructor.enums.Particle;
+import timboe.destructor.manager.GameState;
 import timboe.destructor.manager.Sounds;
 import timboe.destructor.manager.World;
 import timboe.destructor.pathfinding.PathFinding;
@@ -21,7 +22,7 @@ import static timboe.destructor.enums.Cardinal.kSE;
 
 public class Sprite extends Entity {
 
-  private final Vector2 velocity = new Vector2();
+  protected final Vector2 velocity = new Vector2();
   public final Vector2 nudgeDestination = new Vector2();
   private static final List<Integer> walkSearchRandom = Arrays.asList(0,1,2,3);
   private static final List<Integer> walkSearchReproducible = Arrays.asList(0,1,2,3);
@@ -45,7 +46,7 @@ public class Sprite extends Entity {
       if (jumpTo != null) jumpTo.tryRegSprite(this);
     }
     if (target.getPathFindNeighbours().isEmpty()) target = findPathingLocation(target, true, false, true); // Find nearby, reproducible TRUE, require parking FALSE, sameHeight TRUE
-    pathingList = (myTile != null && target != null ? PathFinding.doAStar(myTile, target, solutionKnownFrom, doneSet) : null);
+    pathingList = (myTile != null && target != null ? PathFinding.doAStar(myTile, target, solutionKnownFrom, doneSet, GameState.getInstance().pathingCache) : null);
     if (pathingList == null) Gdx.app.error("pathTo", "Warning, pathTo failed for " + this);
     idleTime = 0;
     Gdx.app.debug("pathTo", "Pathed in " + (pathingList != null ? pathingList.size() : " NULL ") + " steps");
@@ -59,19 +60,21 @@ public class Sprite extends Entity {
     return atDestination;
   }
 
-  @Override
-  public void act(float delta) {
-    time += delta;
+  protected void atFinalDestination(Tile next, boolean wasParked) {
+    if (!wasParked) { // I cannot stay here! Find me somewhere else
+      Tile newDest = findPathingLocation(next, false, true, true); // Wander from "next", random direction, needs parking, requireSameHeight=True
+      if (newDest != null) pathTo(newDest, null, null);
+    }
+  }
+
+  protected void actMovement(float delta) {
     // Pathing
     if (pathingList != null && !pathingList.isEmpty()) { // We've got some walkin' to do
       Tile next = pathingList.get(0);
       boolean atDestination = doMove(next.centreScaleSprite.x, next.centreScaleSprite.y, delta);
       if (atDestination) { // Reached destination
         boolean wasParked = pathingList.remove(0).tryRegSprite(this);
-        if (pathingList.isEmpty() && !wasParked) { // I cannot stay here! Find me somewhere else
-          Tile newDest = findPathingLocation(next, false, true, true); // Wander from "next", random direction, needs parking, requireSameHeight=True
-          if (newDest != null) pathTo(newDest, null, null);
-        }
+        if (pathingList.isEmpty()) atFinalDestination(next, wasParked);
       }
     } else if (!nudgeDestination.isZero()) { // Nudge
       boolean atDestination = doMove(nudgeDestination.x, nudgeDestination.y, delta);
@@ -79,12 +82,19 @@ public class Sprite extends Entity {
     } else if (myTile.mySprite == null) { // I.e. I am not in a queue, otherwise this would be a building
       idleTime += delta;
     }
+  }
+
+  @Override
+  public void act(float delta) {
+    time += delta;
+    actMovement(delta);
     if (frames == 1 || time < Param.ANIM_TIME) return;
     time -= Param.ANIM_TIME;
     if (idleTime > boredTime && Util.R.nextFloat() < Param.PARTICLE_WANDER_CHANCE) {
       int newX = (int) Util.clamp(myTile.coordinates.x - (Param.PARTICLE_WANDER_R/2) + Util.R.nextInt(Param.PARTICLE_WANDER_R), 1, Param.TILES_X - 2);
       int newY = (int) Util.clamp(myTile.coordinates.y - (Param.PARTICLE_WANDER_R/2) + Util.R.nextInt(Param.PARTICLE_WANDER_R), 1, Param.TILES_Y - 2);
-      pathTo(World.getInstance().getTile(newX, newY), null, null);
+      Tile idleWander = GameState.getInstance().mapPathingDestination(World.getInstance().getTile(newX, newY)); // Routes to building entrances if a building is hit
+      if (idleWander != null) pathTo(idleWander, null, null);
     }
     if (++frame == frames) {
       frame = 0;

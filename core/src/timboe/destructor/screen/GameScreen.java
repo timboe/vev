@@ -40,10 +40,9 @@ public class GameScreen implements Screen {
   }
 
   public void setMultiplexerInputs() {
+    gestureDetector.setLongPressSeconds(0.15f);
     multiplexer.clear();
     multiplexer.addProcessor(state.getUIStage());
-//    multiplexer.addProcessor(state.getWarpStage());
-//    multiplexer.addProcessor(state.getSpriteStage());
     multiplexer.addProcessor(handler);
     multiplexer.addProcessor(gestureDetector);
   }
@@ -56,7 +55,6 @@ public class GameScreen implements Screen {
 
   private void renderClear() {
     Gdx.gl.glClearColor(.1529f, .1255f, .1922f, 1);
-//    Gdx.gl.glClearColor(.7f, .7f, .7f, 1);
     Gdx.gl.glLineWidth(3);
     Gdx.graphics.getGL20().glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT | GL20.GL_STENCIL_BUFFER_BIT);
   }

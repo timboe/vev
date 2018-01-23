@@ -23,6 +23,17 @@ public enum Cardinal {
 
   public static final List<Cardinal> corners = new ArrayList<Cardinal>(Arrays.asList(kNW, kNE, kSE, kSW));
 
+  public static Cardinal fromAngle(float a) {
+    Cardinal toReturn = kE;
+    float threshold = 22.5f;
+    while (threshold <= 360) {
+      if (a < threshold) return toReturn;
+      threshold += 45f;
+      toReturn = toReturn.next45(false);
+    }
+    return toReturn;
+  }
+
   public void modVec(IVector2 v) {
     switch (this) {
       case kN: case kNE: case kNW: ++v.x; break;
@@ -44,6 +55,17 @@ public enum Cardinal {
       if (this == kN) return kW;
       if (this == kNE) return kNW;
       return values()[ordinal() - 2];
+    }
+  }
+
+  public Cardinal next45(boolean clockwise) {
+    if (this == kNONE) Gdx.app.error("Cardinal", "Called next45(clockwise="+clockwise+") on "+kNONE.getString());
+    if (clockwise) {
+      if (this == kNW) return kN;
+      return values()[ordinal() + 1];
+    } else {
+      if (this == kN) return kNW;
+      return values()[ordinal() - 1];
     }
   }
 

@@ -36,6 +36,11 @@ public class Sounds {
     reset();
   }
 
+  public void toggleMusic() {
+    music = !music;
+    doMusic();
+  }
+
   public void doMusic() {
     if (music) theme.play();
     else theme.stop();

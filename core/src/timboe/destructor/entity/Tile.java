@@ -108,8 +108,10 @@ public class Tile extends Entity implements Node {
     // De-reg from current
     s.myTile.deRegSprite(s);
 
+    boolean isTruck = (s.getClass() == Truck.class);
     boolean isStartOfQueue = (mySprite != null && mySprite.getClass() == Building.class);
-    if (isStartOfQueue) {
+
+    if (isStartOfQueue && !isTruck) {
       Pair<Tile, Cardinal> slot = null;
       // If thi is my final destination
       if (s.pathingList.size() == 0) slot = ((Building) mySprite).getFreeLocationInQueue(s);
@@ -125,7 +127,7 @@ public class Tile extends Entity implements Node {
     }
 
     // Regular tile - add the sprite
-    if (parkingSpaces.size() < Cardinal.corners.size()) { // I am a regular tile, and have free slots
+    if (!isTruck && parkingSpaces.size() < Cardinal.corners.size()) { // I am a regular tile, and have free slots
       for (Cardinal D : Cardinal.corners) {
         if (parkingSpaces.containsValue(D)) continue;
         parkSprite(s, D);

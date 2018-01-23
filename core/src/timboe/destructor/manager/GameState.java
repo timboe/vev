@@ -1,6 +1,7 @@
 package timboe.destructor.manager;
 
 
+import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.ParticleEffect;
@@ -9,6 +10,7 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.Array;
+import com.sun.org.apache.xpath.internal.operations.And;
 
 import sun.security.krb5.internal.PAData;
 import timboe.destructor.DestructorGame;
@@ -24,6 +26,8 @@ import timboe.destructor.enums.Particle;
 import timboe.destructor.enums.QueueType;
 import timboe.destructor.enums.UIMode;
 import timboe.destructor.pathfinding.OrderlyQueue;
+import timboe.destructor.pathfinding.PathFinding;
+import timboe.destructor.pathfinding.PathingCache;
 import timboe.destructor.screen.GameScreen;
 import timboe.destructor.screen.TitleScreen;
 
@@ -76,6 +80,8 @@ public class GameState {
   public final Set<Sprite> selectedSet = new HashSet<Sprite>(); // Sub-set, selected sprites
   public Building selectedBuilding = null;
 
+  public PathingCache<Tile> pathingCache = new PathingCache<Tile>();
+
   private static GameState ourInstance;
   public static GameState getInstance() {
     return ourInstance;
@@ -110,7 +116,11 @@ public class GameState {
     buildingStage.act(delta);
     // Tile stage is static - does not need to be acted
 
-    cursor.set(Gdx.input.getX(), Gdx.input.getY(), 0);
+    if (Param.IS_ANDROID) {
+      cursor.set(Gdx.graphics.getWidth()/2f, Gdx.graphics.getHeight()/2f, 0);
+    } else {
+      cursor.set(Gdx.input.getX(), Gdx.input.getY(), 0);
+    }
     cursor = Camera.getInstance().unproject(cursor);
     cursor.scl(1f / (float) Param.TILE_S);
     Tile cursorTile = null;
@@ -121,14 +131,17 @@ public class GameState {
         if (cursorTile != null && cursorTile.n8 != null && cursorTile.n8.get(kSW).n8 != null) {
           placeLocation = cursorTile;
           buildingLocationGood = cursorTile.setBuildableHighlight();
-          for (Cardinal D : Cardinal.n8) buildingLocationGood &= cursorTile.n8.get(D).setBuildableHighlight();
-          buildingLocationGood &= cursorTile.n8.get(kSW).n8.get(kS).setBuildableHighlight();
-          if (buildingLocationGood) OrderlyQueue.hintQueue(cursorTile.n8.get(kSW).n8.get(kS));
-          cursorTile.n8.get(kSW).n8.get(kS).setBuildableHighlight(); // Re-apply green tint here
+          for (Cardinal D : Cardinal.n8)
+            buildingLocationGood &= cursorTile.n8.get(D).setBuildableHighlight();
+          if (UI.getInstance().buildingBeingPlaced != BuildingType.kMINE) {
+            buildingLocationGood &= cursorTile.n8.get(kSW).n8.get(kS).setBuildableHighlight();
+            if (buildingLocationGood) OrderlyQueue.hintQueue(cursorTile.n8.get(kSW).n8.get(kS));
+            cursorTile.n8.get(kSW).n8.get(kS).setBuildableHighlight(); // Re-apply green tint here
+          }
         }
       } else if (UI.getInstance().uiMode == UIMode.kWITH_BUILDING_SELECTION) {
-        if (cursorTile != null && !cursorTile.getPathFindNeighbours().isEmpty()) {
-          placeLocation = mapPathingDestination(cursorTile); //TODO this is broken? why?
+        if (cursorTile != null) {
+          placeLocation = mapPathingDestination(cursorTile);
           if (placeLocation != null) {
             UI.getInstance().selectedBuilding.updateDemoPathingList(UI.getInstance().selectedBuildingStandingOrderParticle, placeLocation);
           }
@@ -181,7 +194,22 @@ public class GameState {
   }
 
   public boolean isSelecting() {
-    return (!UI.getInstance().doingPlacement && selectStartWorld.dst(selectEndWorld) > 6);
+    if (Param.IS_ANDROID) {
+      return  UI.getInstance().selectParticlesButton.isChecked();
+    } else {
+      return (!UI.getInstance().doingPlacement && selectStartWorld.dst(selectEndWorld) > 6);
+    }
+  }
+
+  public boolean startSelectingAndroid() {
+    if (UI.getInstance().doingPlacement) {
+      UI.getInstance().selectParticlesButton.setChecked(false);
+      return false; // Cannot do selection
+    }
+    UI.getInstance().selectParticlesButton.setChecked(true);
+    selectEndWorld.setZero();
+    selectStartWorld.setZero();
+    return true;
   }
 
   public void placeBuilding() {
@@ -255,14 +283,14 @@ public class GameState {
       if (!selectedSet.isEmpty()) UI.getInstance().doSelectParticle(selectedSet);
       selectStartWorld.setZero();
       selectEndWorld.setZero();
+      UI.getInstance().selectParticlesButton.setChecked(false);
       return !selectedSet.isEmpty();
 
-    } else {
+    } else if (selectedSet.isEmpty()) {
+      // We only let a building or individual particle be selected if no particles are selected
+      // if particles are selected then we want to path to the building/location
 
       for (Building b : buildingSet) {
-        // We only let a building be selected if no particles are selected
-        // if particles are selected then we want to path to the building
-        if (!selectedSet.isEmpty()) break;
         Rectangle.tmp.set(b.getX(), b.getY(), b.getWidth(), b.getHeight());
         if (Rectangle.tmp.contains(selectStartWorld.x, selectStartWorld.y)) {
           clearSelect();
@@ -282,12 +310,13 @@ public class GameState {
           return true;
         }
       }
-      return false;
 
     }
+    return false;
   }
 
   public void repath() {
+    pathingCache.clear();
     pathingInternal(null, true);
   }
 
@@ -429,6 +458,7 @@ public class GameState {
     warpSpawnTime = Param.WARP_SPAWN_TIME_INITIAL;
     newParticlesMean = Param.NEW_PARTICLE_MEAN;
     newParticlesWidth = Param.NEW_PARTICLE_WIDTH;
+    pathingCache.clear();
   }
 
   public void dispose() {

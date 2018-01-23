@@ -1,5 +1,6 @@
 package timboe.destructor.input;
 
+import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.input.GestureDetector;
@@ -7,6 +8,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 
 import timboe.destructor.Param;
+import timboe.destructor.enums.Particle;
 import timboe.destructor.enums.UIMode;
 import timboe.destructor.manager.Camera;
 import timboe.destructor.manager.GameState;
@@ -20,15 +22,19 @@ public class Gesture implements GestureDetector.GestureListener {
   @Override
   public boolean touchDown(float x, float y, int pointer, int button) {
     if (button == Input.Buttons.LEFT) { // Start a SELECT action
-      GameState.getInstance().selectStartScreen.set(x, y, 0);
-      GameState.getInstance().selectStartWorld.set(x, y, 0);
-      GameState.getInstance().selectStartWorld = Camera.getInstance().unproject(GameState.getInstance().selectStartWorld);
-
-      GameState.getInstance().selectEndScreen.set(x, y, 0);
-      GameState.getInstance().selectEndWorld.set(x, y, 0);
-      GameState.getInstance().selectEndWorld = Camera.getInstance().unproject(GameState.getInstance().selectEndWorld);
+     setStartEnd(x,y);
     }
     return false;
+  }
+
+  private void setStartEnd(float x, float y) {
+    GameState.getInstance().selectStartScreen.set(x, y, 0);
+    GameState.getInstance().selectStartWorld.set(x, y, 0);
+    GameState.getInstance().selectStartWorld = Camera.getInstance().unproject(GameState.getInstance().selectStartWorld);
+
+    GameState.getInstance().selectEndScreen.set(x, y, 0);
+    GameState.getInstance().selectEndWorld.set(x, y, 0);
+    GameState.getInstance().selectEndWorld = Camera.getInstance().unproject(GameState.getInstance().selectEndWorld);
   }
 
   @Override
@@ -41,14 +47,15 @@ public class Gesture implements GestureDetector.GestureListener {
 
     if (button == Input.Buttons.RIGHT) {
       state.doRightClick();
-    } else if (ui.uiMode == UIMode.kPLACE_BUILDING) {
+    } else if (!Param.IS_ANDROID && ui.uiMode == UIMode.kPLACE_BUILDING) {
       state.placeBuilding();
-    } else if (ui.uiMode == UIMode.kWITH_BUILDING_SELECTION && ui.doingPlacement) {
+    } else if (!Param.IS_ANDROID && ui.uiMode == UIMode.kWITH_BUILDING_SELECTION && ui.doingPlacement) {
       state.doConfirmStandingOrder();
     } else {
-      boolean selected = state.doParticleSelect(false); // rangeBased = false
-      if (!selected && !state.selectedSet.isEmpty()) {
+      boolean selectedJustNow = state.doParticleSelect(false); // rangeBased = false
+      if (!selectedJustNow && !state.selectedSet.isEmpty()) {
         state.doParticleMoveOrder((int) v3temp.x, (int) v3temp.y);
+        if (Param.IS_ANDROID) state.doRightClick();
       }
     }
     return false;
@@ -56,6 +63,10 @@ public class Gesture implements GestureDetector.GestureListener {
 
   @Override
   public boolean longPress(float x, float y) {
+    if (Param.IS_ANDROID) {
+      GameState.getInstance().startSelectingAndroid();
+      setStartEnd(x,y);
+    }
     return false;
   }
 
@@ -67,14 +78,22 @@ public class Gesture implements GestureDetector.GestureListener {
 
   @Override
   public boolean pan(float x, float y, float deltaX, float deltaY) {
-    // Are we panning the screen or the select box?
-    if (Gdx.input.isButtonPressed(Input.Buttons.RIGHT)) { // Screen
-      Camera.getInstance().translate(-deltaX, deltaY);
-    }
-    if (Gdx.input.isButtonPressed(Input.Buttons.LEFT)) { // Select box
+    if (Param.IS_ANDROID) {
+      // Update both
+      if (!UI.getInstance().selectParticlesButton.isChecked()) Camera.getInstance().translate(-deltaX, deltaY);
       GameState.getInstance().selectEndScreen.set(x, y, 0);
-      GameState.getInstance().selectEndWorld.set( GameState.getInstance().selectEndScreen );
+      GameState.getInstance().selectEndWorld.set(GameState.getInstance().selectEndScreen);
       GameState.getInstance().selectEndWorld = Camera.getInstance().unproject(GameState.getInstance().selectEndWorld);
+    } else { // Non-android
+      // Are we panning the screen or the select box?
+      if (Gdx.input.isButtonPressed(Input.Buttons.RIGHT)) { // Screen
+        Camera.getInstance().translate(-deltaX, deltaY);
+      }
+      if (Gdx.input.isButtonPressed(Input.Buttons.LEFT)) { // Select box
+        GameState.getInstance().selectEndScreen.set(x, y, 0);
+        GameState.getInstance().selectEndWorld.set(GameState.getInstance().selectEndScreen);
+        GameState.getInstance().selectEndWorld = Camera.getInstance().unproject(GameState.getInstance().selectEndWorld);
+      }
     }
     return false;
   }

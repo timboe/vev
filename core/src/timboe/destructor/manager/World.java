@@ -8,6 +8,7 @@ import timboe.destructor.Pair;
 import timboe.destructor.Param;
 import timboe.destructor.Util;
 import timboe.destructor.entity.Entity;
+import timboe.destructor.entity.Patch;
 import timboe.destructor.entity.Sprite;
 import timboe.destructor.entity.Tile;
 import timboe.destructor.entity.Warp;
@@ -39,7 +40,7 @@ public class World {
   private final Random R = new Random();
   private final Vector<Zone> allZones = new Vector<Zone>();
   public final Map<Warp, ParticleEffect> warps = new HashMap<Warp, ParticleEffect>();
-  public final Vector<IVector2> tiberium = new Vector<IVector2>();
+  public final Vector<Patch> tiberium = new Vector<Patch>();
   public final Vector<ParticleEffect> warpClouds = new Vector<ParticleEffect>();
   private boolean generated = false;
   private int stage;
@@ -69,6 +70,10 @@ public class World {
 
   public Tile getTile(float x, float y) {
     return getTile((int) x, (int) y);
+  }
+
+  public Tile getTile(IVector2 v) {
+    return tiles[v.x][v.y];
   }
 
   public Tile getTile(int x, int y) {
@@ -332,7 +337,7 @@ public class World {
         continue;
       if (tryPatchOfStuff(x, y, isForest, patchSize)) {
         ++fPlaced;
-        if (!isForest) tiberium.add(new IVector2(x, y));
+        if (!isForest) tiberium.add(new Patch(x, y));
       }
     } while (++fTry < Param.N_PATCH_TRIES && fPlaced < max);
     if (fPlaced < min) {
