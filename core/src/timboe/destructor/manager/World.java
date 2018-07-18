@@ -46,6 +46,7 @@ public class World {
   private int stage;
   private Vector<IVector2> worldEdges = new Vector<IVector2>();
 
+  private Tile[][] introTiles;
   private Tile[][] tiles;
   private Zone[][] zones;
 
@@ -61,7 +62,7 @@ public class World {
       System.exit(0);
     }
 
-    reset();
+    reset(true);
   }
 
   public boolean getGenerated() {
@@ -82,8 +83,8 @@ public class World {
     return tiles[x][y];
   }
 
-  private void reset() {
-    GameState.getInstance().reset();
+  private void reset(boolean includingIntro) {
+    GameState.getInstance().reset(includingIntro);
     stage = 0;
     generated = false;
     warps.clear();
@@ -96,7 +97,24 @@ public class World {
         GameState.getInstance().getTileStage().addActor(tiles[x][y]);
       }
     }
-    setNeighbours();
+    setNeighbours(tiles, Param.TILES_X, Param.TILES_Y);
+    if (includingIntro) {
+      introTiles = new Tile[Param.TILES_INTRO_X][Param.TILES_INTRO_Y];
+      for (int x = 0; x < Param.TILES_INTRO_X; ++x) {
+        for (int y = 0; y < Param.TILES_INTRO_Y; ++y) {
+          introTiles[x][y] = new Tile(x, y);
+          GameState.getInstance().getIntroTileStage().addActor(introTiles[x][y]);
+          introTiles[x][y].level = 1;
+          if (x < Param.TILES_INTRO_X / 3) {
+            introTiles[x][y].tileColour = Colour.kGREEN;
+          } else {
+            introTiles[x][y].tileColour = Colour.kRED;
+          }
+        }
+      }
+      setNeighbours(introTiles, Param.TILES_INTRO_X, Param.TILES_INTRO_Y);
+      generateIntro(); // Fast
+    }
     zones = new Zone[Param.ZONES_X][Param.ZONES_Y];
     allZones.clear();
     for (int x = 0; x < Param.ZONES_X; ++x) {
@@ -108,8 +126,15 @@ public class World {
     }
   }
 
+  private void generateIntro() {
+    markCliffs(introTiles, Param.TILES_INTRO_X, Param.TILES_INTRO_Y);
+    addFoliage(introTiles, Param.TILES_INTRO_X, Param.TILES_INTRO_Y, true);
+    doPathGrid(introTiles, Param.TILES_INTRO_X, Param.TILES_INTRO_Y);
+    applyTileGraphics(introTiles, Param.TILES_INTRO_X, Param.TILES_INTRO_Y);
+  }
+
   public void act(float delta) {
-    generate();
+    if (!generated) generate();
   }
 
   public void generate() {
@@ -122,27 +147,24 @@ public class World {
       case 4: success = doSpecialZones(false); break;
       case 5: success = removeEWSingleStairs(); break;
       case 6: success = addWarp(); break;
-      case 7: success = markCliffs(); break;
+      case 7: success = markCliffs(tiles, Param.TILES_X, Param.TILES_Y); break;
       case 8: success = addPatch(false, Param.TIBERIUM_SIZE, Param.MIN_TIBERIUM_PATCH, Param.MAX_TIBERIUM_PATCH); break;
       case 9: success = addPatch(true, Param.FOREST_SIZE, Param.MIN_FORESTS, Param.MAX_FORESTS); break;
-      case 10: success = addFoliage(); break;
-      case 11: success = doPathGrid(); break;
+      case 10: success = addFoliage(tiles, Param.TILES_X, Param.TILES_Y, false); break;
+      case 11: success = doPathGrid(tiles, Param.TILES_X, Param.TILES_Y); break;
       case 12: success = finaliseWarp(); break;
-      case 13: success = applyTileGraphics(); break;
+      case 13: success = applyTileGraphics(tiles, Param.TILES_X, Param.TILES_Y); break;
     }
 
     if (success || (stage == 13 && Param.ALLOW_TILING_ERRORS)) {
       ++stage;
     } else {
-      reset();
+      reset(false);
     }
 
     if (stage == 14) {
-      UI.getInstance().reset();
-      GameState.getInstance().getGameScreen().setMultiplexerInputs();
       Gdx.app.log("World", "Generation finished");
       generated = true;
-      Sounds.getInstance().doMusic();
       for (int y = Param.ZONES_Y - 1; y >= 0; --y)
         Gdx.app.log("", (zones[0][y].tileColour == Colour.kRED ? "R " : "G ") + (zones[1][y].tileColour == Colour.kRED ? "R " : "G ") + (zones[2][y].tileColour == Colour.kRED ? "R " : "G "));
       for (int y = Param.ZONES_Y - 1; y >= 0; --y)
@@ -173,24 +195,20 @@ public class World {
   }
 
   public void updateTilePathfinding(Tile t) {
-    updateTilePathfinding(t.coordinates.x, t.coordinates.y);
-  }
-
-  private void updateTilePathfinding(int x, int y) {
-    tiles[x][y].pathFindDebug.clear();
-    tiles[x][y].pathFindNeighbours.clear();
+    t.pathFindDebug.clear();
+    t.pathFindNeighbours.clear();
     for (Cardinal D : Cardinal.n8) {
-      if (shouldLink(tiles[x][y], tiles[x][y].n8.get(D))) {
-        tiles[x][y].pathFindDebug.add(D);
-        tiles[x][y].pathFindNeighbours.add(tiles[x][y].n8.get(D));
+      if (shouldLink(t, t.n8.get(D))) {
+        t.pathFindDebug.add(D);
+        t.pathFindNeighbours.add(t.n8.get(D));
       }
     }
   }
 
-  private boolean doPathGrid() {
-    for (int x = 1; x < Param.TILES_X - 1; ++x) {
-      for (int y = 1; y < Param.TILES_Y - 1; ++y) {
-        updateTilePathfinding(x, y);
+  private boolean doPathGrid(Tile[][] tileArray, int xMax, int yMax) {
+    for (int x = 1; x < xMax - 1; ++x) {
+      for (int y = 1; y < yMax - 1; ++y) {
+        updateTilePathfinding(tileArray[x][y]);
       }
     }
     return true;
@@ -202,9 +220,12 @@ public class World {
     return "bush_" + c.getString() + "_" + R.nextInt(Param.N_BUSH);
   }
 
-  private Sprite newSprite(int x, int y, String name, boolean isFoliage) {
+  private Sprite newSprite(int x, int y, String name, boolean isFoliage, boolean isIntro) {
     Sprite s = new Sprite(tiles[x][y]);
-    if (isFoliage) GameState.getInstance().getFoliageStage().addActor(s);
+    if (isFoliage) {
+      if (isIntro) GameState.getInstance().getIntroFoliageStage().addActor(s);
+      else GameState.getInstance().getFoliageStage().addActor(s);
+    }
     else GameState.getInstance().getSpriteStage().addActor(s);
     s.setTexture(name, 1, R.nextBoolean());
     return s;
@@ -311,7 +332,7 @@ public class World {
 
   private void tryTree(final double distance, final double maxDistance, final int x, final int y, final String forestTexture) {
     if (distance > Math.abs(R.nextGaussian() * Param.PATCH_DENSITY * maxDistance)) return;
-    Sprite s = newSprite(x, y, forestTexture, true);
+    Sprite s = newSprite(x, y, forestTexture, true, false);
     s.moveBy((-Param.WIGGLE) + Util.R.nextInt(Param.WIGGLE * 2), (-Param.WIGGLE) + Util.R.nextInt(Param.WIGGLE * 2));
     tiles[x][y].type = TileType.kFOILAGE;
     tiles[x][y].mySprite = s;
@@ -321,7 +342,7 @@ public class World {
     for (int subX = 0; subX < 2; ++subX) {
       for (int subY = 0; subY < 2; ++subY) {
         if (distance > Math.abs(R.nextGaussian() * Param.PATCH_DENSITY * maxDistance)) continue;
-        Sprite s = newSprite(x, y, "tiberium_" + R.nextInt(Param.N_TIBERIUM), false);
+        Sprite s = newSprite(x, y, "tiberium_" + R.nextInt(Param.N_TIBERIUM), false, false);
         s.moveBy(subX * Param.TILE_S, subY * Param.TILE_S);
         s.moveBy((-Param.WIGGLE / 2) + Util.R.nextInt(Param.WIGGLE), (-Param.WIGGLE / 2) + Util.R.nextInt(Param.WIGGLE));
       }
@@ -347,15 +368,15 @@ public class World {
     return true;
   }
 
-  private boolean addFoliage() {
-    for (int x = 1; x < Param.TILES_X - 1; ++x) {
-      for (int y = Param.TILES_Y - 1; y >= 0; --y) {
-        if (tiles[x][y].type != TileType.kGROUND || tiles[x][y].tileColour == Colour.kBLACK)
+  private boolean addFoliage(Tile[][] tileArray, int xMax, int yMax, boolean isIntro) {
+    for (int x = 1; x < xMax - 1; ++x) {
+      for (int y = yMax - 1; y >= 0; --y) {
+        if (tileArray[x][y].type != TileType.kGROUND || tileArray[x][y].tileColour == Colour.kBLACK)
           continue;
         if (R.nextFloat() < Param.FOLIAGE_PROB) {
-          Sprite s = newSprite(x, y, randomFoliage(tiles[x][y].tileColour), true);
-          tiles[x][y].type = TileType.kFOILAGE;
-          tiles[x][y].mySprite = s;
+          Sprite s = newSprite(x, y, randomFoliage(tileArray[x][y].tileColour), true, isIntro);
+          tileArray[x][y].type = TileType.kFOILAGE;
+          tileArray[x][y].mySprite = s;
 //        } else if (tiles[x][y].tileColour == Colour.kGREEN && R.nextFloat() < 0.01) {
 //          Tile s = new Tile(x,y);
 //          GameState.getInstance().getStage().addActor(s);
@@ -366,22 +387,22 @@ public class World {
     return true;
   }
 
-  private boolean markCliffs() {
-    for (int x = 1; x < Param.TILES_X - 1; ++x) {
-      for (int y = 1; y < Param.TILES_Y - 1; ++y) {
-        if (tiles[x][y].type != TileType.kGROUND) continue;
-        if (tiles[x][y].n8.get(Cardinal.kN).level > tiles[x][y].level && tiles[x][y].n8.get(Cardinal.kN).type != TileType.kSTAIRS) {
-          tiles[x][y].type = TileType.kCLIFF;
+  private boolean markCliffs(Tile[][] tileArray, int xMax, int yMax) {
+    for (int x = 1; x < xMax - 1; ++x) {
+      for (int y = 1; y < yMax - 1; ++y) {
+        if (tileArray[x][y].type != TileType.kGROUND) continue;
+        if (tileArray[x][y].n8.get(Cardinal.kN).level > tileArray[x][y].level && tileArray[x][y].n8.get(Cardinal.kN).type != TileType.kSTAIRS) {
+          tileArray[x][y].type = TileType.kCLIFF;
         } else {
           for (Cardinal D : Cardinal.NESW) {
-            if (tiles[x][y].n8.get(D).level < tiles[x][y].level) {
-              tiles[x][y].type = TileType.kCLIFF_EDGE;
+            if (tileArray[x][y].n8.get(D).level < tileArray[x][y].level) {
+              tileArray[x][y].type = TileType.kCLIFF_EDGE;
               break;
             }
           }
           for (Cardinal D : Cardinal.n8) {
-            if (tiles[x][y].tileColour == Colour.kGREEN && tiles[x][y].n8.get(D).tileColour != Colour.kGREEN) {
-              tiles[x][y].type = TileType.kGRASS_EDGE;
+            if (tileArray[x][y].tileColour == Colour.kGREEN && tileArray[x][y].n8.get(D).tileColour != Colour.kGREEN) {
+              tileArray[x][y].type = TileType.kGRASS_EDGE;
               break;
             }
           }
@@ -952,41 +973,42 @@ public class World {
     return true;
   }
 
-  private void setNeighbours() {
-    for (int x = 1; x < Param.TILES_X - 1; ++x) {
-      for (int y = 1; y < Param.TILES_Y - 1; ++y) {
+  private void setNeighbours(Tile[][] tilesArray, int maxX, int maxY) {
+    for (int x = 1; x < maxX - 1; ++x) {
+      for (int y = 1; y < maxY - 1; ++y) {
         Map<Cardinal, Tile> map = new EnumMap<Cardinal, Tile>(Cardinal.class);
-        map.put(Cardinal.kN, tiles[x][y + 1]);
-        map.put(Cardinal.kNE, tiles[x + 1][y + 1]);
-        map.put(Cardinal.kE, tiles[x + 1][y]);
-        map.put(Cardinal.kSE, tiles[x + 1][y - 1]);
-        map.put(Cardinal.kS, tiles[x][y - 1]);
-        map.put(Cardinal.kSW, tiles[x - 1][y - 1]);
-        map.put(Cardinal.kW, tiles[x - 1][y]);
-        map.put(Cardinal.kNW, tiles[x - 1][y + 1]);
-        tiles[x][y].n8 = map;
+        map.put(Cardinal.kN, tilesArray[x][y + 1]);
+        map.put(Cardinal.kNE, tilesArray[x + 1][y + 1]);
+        map.put(Cardinal.kE, tilesArray[x + 1][y]);
+        map.put(Cardinal.kSE, tilesArray[x + 1][y - 1]);
+        map.put(Cardinal.kS, tilesArray[x][y - 1]);
+        map.put(Cardinal.kSW, tilesArray[x - 1][y - 1]);
+        map.put(Cardinal.kW, tilesArray[x - 1][y]);
+        map.put(Cardinal.kNW, tilesArray[x - 1][y + 1]);
+        tilesArray[x][y].n8 = map;
       }
     }
   }
 
-  private boolean applyTileGraphics() {
+  private boolean applyTileGraphics(Tile[][] tileArray, int xMax, int yMax) {
     // Outer are forced to be void
     // Do these first so we don't try and access outside of the tilespace
-    for (int x = 0; x < Param.TILES_X; ++x) {
-      tiles[x][0].setTexture(TileType.getTextureString(TileType.kGROUND, Colour.kBLACK), 1, false);
-      tiles[x][Param.TILES_Y - 1].setTexture(TileType.getTextureString(TileType.kGROUND, Colour.kBLACK), 1, false);
+    for (int x = 0; x < xMax; ++x) {
+      tileArray[x][0].setTexture(TileType.getTextureString(TileType.kGROUND, Colour.kBLACK), 1, false);
+      tileArray[x][yMax - 1].setTexture(TileType.getTextureString(TileType.kGROUND, Colour.kBLACK), 1, false);
     }
-    for (int y = 0; y < Param.TILES_Y; ++y) {
-      tiles[0][y].setTexture(TileType.getTextureString(TileType.kGROUND, Colour.kBLACK), 1, false);
-      tiles[Param.TILES_X - 1][y].setTexture(TileType.getTextureString(TileType.kGROUND, Colour.kBLACK), 1, false);
+    for (int y = 0; y < yMax; ++y) {
+      tileArray[0][y].setTexture(TileType.getTextureString(TileType.kGROUND, Colour.kBLACK), 1, false);
+      tileArray[xMax - 1][y].setTexture(TileType.getTextureString(TileType.kGROUND, Colour.kBLACK), 1, false);
     }
     // Set the rest
     boolean ok = true;
-    for (int x = 1; x < Param.TILES_X - 1; ++x) {
-      for (int y = 1; y < Param.TILES_Y - 1; ++y) {
-        String tex = TileType.getTextureString(tiles[x][y]);
+    for (int x = 1; x < xMax - 1; ++x) {
+      for (int y = 1; y < yMax - 1; ++y) {
+        String tex = TileType.getTextureString(tileArray[x][y]);
         ok &= (!tex.contains("missing")); // Should not return "missingX"
-        ok &= tiles[x][y].setTexture(tex, 1, false); // Should be found in atlas
+        ok &= tileArray[x][y].setTexture(tex, 1, false); // Should be found in atlas
+//        Gdx.app.log("applyTileGraphics", "set " + x + "," + y + " to " + tex);
       }
     }
     if (!ok) Gdx.app.error("applyTileGraphics", "Graphics errors reported");

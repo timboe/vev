@@ -80,7 +80,9 @@ public class Gesture implements GestureDetector.GestureListener {
   public boolean pan(float x, float y, float deltaX, float deltaY) {
     if (Param.IS_ANDROID) {
       // Update both
-      if (!UI.getInstance().selectParticlesButton.isChecked()) Camera.getInstance().translate(-deltaX, deltaY);
+      if (UI.getInstance().selectParticlesButton != null && !UI.getInstance().selectParticlesButton.isChecked()) {
+        Camera.getInstance().translate(-deltaX, deltaY);
+      }
       GameState.getInstance().selectEndScreen.set(x, y, 0);
       GameState.getInstance().selectEndWorld.set(GameState.getInstance().selectEndScreen);
       GameState.getInstance().selectEndWorld = Camera.getInstance().unproject(GameState.getInstance().selectEndWorld);

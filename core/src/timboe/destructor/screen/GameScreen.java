@@ -12,6 +12,7 @@ import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 
 import timboe.destructor.Param;
+import timboe.destructor.Util;
 import timboe.destructor.entity.Building;
 import timboe.destructor.entity.Sprite;
 import timboe.destructor.entity.Tile;
@@ -40,7 +41,7 @@ public class GameScreen implements Screen {
   }
 
   public void setMultiplexerInputs() {
-    gestureDetector.setLongPressSeconds(0.15f);
+    gestureDetector.setLongPressSeconds(Param.LONG_PRESS_TIME);
     multiplexer.clear();
     multiplexer.addProcessor(state.getUIStage());
     multiplexer.addProcessor(handler);
@@ -53,23 +54,12 @@ public class GameScreen implements Screen {
     Gdx.app.log("GameScreen", "Show " + Gdx.input.getInputProcessor());
   }
 
-  private void renderClear() {
-    Gdx.gl.glClearColor(.1529f, .1255f, .1922f, 1);
-    Gdx.gl.glLineWidth(3);
-    Gdx.graphics.getGL20().glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT | GL20.GL_STENCIL_BUFFER_BIT);
-  }
-
-
   @Override
   public void render(float delta) {
     ++Param.FRAME;
     delta = Math.min(delta, Param.FRAME_TIME * 10); // Do not let this get too extreme
-    renderClear();
+    Util.renderClear();
 
-    if (!world.getGenerated()) {
-      world.act(delta);
-      return;
-    }
     camera.update(delta);
     state.act(delta);
     ui.act(delta);

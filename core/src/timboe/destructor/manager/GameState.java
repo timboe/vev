@@ -51,8 +51,11 @@ public class GameState {
 
   private Tile placeLocation;
 
+  private Stage introTileStage;
   private Stage tileStage;
   private Stage spriteStage;
+  private Stage introSpriteStage;
+  private Stage introFoliageStage;
   private Stage foliageStage;
   private Stage warpStage;
   private Stage uiStage;
@@ -95,8 +98,10 @@ public class GameState {
   private GameScreen theGameScreen;
   private DestructorGame game;
 
+  private boolean gameOn;
+
   private GameState() {
-    reset();
+    reset(true);
   }
 
   public void setGame(DestructorGame theGame) {
@@ -110,11 +115,16 @@ public class GameState {
   public void act(float delta) {
     tickTime += delta;
 
+    if (!gameOn) {
+      introSpriteStage.act(delta);
+      return;
+    }
+
+    // Tile stage, foliage stage are static - does not need to be acted
     spriteStage.act(delta);
     warpStage.act(delta);
     uiStage.act(delta);
     buildingStage.act(delta);
-    // Tile stage is static - does not need to be acted
 
     if (Param.IS_ANDROID) {
       cursor.set(Gdx.graphics.getWidth()/2f, Gdx.graphics.getHeight()/2f, 0);
@@ -407,11 +417,18 @@ public class GameState {
   }
 
   public void setToGameScreen() {
+    UI.getInstance().reset();
+    theGameScreen.setMultiplexerInputs();
     game.setScreen(theGameScreen);
+    setGameOn(true);
   }
 
   public Stage getTileStage() {
     return tileStage;
+  }
+
+  public Stage getIntroTileStage() {
+    return introTileStage;
   }
 
   public Stage getUIStage() {
@@ -426,9 +443,19 @@ public class GameState {
 
   public Stage getFoliageStage() { return foliageStage; }
 
+  public Stage getIntroFoliageStage() { return introFoliageStage; }
+
   public Stage getBuildingStage() { return buildingStage; }
 
-  public void reset() {
+  public void reset(boolean includingIntro) {
+    if (includingIntro) {
+      if (introTileStage != null) introTileStage.dispose();
+      if (introFoliageStage != null) introFoliageStage.dispose();
+      if (introSpriteStage != null) introSpriteStage.dispose();
+      introTileStage = new Stage(Camera.getInstance().getTileViewport());
+      introSpriteStage = new Stage(Camera.getInstance().getSpriteViewport());
+      introFoliageStage = new Stage(Camera.getInstance().getSpriteViewport());
+    }
     if (tileStage != null) tileStage.dispose();
     if (spriteStage != null) spriteStage.dispose();
     if (foliageStage != null) foliageStage.dispose();
@@ -459,14 +486,21 @@ public class GameState {
     newParticlesMean = Param.NEW_PARTICLE_MEAN;
     newParticlesWidth = Param.NEW_PARTICLE_WIDTH;
     pathingCache.clear();
+    gameOn = false;
+  }
+
+  public void setGameOn(boolean gameOn) {
+    this.gameOn = gameOn;
   }
 
   public void dispose() {
     theGameScreen.dispose();
     theTitleScreen.dispose();
+    introTileStage.dispose();
     tileStage.dispose();
     spriteStage.dispose();
     foliageStage.dispose();
+    introFoliageStage.dispose();
     uiStage.dispose();
     warpStage.dispose();
     buildingStage.dispose();

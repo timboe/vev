@@ -39,15 +39,22 @@ public class Camera {
   private OrthographicCamera spriteCamera;
   private OrthographicCamera uiCamera;
 
-
   private FitViewport tileViewport;
   private FitViewport spriteViewport;
   private FitViewport uiViewport;
 
-
-
   private Camera() {
     reset();
+  }
+
+  public void setCurrentPos(float x, float y) {
+    this.currentPos.set(x,y);
+    this.desiredPos.set(x,y);
+  }
+
+  public void setCurrentZoom(float currentZoom) {
+    this.currentZoom = currentZoom;
+    this.desiredZoom = currentZoom;
   }
 
   public FitViewport getTileViewport() {
@@ -110,13 +117,12 @@ public class Camera {
     spriteCamera = new OrthographicCamera();
     uiCamera = new OrthographicCamera();
 
-    tileViewport = new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), tileCamera);
-    spriteViewport = new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), spriteCamera);
-    uiViewport = new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), uiCamera);
+    tileViewport = new FitViewport(Param.DISPLAY_X, Param.DISPLAY_Y, tileCamera);
+    spriteViewport = new FitViewport(Param.DISPLAY_X, Param.DISPLAY_Y, spriteCamera);
+    uiViewport = new FitViewport(Param.DISPLAY_X, Param.DISPLAY_Y, uiCamera);
   }
 
   public void translate(float x, float y) {
-
     desiredPos.add(x * currentZoom, y * currentZoom);
   }
 
@@ -166,6 +172,8 @@ public class Camera {
     float tempShakeAngle = R.nextFloat() * (float)Math.PI * 2f;
     uiCamera.position.add(shake * (float)Math.cos(tempShakeAngle) / currentZoom , shake * (float)Math.sin(tempShakeAngle) / currentZoom, 0);
     uiCamera.update();
+
+//    Gdx.app.log("Camera","camera current " + currentPos);
 
     cullBoxTile.set(tileCamera.position.x - tileViewport.getScreenWidth()/2*currentZoom,
         tileCamera.position.y - tileViewport.getScreenHeight()/2*currentZoom,

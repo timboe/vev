@@ -372,13 +372,16 @@ public class UI {
     time += delta;
     if (time < Param.FRAME_TIME) return;
     time -= Param.FRAME_TIME;
-    if (Math.abs(displayPlayerEnergy - GameState.getInstance().playerEnergy) > .5f) {
-      displayPlayerEnergy += (GameState.getInstance().playerEnergy - displayPlayerEnergy) * 0.05f;
-      displayPlayerEnergyLabel.setText( formatter.format(Math.round(displayPlayerEnergy)) );
-    }
-    if (Math.abs(displayWarpEnergy - GameState.getInstance().warpEnergy) > .5f) {
-      displayWarpEnergy += (GameState.getInstance().warpEnergy - displayWarpEnergy) * 0.05f;
-      displayWarpEnergyLabel.setText( formatter.format(Math.round(displayWarpEnergy)) );
+    // Check for existance of main UI component
+    if (displayPlayerEnergyLabel != null) {
+      if (Math.abs(displayPlayerEnergy - GameState.getInstance().playerEnergy) > .5f) {
+        displayPlayerEnergy += (GameState.getInstance().playerEnergy - displayPlayerEnergy) * 0.05f;
+        displayPlayerEnergyLabel.setText(formatter.format(Math.round(displayPlayerEnergy)));
+      }
+      if (Math.abs(displayWarpEnergy - GameState.getInstance().warpEnergy) > .5f) {
+        displayWarpEnergy += (GameState.getInstance().warpEnergy - displayWarpEnergy) * 0.05f;
+        displayWarpEnergyLabel.setText(formatter.format(Math.round(displayWarpEnergy)));
+      }
     }
   }
 

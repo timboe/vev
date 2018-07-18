@@ -1,5 +1,8 @@
 package timboe.destructor;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.GL20;
+
 import timboe.destructor.pathfinding.IVector2;
 
 import java.util.Random;
@@ -19,6 +22,12 @@ public class Util {
 
   public static float clamp(float val, float min, float max) {
     return Math.max(min, Math.min(max, val));
+  }
+
+  public static void renderClear() {
+    Gdx.gl.glClearColor(.1529f, .1255f, .1922f, 1);
+    Gdx.gl.glLineWidth(3);
+    Gdx.graphics.getGL20().glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT | GL20.GL_STENCIL_BUFFER_BIT);
   }
 
   public static boolean needsClamp(float val, float min, float max) { return !(val == clamp(val,min,max)); }

@@ -12,6 +12,9 @@ public class Param {
   public static final int ZONES_Y = 3;
   public static final int ZONES_MAX = Math.max(ZONES_X, ZONES_Y);
 
+  public static final int TILES_INTRO_X = 64;
+  public static final int TILES_INTRO_Y = (int)Math.round(TILES_INTRO_X * (9f/16f));
+
   public static final int TILES_X = 128+32;
   public static final int TILES_Y = 128+32;
   public static final int TILES_MIN = Math.min(TILES_X, TILES_Y);
@@ -70,6 +73,7 @@ public class Param {
   public static final float BUILD_TIME = .5f; // Time in seconds between build phases
   public static final float BUILDING_QUEUE_MOVE_TIME = .25f; // Time in seconds between particles moving through queue
 
+  public static final float LONG_PRESS_TIME = 0.15f;
 
   public static final int N_TIBERIUM = 4; // Number of sprites
   public static final int N_BALLS = 6; // number of sprites
@@ -108,8 +112,8 @@ public class Param {
   public static final Color HIGHLIGHT_RED = new Color(1f, 0f, 0f, 1f);
   public static final Color HIGHLIGHT_YELLOW = new Color(1f, 1f, 0f, 1f);
 
-  public static final int DISPLAY_X = Gdx.graphics.getWidth();
-  public static final int DISPLAY_Y = Gdx.graphics.getHeight();
+  public static final int DISPLAY_X = 1920;
+  public static final int DISPLAY_Y = 1080;
 
   public static final float PLAYER_STARTING_ENERGY = 50000;
   public static final float WARP_STARTING_ENERGY = 1000000;
@@ -122,7 +126,7 @@ public class Param {
   public static final Color PARTICLE_Q = new Color(64/255f, 141/255f, 174/255f, 1f);
 
   public static final int DEBUG_INTIAL = 0;
-  private static final boolean FAKE_ANDROID = true;
+  private static final boolean FAKE_ANDROID = false;
   public static final boolean IS_ANDROID = FAKE_ANDROID || Gdx.app.getType() == Application.ApplicationType.Android;
 
   public static final int QUEUE_INITIAL_SIZE = 9;

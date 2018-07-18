@@ -6,17 +6,20 @@ import com.badlogic.gdx.audio.Sound;
 
 import java.util.Random;
 
+import timboe.destructor.Util;
+
 public class Sounds {
 
   private final Random R = new Random();
 
-  private final int nMove = 6, nSelect = 3;
+  private final int nMove = 6, nSelect = 3, nMusic = 3;
   private final Sound[] move = new Sound[nMove];
   private final Sound[] select = new Sound[nSelect];
   private Sound foot;
-  private Music theme;
+  private Music[] theme = new Music[nMusic];
 
-  private boolean sfx = true, music = true;
+  private int track;
+  private boolean sfx = true, music = false;
 
   private static Sounds ourInstance;
   public static Sounds getInstance() {
@@ -26,7 +29,7 @@ public class Sounds {
 
   public void dispose() {
     foot.dispose();
-    theme.dispose();
+    for (int i = 0; i < nMusic; ++i) theme[i].dispose();
     for (int i = 0; i < nMove; ++i) move[i].dispose();
     for (int i = 0; i < nSelect; ++i) select[i].dispose();
     ourInstance = null;
@@ -42,8 +45,15 @@ public class Sounds {
   }
 
   public void doMusic() {
-    if (music) theme.play();
-    else theme.stop();
+    if (music) {
+      theme[track].play();
+      int trackTemp = track;
+      while (trackTemp == track) trackTemp = Util.R.nextInt(nMusic);
+      track = trackTemp; // Random - but not the same
+    } else {
+      theme[track].stop();
+      track = 0;
+    }
   }
 
   public void moveOrder() {
@@ -62,8 +72,19 @@ public class Sounds {
   }
 
   public void reset() {
-    theme = Gdx.audio.newMusic(Gdx.files.internal("IsThatYouorAreYouYou.ogg"));
-    theme.setLooping(true);
+    track = 0;
+    for (int i = 0; i < nMusic; ++i) {
+      String path = "IsThatYouorAreYouYou.ogg";
+      if (i == 1) path = "CGISnake.ogg";
+      else if (i == 2) path = "Divider.ogg";
+      theme[i] = Gdx.audio.newMusic(Gdx.files.internal(path));
+      theme[i].setOnCompletionListener(new Music.OnCompletionListener() {
+        @Override
+        public void onCompletion(Music music) {
+          doMusic();
+        }
+      });
+    }
     foot = Gdx.audio.newSound(Gdx.files.internal("365810__fxkid2__cute-walk-run-c.wav"));
     move[0] = Gdx.audio.newSound(Gdx.files.internal("379234__westington__skiffy1.wav"));
     move[1] = Gdx.audio.newSound(Gdx.files.internal("379233__westington__skiffy2.wav"));
