@@ -5,6 +5,7 @@ import com.badlogic.gdx.Gdx;
 import java.util.EnumMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Vector;
 
 import timboe.destructor.Pair;
 import timboe.destructor.Param;
@@ -31,6 +32,8 @@ public class Building extends Entity {
   private Tile pathingStartPoint;
   private float timeDisassemble, timeMove, timeBuild, timeHoldingPen, nextReleaseTime;
   public Sprite spriteProcessing = null;
+  private Entity banner;
+  private Vector<Entity> accepts = new Vector<Entity>();
   private EnumMap<Particle, List<Sprite>> holdingPen = new EnumMap<Particle, List<Sprite>>(Particle.class);
   private int built;
   private boolean updateBuildingTexture;
@@ -181,6 +184,17 @@ public class Building extends Entity {
       if (updateBuildingTexture) {
         setTexture("building_" + type.ordinal(), 1, false);
         updateBuildingTexture = false;
+        if (type != BuildingType.kMINE) {
+          banner = new Entity(coordinates.x + 2, coordinates.y);
+          banner.setTexture("board_vertical", 1, false);
+          GameState.getInstance().getBuildingStage().addActor(banner);
+          for (int i = 0; i < BuildingType.N_MODES; ++i) {
+            Entity p = new Entity(Param.SPRITE_SCALE*(coordinates.x + 2), Param.SPRITE_SCALE*(coordinates.y + i));
+            Particle input = type.getInput(i);
+            p.setTexture("ball_" + input.getColourFromParticle().getString(), 1, false);
+            GameState.getInstance().getSpriteStage().addActor(p);
+          }
+        }
       }
     }
 
