@@ -380,6 +380,19 @@
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
+            <key type="filename">large/board_vertical.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>4,12,8,24</rect>
+                <key>scale9Paddings</key>
+                <rect>4,12,8,24</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
             <key type="filename">large/build_3_3.png</key>
             <key type="filename">large/building_1.png</key>
             <key type="filename">large/building_2.png</key>
@@ -435,6 +448,14 @@
             <key type="filename">large/cloud_sprite.png</key>
             <key type="filename">large/cross.png</key>
             <key type="filename">large/tick.png</key>
+            <key type="filename">large/truck_0.png</key>
+            <key type="filename">large/truck_1.png</key>
+            <key type="filename">large/truck_2.png</key>
+            <key type="filename">large/truck_3.png</key>
+            <key type="filename">large/truck_4.png</key>
+            <key type="filename">large/truck_5.png</key>
+            <key type="filename">large/truck_6.png</key>
+            <key type="filename">large/truck_7.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
                 <point_f>0.5,0.5</point_f>
