@@ -65,7 +65,7 @@ public class Param {
   public static final float WARP_ROTATE_SPEED = 3f;
   public static final float WARP_SHAKE = 5f;
   public static final float WARP_SPAWN_TIME_INITIAL = 5f; // seconds between spawn
-  public static final float WARP_SPAWN_TIME_REDUCTION = 0.005f; // time reduced by this every spawn TODO make no higher than .01f
+  public static final float WARP_SPAWN_TIME_REDUCTION = 0.0051f; // time reduced by this every spawn TODO make no higher than .01f
   public static final float WARP_SPAWN_MEAN_INCREASE = .25f; // increase in mean number of spawned
   public static final float WARP_SPAWN_WIDTH_INCREASE = 0.1f; // increase in width of mean number
   public static final float WARP_SPAWN_TIME_MIN = 0.25f; // min time between spawn
@@ -113,7 +113,7 @@ public class Param {
   public static final Color HIGHLIGHT_YELLOW = new Color(1f, 1f, 0f, 1f);
 
   public static final int DISPLAY_X = 1920;
-  public static final int DISPLAY_Y = 1080;
+  public static final int DISPLAY_Y = Math.round(DISPLAY_X * (9f/16f));
 
   public static final float PLAYER_STARTING_ENERGY = 50000;
   public static final float WARP_STARTING_ENERGY = 1000000;
