@@ -12,14 +12,18 @@ public class Sounds {
 
   private final Random R = new Random();
 
-  private final int nMove = 6, nSelect = 3, nMusic = 3;
+  private final int nMove = 6, nSelect = 3, nMusic = 3, nElectric = 3;
   private final Sound[] move = new Sound[nMove];
+  private final Sound[] electric = new Sound[nElectric];
   private final Sound[] select = new Sound[nSelect];
   private Sound foot;
+  private Sound blop;
+  private Sound pulse;
+  private Sound swoosh;
   private Music[] theme = new Music[nMusic];
 
   private int track;
-  private boolean sfx = true, music = false;
+  private boolean sfx = true, music = true;
 
   private static Sounds ourInstance;
   public static Sounds getInstance() {
@@ -29,9 +33,13 @@ public class Sounds {
 
   public void dispose() {
     foot.dispose();
+    swoosh.dispose();
+    blop.dispose();
+    pulse.dispose();
     for (int i = 0; i < nMusic; ++i) theme[i].dispose();
     for (int i = 0; i < nMove; ++i) move[i].dispose();
     for (int i = 0; i < nSelect; ++i) select[i].dispose();
+    for (int i = 0; i < nElectric; ++i) electric[i].dispose();
     ourInstance = null;
   }
 
@@ -56,6 +64,16 @@ public class Sounds {
     }
   }
 
+  public void boop() {
+    if (!sfx) return;
+    blop.play();
+  }
+
+  public void zap() {
+    if (!sfx) return;
+    electric[ R.nextInt(nElectric) ].play();
+  }
+
   public void moveOrder() {
     if (!sfx) return;
     move[ R.nextInt(nMove) ].play();
@@ -71,6 +89,13 @@ public class Sounds {
 //    foot.play();
   }
 
+  public void pulse() {
+    if (!sfx) return;
+    swoosh.play();
+    pulse.play();
+  }
+
+
   public void reset() {
     track = 0;
     for (int i = 0; i < nMusic; ++i) {
@@ -85,6 +110,9 @@ public class Sounds {
         }
       });
     }
+    swoosh = Gdx.audio.newSound(Gdx.files.internal("Swoosh 1-SoundBible.com-231145780.mp3"));
+    pulse = Gdx.audio.newSound(Gdx.files.internal("138421__cameronmusic__pulse-1.wav"));
+    blop = Gdx.audio.newSound(Gdx.files.internal("Blop-Mark_DiAngelo-79054334.mp3"));
     foot = Gdx.audio.newSound(Gdx.files.internal("365810__fxkid2__cute-walk-run-c.wav"));
     move[0] = Gdx.audio.newSound(Gdx.files.internal("379234__westington__skiffy1.wav"));
     move[1] = Gdx.audio.newSound(Gdx.files.internal("379233__westington__skiffy2.wav"));
@@ -95,6 +123,9 @@ public class Sounds {
     select[0] = Gdx.audio.newSound(Gdx.files.internal("379238__westington__skiffy5.wav"));
     select[1] = Gdx.audio.newSound(Gdx.files.internal("379237__westington__skiffy6.wav"));
     select[2] = Gdx.audio.newSound(Gdx.files.internal("379235__westington__skiffy8.wav"));
+    electric[0] = Gdx.audio.newSound(Gdx.files.internal("Electric1-SoundBible.com-1439537520.mp3"));
+    electric[1] = Gdx.audio.newSound(Gdx.files.internal("Electric2-SoundBible.com-742005847.mp3"));
+    electric[2] = Gdx.audio.newSound(Gdx.files.internal("Electric3-SoundBible.com-1450168875.mp3"));
   }
 
 }
