@@ -1,8 +1,8 @@
 package timboe.destructor.pathfinding;
 
-import java.util.Map;
+import java.io.Serializable;
 
-public class IVector2 implements Comparable {
+public class IVector2 implements Comparable, Serializable {
   public int x;
   public int y;
 

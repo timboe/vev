@@ -2,6 +2,7 @@ package timboe.destructor.pathfinding;
 
 import com.badlogic.gdx.Gdx;
 
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -25,7 +26,7 @@ import timboe.destructor.manager.World;
  * Created by Tim on 28/12/2017.
  */
 
-public class OrderlyQueue {
+public class OrderlyQueue implements Serializable {
   final Tile queueStart;
   private List<Tile> queue = new LinkedList<Tile>();
   final Building myBuilding;

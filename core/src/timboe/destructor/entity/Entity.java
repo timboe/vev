@@ -9,6 +9,7 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.utils.Align;
 
+import java.io.Serializable;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -22,7 +23,7 @@ import timboe.destructor.manager.GameState;
 import timboe.destructor.manager.Textures;
 import timboe.destructor.pathfinding.IVector2;
 
-public class Entity extends Actor {
+public class Entity extends Actor implements Serializable {
 
   public boolean mask;
   public Colour tileColour;
