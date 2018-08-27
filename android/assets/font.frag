@@ -7,7 +7,8 @@ uniform sampler2D u_texture;
 varying vec4 v_color;
 varying vec2 v_texCoord;
 
-const float smoothing = 1.0/16.0;
+// 0.25f / (spread * scale)
+const float smoothing = 0.25/(4 * 1);
 
 void main() {
     float distance = texture2D(u_texture, v_texCoord).a;
