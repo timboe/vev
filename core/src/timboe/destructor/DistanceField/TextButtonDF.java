@@ -1,4 +1,4 @@
-package timboe.destructor;
+package timboe.destructor.DistanceField;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Batch;
@@ -9,6 +9,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.Align;
 
+import timboe.destructor.DistanceField.LabelDF;
 import timboe.destructor.manager.UI;
 
 

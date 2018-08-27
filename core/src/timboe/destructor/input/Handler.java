@@ -22,7 +22,8 @@ public class Handler extends InputAdapter {
   public boolean touchUp (int screenX, int screenY, int pointer, int button) {
     if (button == Input.Buttons.LEFT && GameState.getInstance().isSelecting()) {
       Gdx.app.log("touchUp", "End selecting");
-      GameState.getInstance().doParticleSelect(true);
+      boolean result = GameState.getInstance().doParticleSelect(true);
+      if (!result) GameState.getInstance().doRightClick(); // Cancel
       return true; // Consume
     }
     return false;

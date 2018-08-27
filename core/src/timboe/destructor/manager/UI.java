@@ -4,8 +4,6 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.NinePatch;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.Event;
-import com.badlogic.gdx.scenes.scene2d.EventListener;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
 import com.badlogic.gdx.scenes.scene2d.ui.HorizontalGroup;
@@ -15,9 +13,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.ProgressBar;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Slider;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextTooltip;
-import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.NinePatchDrawable;
 import com.badlogic.gdx.utils.Align;
@@ -27,12 +23,12 @@ import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.Set;
 
-import timboe.destructor.LabelDF;
+import timboe.destructor.DistanceField.LabelDF;
+import timboe.destructor.DistanceField.TextTooltipDF;
 import timboe.destructor.Pair;
 import timboe.destructor.Param;
-import timboe.destructor.TextButtonDF;
+import timboe.destructor.DistanceField.TextButtonDF;
 import timboe.destructor.entity.Building;
-import timboe.destructor.entity.Entity;
 import timboe.destructor.entity.Sprite;
 import timboe.destructor.enums.BuildingType;
 import timboe.destructor.enums.Particle;
@@ -69,7 +65,7 @@ public class UI {
   private Table tableIntro;
   private Table table;
   private Skin skin;
-  private ShaderProgram dfShader;
+  public ShaderProgram dfShader;
   public ShaderProgram dfShader_medium;
   private ShaderProgram dfShader_large;
 
@@ -137,7 +133,6 @@ public class UI {
 
   private Button getTextButton(String label) {
     TextButtonDF b = new TextButtonDF(label, skin, "default");
-    b.getLabel().setFontScale(2);
     b.getLabelCell().pad(10,30,10,30);
     return b;
   }
@@ -271,7 +266,7 @@ public class UI {
         else GameState.getInstance().transitionToGameScreen();
       }
     });
-    newGame.addListener(new TextTooltip("You can press this", skin));
+    newGame.addListener(new TextTooltipDF("You can press this", skin));
     titleWindow.add( newGame ).pad(SIZE_S).colspan(2).fillX();
     titleWindow.row();
     separator(titleWindow, 2);
@@ -331,6 +326,8 @@ public class UI {
     separator(mainWindow, 2);
     for (BuildingType bt : BuildingType.values()) {
       if (bt == BuildingType.kWARP) continue;
+      if (bt == BuildingType.kMINE) separator(mainWindow, 2);
+
       Image ib = new Image( Textures.getInstance().getTexture("building_" + bt.ordinal(), false) );
       Container<Actor> cont = new Container<Actor>();
       cont.setActor(ib);

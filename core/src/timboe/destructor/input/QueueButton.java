@@ -8,6 +8,7 @@ import timboe.destructor.Param;
 import timboe.destructor.enums.BuildingType;
 import timboe.destructor.enums.QueueType;
 import timboe.destructor.manager.GameState;
+import timboe.destructor.manager.Sounds;
 import timboe.destructor.manager.UI;
 
 /**
@@ -21,5 +22,6 @@ public class QueueButton extends ChangeListener {
     BuildingType bt = UI.getInstance().buildingBeingPlaced;
     UI.getInstance().buildingWindowQSimple.get(bt).setChecked(GameState.getInstance().queueType == QueueType.kSIMPLE);
     UI.getInstance().buildingWindowQSpiral.get(bt).setChecked(GameState.getInstance().queueType == QueueType.kSPIRAL);
+    Sounds.getInstance().click();
   }
 }

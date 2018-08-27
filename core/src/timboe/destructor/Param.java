@@ -68,10 +68,11 @@ public class Param {
   public static final float WARP_SPAWN_TIME_REDUCTION = 0.0051f; // time reduced by this every spawn TODO make no higher than .01f
   public static final float WARP_SPAWN_MEAN_INCREASE = .25f; // increase in mean number of spawned
   public static final float WARP_SPAWN_WIDTH_INCREASE = 0.1f; // increase in width of mean number
-  public static final float WARP_SPAWN_TIME_MIN = 0.25f; // min time between spawn
+  public static final float WARP_SPAWN_TIME_MIN = 0.5f; // min time between spawn
 
   public static final float BUILD_TIME = .5f; // Time in seconds between build phases
   public static final float BUILDING_QUEUE_MOVE_TIME = .25f; // Time in seconds between particles moving through queue
+  public static final float BUILDING_SHAKE = 2.5f;
 
   public static final float LONG_PRESS_TIME = 0.15f;
 
@@ -100,7 +101,7 @@ public class Param {
   public static final float SCROLL_ZOOM = 0.1f;
 
   public static final float ZOOM_MIN = 0.1f;
-  public static final float ZOOM_MAX = 4.0f;
+  public static final float ZOOM_MAX = 3.0f;
 
   public static final float DESIRED_FPS = 60; // FPS ANIM_SPEED is tuned for
   public static final float FRAME_TIME = (1f/DESIRED_FPS);

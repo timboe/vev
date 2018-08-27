@@ -112,7 +112,6 @@ public class Sprite extends Entity {
     }
     if (++frame == frames) {
       frame = 0;
-      Sounds.getInstance().foot();
     }
   }
 

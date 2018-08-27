@@ -8,6 +8,7 @@ import timboe.destructor.Param;
 import timboe.destructor.enums.BuildingType;
 import timboe.destructor.enums.Particle;
 import timboe.destructor.manager.GameState;
+import timboe.destructor.manager.Sounds;
 import timboe.destructor.manager.UI;
 
 /**
@@ -21,5 +22,6 @@ public class QueueLengthSlider extends ChangeListener {
     BuildingType bt = UI.getInstance().buildingBeingPlaced;
     UI.getInstance().buildingWindowQSize.get(bt).setText(""+ GameState.getInstance().queueSize);
     UI.getInstance().buildingWindowQPrice.get(bt).setText( UI.getInstance().formatter.format( bt.getCost() ) );
+    Sounds.getInstance().click();
   }
 }

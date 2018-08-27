@@ -20,6 +20,11 @@ public class Sounds {
   private Sound blop;
   private Sound pulse;
   private Sound swoosh;
+  private Sound thud;
+  private Sound star;
+  private Sound OK;
+  private Sound click;
+  private Sound poof;
   private Music[] theme = new Music[nMusic];
 
   private int track;
@@ -36,6 +41,11 @@ public class Sounds {
     swoosh.dispose();
     blop.dispose();
     pulse.dispose();
+    thud.dispose();
+    star.dispose();
+    OK.dispose();
+    click.dispose();
+    poof.dispose();
     for (int i = 0; i < nMusic; ++i) theme[i].dispose();
     for (int i = 0; i < nMove; ++i) move[i].dispose();
     for (int i = 0; i < nSelect; ++i) select[i].dispose();
@@ -64,6 +74,31 @@ public class Sounds {
     }
   }
 
+  public void poof() {
+    if (!sfx) return;
+    poof.play();
+  }
+
+  public void click() {
+    if (!sfx) return;
+    click.play();
+  }
+
+  public void OK() {
+    if (!sfx) return;
+    OK.play();
+  }
+
+  public void star() {
+    if (!sfx) return;
+    star.play();
+  }
+
+  public void thud() {
+    if (!sfx) return;
+    thud.play();
+  }
+
   public void boop() {
     if (!sfx) return;
     blop.play();
@@ -85,8 +120,8 @@ public class Sounds {
   }
 
   public void foot() {
-    return;
-//    foot.play();
+    if (!sfx) return;
+    foot.play();
   }
 
   public void pulse() {
@@ -110,6 +145,11 @@ public class Sounds {
         }
       });
     }
+    poof = Gdx.audio.newSound(Gdx.files.internal("208111__planman__poof-of-smoke.wav"));
+    click = Gdx.audio.newSound(Gdx.files.internal("399934__waveplay-old__short-click-snap-perc.wav"));
+    OK = Gdx.audio.newSound(Gdx.files.internal("405547__raclure__affirmative-decision-chime.wav"));
+    star = Gdx.audio.newSound(Gdx.files.internal("shooting_star-Mike_Koenig-1132888100.mp3"));
+    thud = Gdx.audio.newSound(Gdx.files.internal("Thud-SoundBible.com-395560493.mp3"));
     swoosh = Gdx.audio.newSound(Gdx.files.internal("Swoosh 1-SoundBible.com-231145780.mp3"));
     pulse = Gdx.audio.newSound(Gdx.files.internal("138421__cameronmusic__pulse-1.wav"));
     blop = Gdx.audio.newSound(Gdx.files.internal("Blop-Mark_DiAngelo-79054334.mp3"));

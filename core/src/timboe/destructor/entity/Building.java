@@ -1,7 +1,6 @@
 package timboe.destructor.entity;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.math.Rectangle;
 
 import java.util.EnumMap;
 import java.util.LinkedList;
@@ -90,6 +89,7 @@ public class Building extends Entity {
     }
     Particle p = s.getParticle();
     spriteProcessing = s;
+    if (Camera.getInstance().onScreen(this)) Sounds.getInstance().poof();
     timeDisassemble = getDisassembleTime(p);
     getTimeDisassembleMax = timeDisassemble;
   }
@@ -127,24 +127,28 @@ public class Building extends Entity {
   }
 
   public void updateDemoPathingList(Particle p, Tile t) {
-    if (getDestination() != t) pathingList = PathFinding.doAStar(getPathingStartPoint(p), t, null, null, GameState.getInstance().pathingCache);
+    if (getDestination() != t) {
+      pathingList = PathFinding.doAStar(getPathingStartPoint(p), t, null, null, GameState.getInstance().pathingCache);
+      Sounds.getInstance().click();
+    }
     // The "pathingList" holds our speculative/demo destination
     pathingParticle = p;
   }
 
-  public void savePathingList() {
+  public boolean savePathingList() {
     if (pathingParticle == null) {
       Gdx.app.log("savePathingList","Called with pathingParticle = null. Maybe OK was chosen with no pathing list in progress?");
-      return;
+      return false;
     }
     if (pathingList == null) {
       Gdx.app.error("savePathingList","Called with pathingList = null?!");
-      return;
+      return false;
     }
     Gdx.app.log("savePathingList","Set pathing " + pathingParticle + " to " + pathingList.get(0).toString());
     buildingPathingLists.put(pathingParticle, pathingList);
     pathingList = null;
     pathingParticle = null;
+    return true;
   }
 
   public void cancelUpdatePathingList() {
@@ -190,12 +194,15 @@ public class Building extends Entity {
     }
     if (myQueue != null) {
       myQueue.getQueue().get(built).setQueueTexture();
-      GameState.getInstance().dustEffect(myQueue.getQueue().get(built));
+      Tile t = myQueue.getQueue().get(built);
+      GameState.getInstance().dustEffect(t);
+      if (Camera.getInstance().onScreen(t)) Sounds.getInstance().foot();
     }
   }
 
   private void setBuiltTexture() {
     setTexture("building_" + type.ordinal(), 1, false);
+    if (Camera.getInstance().onScreen(this)) Sounds.getInstance().star();
     if (type != BuildingType.kMINE) {
       banner = new Entity(coordinates.x + 2, coordinates.y);
       banner.setTexture("board_vertical", 1, false);
@@ -245,7 +252,7 @@ public class Building extends Entity {
           GameState.getInstance().getSpriteStage().addActor(s);
           GameState.getInstance().getParticleSet().add(s);
           GameState.getInstance().dustEffect(s.myTile);
-          if (Camera.getInstance().onScrean(s)) Sounds.getInstance().boop();
+          if (Camera.getInstance().onScreen(s)) Sounds.getInstance().boop();
         }
       }
     }

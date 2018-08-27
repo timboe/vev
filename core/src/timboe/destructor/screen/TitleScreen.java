@@ -28,7 +28,7 @@ public class TitleScreen implements Screen {
   private final World world = World.getInstance();
   private final UI ui = UI.getInstance();
   private final ShapeRenderer sr = new ShapeRenderer();
-  public float fadeTimer, fadeTimer2;
+  public float fadeTimer, fadeTimer2, fadeTimer3;
 
   // Temp
   private final Gesture gesture = new Gesture();
@@ -45,8 +45,7 @@ public class TitleScreen implements Screen {
     camera.setCurrentPos(Param.TILES_INTRO_X/2 * Param.TILE_S,Param.TILES_INTRO_Y/2 * Param.TILE_S); // Edge+offset
     camera.setCurrentZoom(.25f);
     addParticles();
-    fadeTimer = 0;
-    fadeTimer2 = 0;
+    fadeTimer = fadeTimer2 = fadeTimer3 = 0;
   }
 
   void addParticles() {
@@ -94,20 +93,29 @@ public class TitleScreen implements Screen {
       sr.setColor(206f/255f, 101f/255f, 80f/255f, 1f);
       sr.begin(ShapeRenderer.ShapeType.Filled);
       strokeRect(sr, fadeTimer, fadeTimer/4f);
+      sr.setColor(176/255f, 78/255f, 80/255f, 1f);
+      strokeRect(sr, fadeTimer2, fadeTimer2/4f);
+      sr.setColor(136/255f, 57/255f, 80/255f, 1f);
+      strokeRect(sr, fadeTimer3, fadeTimer3/4f);
       sr.end();
       Gdx.gl.glLineWidth(5);
       sr.begin(ShapeRenderer.ShapeType.Line);
       sr.setColor(72f/255f, 43f/255f, 81f/255f, 1f);
       strokeRect(sr, fadeTimer, fadeTimer/4f);
       strokeRect(sr, fadeTimer2, fadeTimer2/4f);
+      strokeRect(sr, fadeTimer3, fadeTimer3/4f);
       sr.end();
       fadeTimer += (delta * 5);
       fadeTimer *= 1.1;
-      if (fadeTimer > 5) {
+      if (fadeTimer > 2.5) {
         fadeTimer2 += (delta * 10);
         fadeTimer2 *= 1.1;
       }
-      if (fadeTimer2 > 1100) {
+      if (fadeTimer2 > 2.5) {
+        fadeTimer3 += (delta * 10);
+        fadeTimer3 *= 1.1;
+      }
+      if (fadeTimer3 > 1100) {
         GameState.getInstance().setToGameScreen();
       }
     }

@@ -8,6 +8,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import timboe.destructor.Param;
 import timboe.destructor.Util;
+import timboe.destructor.entity.Entity;
 import timboe.destructor.entity.Sprite;
 
 import java.util.Random;
@@ -32,8 +33,6 @@ public class Camera {
   private final Vector2 velocity = new Vector2(0,0);
   private float shake;
   private float shakeAngle;
-
-  private Rectangle tempOnScreenRect = new Rectangle();
 
   private final Random R = new Random();
 
@@ -101,22 +100,34 @@ public class Camera {
     return tileCamera.unproject(v);
   }
 
-  boolean addShake(Rectangle r, float amount) {
-    if (!onScrean(r)) return false;
-    shake += amount;
+  boolean addShake(Entity e, float amount) {
+    if (!onScreen(e)) return false;
+    addShake(amount);
     return true;
+  }
+
+  void addShake(float amount) {
+    shake += amount;
   }
 
   public float distanceToCamera(int x, int y) {
     return (float)Math.hypot(x - currentPos.x, y - currentPos.y);
   }
 
-  public boolean onScrean(Sprite s) {
-    tempOnScreenRect.set(s.getX()/2, s.getY()/2, s.getWidth()/2, s.getHeight()/2);
-    return onScrean(tempOnScreenRect);
+  public boolean onScreen(Sprite s) {
+    Rectangle.tmp.set(s.getX()/Param.SPRITE_SCALE,
+        s.getY()/Param.SPRITE_SCALE,
+        s.getWidth()/Param.SPRITE_SCALE,
+        s.getHeight()/Param.SPRITE_SCALE);
+    return onScreen(Rectangle.tmp);
   }
 
-  public boolean onScrean(Rectangle r) {
+  public boolean onScreen(Entity t) {
+    Rectangle.tmp.set(t.getX(), t.getY(), t.getWidth(), t.getHeight());
+    return onScreen(Rectangle.tmp);
+  }
+
+  public boolean onScreen(Rectangle r) {
     return cullBoxTile.contains(r) || cullBoxTile.overlaps(r);
   }
 

@@ -144,7 +144,10 @@ public class GameState {
 
     if (UI.getInstance().doingPlacement) {
       if (UI.getInstance().uiMode == UIMode.kPLACE_BUILDING) {
-        if (cursorTile != null && cursorTile.n8 != null && cursorTile.n8.get(kSW).n8 != null) {
+        if (cursorTile != null
+            && cursorTile.n8 != null
+            && cursorTile.n8.get(kSW).n8 != null) {
+          if (placeLocation != cursorTile) Sounds.getInstance().click();
           placeLocation = cursorTile;
           buildingLocationGood = cursorTile.setBuildableHighlight();
           for (Cardinal D : Cardinal.n8)
@@ -171,7 +174,6 @@ public class GameState {
       warpSpawnTime -= Param.WARP_SPAWN_TIME_REDUCTION;
       newParticlesMean += Param.WARP_SPAWN_MEAN_INCREASE;
       newParticlesWidth += Param.WARP_SPAWN_WIDTH_INCREASE;
-      Gdx.app.log("act","Warp: new SpawnTime: "+warpSpawnTime + " meanP: " + newParticlesMean + " widthP: " + newParticlesWidth);
     }
 
     tryNewParticles(false);
@@ -188,13 +190,13 @@ public class GameState {
     );
     if (stressTest) toPlace = 100000;
     boolean placed = warp.newParticles(toPlace);
+    Gdx.app.log("act","Warp: SpawnTime: "+warpSpawnTime + " meanP: "
+        + newParticlesMean + " widthP: " + newParticlesWidth
+        + " place:" + toPlace + " placed:" + placed);
 
     if (placed) {
-      rWarp.getValue().start();
-      Rectangle.tmp.set((warp.coordinates.x - Param.WARP_SIZE / 2) * Param.TILE_S,
-          (warp.coordinates.y - Param.WARP_SIZE / 2) * Param.TILE_S,
-          Param.WARP_SIZE * Param.TILE_S, Param.WARP_SIZE * Param.TILE_S);
-      if (Camera.getInstance().addShake(Rectangle.tmp, Param.WARP_SHAKE)) {
+      rWarp.getValue().start(); // Lightning
+      if (Camera.getInstance().addShake(warp, Param.WARP_SHAKE)) {
         // If did shake, then also do zap
         Sounds.getInstance().zap();
       }
@@ -239,6 +241,8 @@ public class GameState {
     buildingStage.addActor(b);
     buildingSet.add(b);
     playerEnergy += UI.getInstance().buildingBeingPlaced.getCost();
+    Camera.getInstance().addShake(Param.BUILDING_SHAKE);
+    Sounds.getInstance().thud();
     repath();
     UI.getInstance().showMain();
   }
@@ -254,8 +258,10 @@ public class GameState {
 
   public void doConfirmStandingOrder() {
     BuildingType bt = UI.getInstance().selectedBuilding.getType();
-    UI.getInstance().selectedBuilding.savePathingList(); // Save the pathing list
+    boolean didSave = UI.getInstance().selectedBuilding.savePathingList(); // Save the pathing list
+    if (!didSave) return;
     UI.getInstance().doingPlacement = false;
+    Sounds.getInstance().OK();
     // Set all buttons to false
     for (Particle p : Particle.values()) {
       if (!UI.getInstance().buildingSelectStandingOrder.get(bt).containsKey(p)) continue;
