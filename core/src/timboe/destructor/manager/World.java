@@ -172,7 +172,7 @@ public class World {
     if (stage == 14) {
       Gdx.app.log("World", "Generation finished");
       generated = true;
-      if (launchAfterGen) GameState.getInstance().setToGameScreen();
+      if (launchAfterGen) GameState.getInstance().transitionToGameScreen();
       launchAfterGen = false;
       for (int y = Param.ZONES_Y - 1; y >= 0; --y)
         Gdx.app.log("", (zones[0][y].tileColour == Colour.kRED ? "R " : "G ") + (zones[1][y].tileColour == Colour.kRED ? "R " : "G ") + (zones[2][y].tileColour == Colour.kRED ? "R " : "G "));

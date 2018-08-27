@@ -8,7 +8,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import timboe.destructor.Param;
 import timboe.destructor.Util;
-import timboe.destructor.enums.Particle;
+import timboe.destructor.entity.Sprite;
 
 import java.util.Random;
 
@@ -32,6 +32,8 @@ public class Camera {
   private final Vector2 velocity = new Vector2(0,0);
   private float shake;
   private float shakeAngle;
+
+  private Rectangle tempOnScreenRect = new Rectangle();
 
   private final Random R = new Random();
 
@@ -99,13 +101,19 @@ public class Camera {
     return tileCamera.unproject(v);
   }
 
-  public void addShake(Rectangle r, float amount) {
-    if (!onScrean(r)) return;
+  boolean addShake(Rectangle r, float amount) {
+    if (!onScrean(r)) return false;
     shake += amount;
+    return true;
   }
 
   public float distanceToCamera(int x, int y) {
     return (float)Math.hypot(x - currentPos.x, y - currentPos.y);
+  }
+
+  public boolean onScrean(Sprite s) {
+    tempOnScreenRect.set(s.getX()/2, s.getY()/2, s.getWidth()/2, s.getHeight()/2);
+    return onScrean(tempOnScreenRect);
   }
 
   public boolean onScrean(Rectangle r) {
@@ -169,8 +177,8 @@ public class Camera {
     spriteCamera.update();
 
     uiCamera.position.set(uiViewport.getWorldWidth()/2, uiViewport.getWorldHeight()/2, 0f);
-    float tempShakeAngle = R.nextFloat() * (float)Math.PI * 2f;
-    uiCamera.position.add(shake * (float)Math.cos(tempShakeAngle) / currentZoom , shake * (float)Math.sin(tempShakeAngle) / currentZoom, 0);
+    // Note - sin & cos are inverted for the UI vs. the game world
+    uiCamera.position.add(shake * (float)Math.sin(shakeAngle) / currentZoom , shake * (float)Math.cos(shakeAngle) / currentZoom, 0);
     uiCamera.update();
 
 //    Gdx.app.log("Camera","camera current " + currentPos);

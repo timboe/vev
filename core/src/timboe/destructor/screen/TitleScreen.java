@@ -28,6 +28,7 @@ public class TitleScreen implements Screen {
   private final World world = World.getInstance();
   private final UI ui = UI.getInstance();
   private final ShapeRenderer sr = new ShapeRenderer();
+  public float fadeTimer, fadeTimer2;
 
   // Temp
   private final Gesture gesture = new Gesture();
@@ -44,6 +45,8 @@ public class TitleScreen implements Screen {
     camera.setCurrentPos(Param.TILES_INTRO_X/2 * Param.TILE_S,Param.TILES_INTRO_Y/2 * Param.TILE_S); // Edge+offset
     camera.setCurrentZoom(.25f);
     addParticles();
+    fadeTimer = 0;
+    fadeTimer2 = 0;
   }
 
   void addParticles() {
@@ -85,6 +88,36 @@ public class TitleScreen implements Screen {
     state.getIntroSpriteStage().draw();
     state.getIntroFoliageStage().draw();
     state.getUIStage().draw();
+
+    if (fadeTimer > 0) {
+      sr.setProjectionMatrix(Camera.getInstance().getUiCamera().combined);
+      sr.setColor(206f/255f, 101f/255f, 80f/255f, 1f);
+      sr.begin(ShapeRenderer.ShapeType.Filled);
+      strokeRect(sr, fadeTimer, fadeTimer/4f);
+      sr.end();
+      Gdx.gl.glLineWidth(5);
+      sr.begin(ShapeRenderer.ShapeType.Line);
+      sr.setColor(72f/255f, 43f/255f, 81f/255f, 1f);
+      strokeRect(sr, fadeTimer, fadeTimer/4f);
+      strokeRect(sr, fadeTimer2, fadeTimer2/4f);
+      sr.end();
+      fadeTimer += (delta * 5);
+      fadeTimer *= 1.1;
+      if (fadeTimer > 5) {
+        fadeTimer2 += (delta * 10);
+        fadeTimer2 *= 1.1;
+      }
+      if (fadeTimer2 > 1100) {
+        GameState.getInstance().setToGameScreen();
+      }
+    }
+  }
+
+  private void strokeRect(ShapeRenderer sr, float width, float angle) {
+    final float midX = Param.DISPLAY_X / 2, midY = Param.DISPLAY_Y / 2;
+    sr.rect(midX-width, midY-width,
+        width,width,2*width,2*width,
+        1,1,angle);
   }
 
   @Override

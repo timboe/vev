@@ -1,6 +1,7 @@
 package timboe.destructor.entity;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.math.Rectangle;
 
 import java.util.EnumMap;
 import java.util.LinkedList;
@@ -13,7 +14,9 @@ import timboe.destructor.Util;
 import timboe.destructor.enums.BuildingType;
 import timboe.destructor.enums.Cardinal;
 import timboe.destructor.enums.Particle;
+import timboe.destructor.manager.Camera;
 import timboe.destructor.manager.GameState;
+import timboe.destructor.manager.Sounds;
 import timboe.destructor.manager.UI;
 import timboe.destructor.manager.World;
 import timboe.destructor.pathfinding.OrderlyQueue;
@@ -242,6 +245,7 @@ public class Building extends Entity {
           GameState.getInstance().getSpriteStage().addActor(s);
           GameState.getInstance().getParticleSet().add(s);
           GameState.getInstance().dustEffect(s.myTile);
+          if (Camera.getInstance().onScrean(s)) Sounds.getInstance().boop();
         }
       }
     }
@@ -268,6 +272,7 @@ public class Building extends Entity {
 
     s.setTexture("ball_" + p.getColourFromParticle().getString(), 6, false);
     s.setUserObject(p);
+
     holdingPen.get(p).add(s); // Don't throw into world all at once
   }
 

@@ -36,6 +36,8 @@ public class GameScreen implements Screen {
   private final World world = World.getInstance();
   private final UI ui = UI.getInstance();
 
+  public float fadeIn = 0;
+
   public GameScreen() {
     setMultiplexerInputs();
   }
@@ -164,6 +166,18 @@ public class GameScreen implements Screen {
     // UI
 
     state.getUIStage().draw();
+
+    ////////////////////////////////////////////////
+    // Fade in
+
+    if (fadeIn > 0) {
+      sr.setProjectionMatrix(Camera.getInstance().getUiCamera().combined);
+      sr.begin(ShapeRenderer.ShapeType.Filled);
+      sr.setColor(206f/255f, 101f/255f, 80f/255f, fadeIn/100f);
+      sr.rect(0, 0,Param.DISPLAY_X, Param.DISPLAY_Y);
+      sr.end();
+      fadeIn -= delta * 80f;
+    }
   }
 
   @Override

@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.g2d.ParticleEffect;
 import com.badlogic.gdx.graphics.g2d.ParticleEffectPool;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.Array;
 import com.sun.org.apache.xpath.internal.operations.And;
@@ -193,7 +194,10 @@ public class GameState {
       Rectangle.tmp.set((warp.coordinates.x - Param.WARP_SIZE / 2) * Param.TILE_S,
           (warp.coordinates.y - Param.WARP_SIZE / 2) * Param.TILE_S,
           Param.WARP_SIZE * Param.TILE_S, Param.WARP_SIZE * Param.TILE_S);
-      Camera.getInstance().addShake(Rectangle.tmp, Param.WARP_SHAKE);
+      if (Camera.getInstance().addShake(Rectangle.tmp, Param.WARP_SHAKE)) {
+        // If did shake, then also do zap
+        Sounds.getInstance().zap();
+      }
     }
   }
 
@@ -420,16 +424,27 @@ public class GameState {
   }
 
 
+  public void transitionToGameScreen() {
+    theTitleScreen.fadeTimer = 1f;
+    Sounds.getInstance().pulse();
+  }
+
   public void setToTitleScreen() {
     pathingCache.clear();
     UI.getInstance().resetTitle();
     game.setScreen(theTitleScreen);
+    setGameOn(false);
   }
 
   public void setToGameScreen() {
     pathingCache.clear();
     UI.getInstance().resetGame();
     theGameScreen.setMultiplexerInputs();
+    theGameScreen.fadeIn = 100f;
+    Actor toFocusOn = warpStage.getActors().first();
+    Camera.getInstance().setCurrentPos(
+        toFocusOn.getX() + (Param.WARP_SIZE/2 * Param.TILE_S),
+        toFocusOn.getY() + (Param.WARP_SIZE/2 * Param.TILE_S));
     game.setScreen(theGameScreen);
     setGameOn(true);
   }
