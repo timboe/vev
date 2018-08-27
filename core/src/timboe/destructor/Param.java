@@ -13,7 +13,7 @@ public class Param {
   public static final int ZONES_MAX = Math.max(ZONES_X, ZONES_Y);
 
   public static final int TILES_INTRO_X = 64;
-  public static final int TILES_INTRO_Y = (int)Math.round(TILES_INTRO_X * (9f/16f));
+  public static final int TILES_INTRO_Y = 64;
 
   public static final int TILES_X = 128+32;
   public static final int TILES_Y = 128+32;
@@ -25,9 +25,9 @@ public class Param {
   public static final int SPRITE_SCALE = 2;
   public static final float PARTICLE_VELOCITY = 32f*2f;
   public static final float PARTICLE_AT_TARGET = 2f;
-  public static final float NEW_PARTICLE_MEAN = 25f; // mean number of particles to place
+  public static final float NEW_PARTICLE_MEAN = 5f; // mean number of particles to place
   public static final float NEW_PARTICLE_WIDTH = 10f; // width of new particles dist
-  public static final int NEW_PARTICLE_MAX = 100; // max number of particles to place TODO remove this
+  public static final int NEW_PARTICLE_MAX = 200; // max number of particles to place TODO remove this
   public static final float NEW_PARTICLE_TIME = 0.2f; // max time before new particle is sent into world from holding pen
   public static final float PARTICLE_BORED_TIME = 60f; // max seconds until bored (may wander off)
   public static final float PARTICLE_WANDER_CHANCE = 0.001f; // if bored - note this is per animation frame so set it low
@@ -65,8 +65,8 @@ public class Param {
   public static final float WARP_ROTATE_SPEED = 3f;
   public static final float WARP_SHAKE = 5f;
   public static final float WARP_SPAWN_TIME_INITIAL = 5f; // seconds between spawn
-  public static final float WARP_SPAWN_TIME_REDUCTION = 0.1f; // time reduced by this every spawn TODO make no higher than .01f
-  public static final float WARP_SPAWN_MEAN_INCREASE = 1f; // increase in mean number of spawned
+  public static final float WARP_SPAWN_TIME_REDUCTION = 0.005f; // time reduced by this every spawn TODO make no higher than .01f
+  public static final float WARP_SPAWN_MEAN_INCREASE = .25f; // increase in mean number of spawned
   public static final float WARP_SPAWN_WIDTH_INCREASE = 0.1f; // increase in width of mean number
   public static final float WARP_SPAWN_TIME_MIN = 0.25f; // min time between spawn
 
@@ -126,7 +126,7 @@ public class Param {
   public static final Color PARTICLE_Q = new Color(64/255f, 141/255f, 174/255f, 1f);
 
   public static final int DEBUG_INTIAL = 0;
-  private static final boolean FAKE_ANDROID = false;
+  private static final boolean FAKE_ANDROID = true;
   public static final boolean IS_ANDROID = FAKE_ANDROID || Gdx.app.getType() == Application.ApplicationType.Android;
 
   public static final int QUEUE_INITIAL_SIZE = 9;

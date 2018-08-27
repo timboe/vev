@@ -50,6 +50,11 @@ public enum BuildingType {
   // TODO
   public float getBaseCost() {
     switch (this) {
+      case kHZE: return 5000;
+      case kHWM: return 5000;
+      case kWEQ: return 2500;
+      case kZMQ: return 2500;
+      case kMINE: return 10000;
       default: return 10000;
     }
   }
@@ -57,7 +62,12 @@ public enum BuildingType {
   // TODO
   public float getQueueCost() {
     switch (this) {
-      default: return 1000;
+      case kHZE: return 100;
+      case kHWM: return 100;
+      case kWEQ: return 150;
+      case kZMQ: return 150;
+      case kMINE: return 0;
+      default: return 100;
     }
   }
 
@@ -81,6 +91,20 @@ public enum BuildingType {
         if (mode == 1) return Particle.kM;
         if (mode == 2) return Particle.kQ;
       case kMINE: default: return null;
+    }
+  }
+
+  public float getDissassembleBonus(Particle p) {
+    switch (this) {
+      case kHZE:
+        if (p == Particle.kH) return 0.75f; // Z, e
+      case kHWM:
+        if (p == Particle.kW) return 0.8f; // H, m
+      case kWEQ:
+        if (p == Particle.kQ) return 0.85f; // W, e
+      case kZMQ:
+        if (p == Particle.kZ) return 0.8f;
+      default: return 1f;
     }
   }
 
@@ -114,34 +138,24 @@ public enum BuildingType {
     }
   }
 
-  public int getOutputEnergy(Particle p) {
-    for (int i = 0; i < N_MODES; ++i) {
-      if (getInput(i) == p) return getOutputEnergy(i);
-    }
-    return 0;
+  // How much energy is released in the decay.
+  // Rest is still locked up in the decay particles
+  public int getOutputEnergy(int mode) {
+    final int createEnergy = getInput(mode).getCreateEnergy();
+    Pair<Particle,Particle> outputs = getOutputs(mode);
+    int decayCreateEnergy = 0;
+    if (outputs.getKey() != null) decayCreateEnergy += outputs.getKey().getCreateEnergy();
+    if (outputs.getValue() != null) decayCreateEnergy += outputs.getValue().getCreateEnergy();
+    return createEnergy - decayCreateEnergy;
   }
 
-  public int getOutputEnergy(int mode) {
-    if (mode >= N_MODES) Gdx.app.error("getOutputs", "Invalid mode:"+mode);
-    switch (this) {
-      case kHZE:
-        if (mode == 0) return 99;
-        if (mode == 1) return 88;
-        if (mode == 2) return 77;
-      case kHWM:
-        if (mode == 0) return 66;
-        if (mode == 1) return 55;
-        if (mode == 2) return 44;
-      case kWEQ:
-        if (mode == 0) return 33;
-        if (mode == 1) return 22;
-        if (mode == 2) return 11;
-      case kZMQ:
-        if (mode == 0) return 1;
-        if (mode == 1) return 9;
-        if (mode == 2) return 99;
-      case kMINE: default: return 50;
+    public int getOutputEnergy(Particle p) {
+    for (int mode = 0; mode < N_MODES; ++mode) {
+      if (getInput(mode) == p) {
+        return getOutputEnergy(mode);
+      }
     }
+    return 0;
   }
 
 }

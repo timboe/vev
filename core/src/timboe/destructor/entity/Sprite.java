@@ -27,12 +27,15 @@ public class Sprite extends Entity {
   private static final List<Integer> walkSearchRandom = Arrays.asList(0,1,2,3);
   private static final List<Integer> walkSearchReproducible = Arrays.asList(0,1,2,3);
   public Tile myTile;
-  private float idleTime;
-  private final float boredTime = 10f + (Param.PARTICLE_BORED_TIME * Util.R.nextFloat()); // Leave at least 10 seconds
+  public float idleTime;
+  public final float boredTime = 10f + (Param.PARTICLE_BORED_TIME * Util.R.nextFloat()); // Leave at least 10 seconds
+  public boolean isIntroSprite;
 
   public Sprite(Tile t) {
     super(t.coordinates.x, t.coordinates.y, Param.TILE_S * Param.SPRITE_SCALE);
     myTile = t;
+    isIntroSprite = false;
+    idleTime = 0;
   }
 
   public Particle getParticle() {
@@ -42,13 +45,13 @@ public class Sprite extends Entity {
   public void pathTo(Tile target, Set<Tile> solutionKnownFrom, Set<Sprite> doneSet) {
     if (target == null) return;
     if (myTile.getPathFindNeighbours().isEmpty()) {
-      Tile jumpTo = findPathingLocation(myTile, true, false, true); // Find nearby, reproducible TRUE, require parking FALSE, sameHeight TRUE
+      Tile jumpTo = findPathingLocation(myTile, true, false, true, isIntroSprite); // Find nearby, reproducible TRUE, require parking FALSE, sameHeight TRUE
       if (jumpTo != null) jumpTo.tryRegSprite(this);
     }
-    if (target.getPathFindNeighbours().isEmpty()) target = findPathingLocation(target, true, false, true); // Find nearby, reproducible TRUE, require parking FALSE, sameHeight TRUE
+    if (target.getPathFindNeighbours().isEmpty()) target = findPathingLocation(target, true, false, true, isIntroSprite); // Find nearby, reproducible TRUE, require parking FALSE, sameHeight TRUE
     pathingList = (myTile != null && target != null ? PathFinding.doAStar(myTile, target, solutionKnownFrom, doneSet, GameState.getInstance().pathingCache) : null);
     if (pathingList == null) Gdx.app.error("pathTo", "Warning, pathTo failed for " + this);
-    idleTime = 0;
+    if (!isIntroSprite) idleTime = 0;
     Gdx.app.debug("pathTo", "Pathed in " + (pathingList != null ? pathingList.size() : " NULL ") + " steps");
   }
 
@@ -62,7 +65,7 @@ public class Sprite extends Entity {
 
   protected void atFinalDestination(Tile next, boolean wasParked) {
     if (!wasParked) { // I cannot stay here! Find me somewhere else
-      Tile newDest = findPathingLocation(next, false, true, true); // Wander from "next", random direction, needs parking, requireSameHeight=True
+      Tile newDest = findPathingLocation(next, false, true, true, isIntroSprite); // Wander from "next", random direction, needs parking, requireSameHeight=True
       if (newDest != null) pathTo(newDest, null, null);
     }
   }
@@ -93,8 +96,19 @@ public class Sprite extends Entity {
     if (idleTime > boredTime && Util.R.nextFloat() < Param.PARTICLE_WANDER_CHANCE) {
       int newX = (int) Util.clamp(myTile.coordinates.x - (Param.PARTICLE_WANDER_R/2) + Util.R.nextInt(Param.PARTICLE_WANDER_R), 1, Param.TILES_X - 2);
       int newY = (int) Util.clamp(myTile.coordinates.y - (Param.PARTICLE_WANDER_R/2) + Util.R.nextInt(Param.PARTICLE_WANDER_R), 1, Param.TILES_Y - 2);
-      Tile idleWander = GameState.getInstance().mapPathingDestination(World.getInstance().getTile(newX, newY)); // Routes to building entrances if a building is hit
-      if (idleWander != null) pathTo(idleWander, null, null);
+      Tile idleWander = null;
+      if (Util.inBounds(newX, newY, isIntroSprite)) {
+        if (isIntroSprite) {
+          idleWander = GameState.getInstance().mapPathingDestination(World.getInstance().getIntroTile(newX, newY));
+        } else {
+          idleWander = GameState.getInstance().mapPathingDestination(World.getInstance().getTile(newX, newY)); // Routes to building entrances if a building is hit
+        }
+      }
+      if (idleWander != null) {
+//        Gdx.app.log("act", "Trying idle wander to " + idleWander + " (isIntroSprite = " + isIntroSprite + ")");
+        pathTo(idleWander, null, null);
+        idleTime = 0;
+      }
     }
     if (++frame == frames) {
       frame = 0;
@@ -105,12 +119,12 @@ public class Sprite extends Entity {
   public void setNudgeDestination(Tile t, Cardinal D) {
     nudgeDestination.set(t.getX() * Param.SPRITE_SCALE + getWidth()/2, t.getY() * Param.SPRITE_SCALE + getHeight()/2);
     nudgeDestination.add(D == kSE || D == kNE ? Param.TILE_S : 0, D == kNW || D== kNE ? Param.TILE_S : 0);
-    idleTime = 0;
+    if (!isIntroSprite) idleTime = 0;
   }
 
   // Check a (nearby) space for its connectedness, suitability for particle and if it has parking space
-  private static Tile tryWanderDest(int x, int y, int level, boolean requireSameHeight, boolean requireParking) {
-    Tile tempTilePtr = World.getInstance().getTile(x, y);
+  private static Tile tryWanderDest(int x, int y, int level, boolean requireSameHeight, boolean requireParking, boolean isIntroSprite) {
+    Tile tempTilePtr = (isIntroSprite ? World.getInstance().getIntroTile(x, y) : World.getInstance().getTile(x, y));
     if (tempTilePtr.mySprite != null) return null; // Building or queue or vegetation
     if (tempTilePtr.getPathFindNeighbours().isEmpty()) return null; // Unpathable
     if (requireSameHeight && tempTilePtr.level != level) return null; // Different elevation
@@ -119,7 +133,7 @@ public class Sprite extends Entity {
   }
 
   // Find a nearby spot. Note this randomises the direction if reproducible == false
-  public static Tile findPathingLocation(final Tile t, final boolean reproducible, final boolean requireParking, final boolean requireSameHeight) {
+  public static Tile findPathingLocation(final Tile t, final boolean reproducible, final boolean requireParking, final boolean requireSameHeight, final boolean isIntroSprite) {
     int tryRadius = 0;
     while (++tryRadius < Param.TILES_MAX) {
       boolean sameHeight = (tryRadius < Param.TILES_MAX / 4); // TODO tune radius at which we should try and get the same height
@@ -129,26 +143,26 @@ public class Sprite extends Entity {
       for (final Integer s : reproducible ? walkSearchReproducible : walkSearchRandom) {
         if (s == 0) {
           for (int x = t.coordinates.x - tryRadius; x <= t.coordinates.x + tryRadius; ++x) {
-            if (!Util.inBounds(x, t.coordinates.y + tryRadius)) break;
-            Tile t2 = tryWanderDest(x, t.coordinates.y + tryRadius, t.level, sameHeight, requireParking);
+            if (!Util.inBounds(x, t.coordinates.y + tryRadius, isIntroSprite)) break;
+            Tile t2 = tryWanderDest(x, t.coordinates.y + tryRadius, t.level, sameHeight, requireParking, isIntroSprite);
             if (t2 != null) return t2;
           }
         } else if (s == 1) {
           for (int x = t.coordinates.x - tryRadius; x <= t.coordinates.x + tryRadius; ++x) {
-            if (!Util.inBounds(x, t.coordinates.y - tryRadius)) break;
-            Tile t2 = tryWanderDest(x, t.coordinates.y - tryRadius, t.level, sameHeight, requireParking);
+            if (!Util.inBounds(x, t.coordinates.y - tryRadius, isIntroSprite)) break;
+            Tile t2 = tryWanderDest(x, t.coordinates.y - tryRadius, t.level, sameHeight, requireParking, isIntroSprite);
             if (t2 != null) return t2;
           }
         } else if (s == 2) {
           for (int y = t.coordinates.y - tryRadius; y <= t.coordinates.y + tryRadius; ++y) {
-            if (!Util.inBounds(t.coordinates.x + tryRadius, y)) break;
-            Tile t2 = tryWanderDest(t.coordinates.x + tryRadius, y, t.level, sameHeight, requireParking);
+            if (!Util.inBounds(t.coordinates.x + tryRadius, y, isIntroSprite)) break;
+            Tile t2 = tryWanderDest(t.coordinates.x + tryRadius, y, t.level, sameHeight, requireParking, isIntroSprite);
             if (t2 != null) return t2;
           }
         } else if (s == 3) {
           for (int y = t.coordinates.y - tryRadius; y <= t.coordinates.y + tryRadius; ++y) {
-            if (!Util.inBounds(t.coordinates.x - tryRadius, y)) break;
-            Tile t2 = tryWanderDest(t.coordinates.x - tryRadius, y, t.level, sameHeight, requireParking);
+            if (!Util.inBounds(t.coordinates.x - tryRadius, y, isIntroSprite)) break;
+            Tile t2 = tryWanderDest(t.coordinates.x - tryRadius, y, t.level, sameHeight, requireParking, isIntroSprite);
             if (t2 != null) return t2;
           }
         }

@@ -98,6 +98,10 @@ public class GameState {
   private GameScreen theGameScreen;
   private DestructorGame game;
 
+  public boolean isGameOn() {
+    return gameOn;
+  }
+
   private boolean gameOn;
 
   private GameState() {
@@ -115,6 +119,8 @@ public class GameState {
   public void act(float delta) {
     tickTime += delta;
 
+    uiStage.act(delta);
+
     if (!gameOn) {
       introSpriteStage.act(delta);
       return;
@@ -123,7 +129,6 @@ public class GameState {
     // Tile stage, foliage stage are static - does not need to be acted
     spriteStage.act(delta);
     warpStage.act(delta);
-    uiStage.act(delta);
     buildingStage.act(delta);
 
     if (Param.IS_ANDROID) {
@@ -134,7 +139,7 @@ public class GameState {
     cursor = Camera.getInstance().unproject(cursor);
     cursor.scl(1f / (float) Param.TILE_S);
     Tile cursorTile = null;
-    if (Util.inBounds((int)cursor.x, (int)cursor.y)) cursorTile = World.getInstance().getTile(cursor.x, cursor.y);
+    if (Util.inBounds((int)cursor.x, (int)cursor.y, false)) cursorTile = World.getInstance().getTile(cursor.x, cursor.y);
 
     if (UI.getInstance().doingPlacement) {
       if (UI.getInstance().uiMode == UIMode.kPLACE_BUILDING) {
@@ -177,7 +182,9 @@ public class GameState {
     Map.Entry<Warp,ParticleEffect> rWarp = entries.get( R.nextInt(entries.size()) );
     Warp warp = rWarp.getKey();
 
-    int toPlace = Math.round(Util.clamp(newParticlesMean + ((float)R.nextGaussian() * newParticlesWidth), 1, Param.NEW_PARTICLE_MAX));
+    int toPlace = Math.round(
+        Util.clamp(newParticlesMean + ((float)R.nextGaussian() * newParticlesWidth), 1, Param.NEW_PARTICLE_MAX)
+    );
     if (stressTest) toPlace = 100000;
     boolean placed = warp.newParticles(toPlace);
 
@@ -340,7 +347,7 @@ public class GameState {
   }
 
   public void doParticleMoveOrder(int x, int y) {
-    if (!Util.inBounds(x / Param.TILE_S, y / Param.TILE_S)) return;
+    if (!Util.inBounds(x / Param.TILE_S, y / Param.TILE_S, false)) return;
     Tile target = World.getInstance().getTile(x / Param.TILE_S, y / Param.TILE_S);
     target = mapPathingDestination(target);
     if (target == null) return;
@@ -392,6 +399,7 @@ public class GameState {
           // Hence it will (very likley) fail here too. And failed pathing is EXPENSIVE
           // So don't run it.
           pathed.add(s);
+          // TODO - cancel existing pathing on these fellas?
           continue;
         }
 
@@ -413,11 +421,14 @@ public class GameState {
 
 
   public void setToTitleScreen() {
+    pathingCache.clear();
+    UI.getInstance().resetTitle();
     game.setScreen(theTitleScreen);
   }
 
   public void setToGameScreen() {
-    UI.getInstance().reset();
+    pathingCache.clear();
+    UI.getInstance().resetGame();
     theGameScreen.setMultiplexerInputs();
     game.setScreen(theGameScreen);
     setGameOn(true);
@@ -437,6 +448,10 @@ public class GameState {
 
   public Stage getWarpStage() { return warpStage; }
 
+  public Stage getIntroSpriteStage() {
+    return introSpriteStage;
+  }
+
   public Stage getSpriteStage() {
     return spriteStage;
   }
@@ -452,20 +467,21 @@ public class GameState {
       if (introTileStage != null) introTileStage.dispose();
       if (introFoliageStage != null) introFoliageStage.dispose();
       if (introSpriteStage != null) introSpriteStage.dispose();
+      if (uiStage != null) uiStage.dispose();
       introTileStage = new Stage(Camera.getInstance().getTileViewport());
       introSpriteStage = new Stage(Camera.getInstance().getSpriteViewport());
       introFoliageStage = new Stage(Camera.getInstance().getSpriteViewport());
+      uiStage = new Stage(Camera.getInstance().getUiViewport());
+
     }
     if (tileStage != null) tileStage.dispose();
     if (spriteStage != null) spriteStage.dispose();
     if (foliageStage != null) foliageStage.dispose();
-    if (uiStage != null) uiStage.dispose();
     if (warpStage != null) warpStage.dispose();
     if (buildingStage != null) buildingStage.dispose();
     tileStage = new Stage(Camera.getInstance().getTileViewport());
     spriteStage = new Stage(Camera.getInstance().getSpriteViewport());
     foliageStage = new Stage(Camera.getInstance().getSpriteViewport());
-    uiStage = new Stage(Camera.getInstance().getUiViewport());
     warpStage = new Stage(Camera.getInstance().getTileViewport());
     buildingStage = new Stage(Camera.getInstance().getTileViewport());
     Color warpStageC = warpStage.getBatch().getColor();
@@ -499,6 +515,7 @@ public class GameState {
     introTileStage.dispose();
     tileStage.dispose();
     spriteStage.dispose();
+    introSpriteStage.dispose();
     foliageStage.dispose();
     introFoliageStage.dispose();
     uiStage.dispose();

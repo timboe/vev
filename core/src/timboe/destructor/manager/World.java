@@ -43,6 +43,7 @@ public class World {
   public final Vector<Patch> tiberium = new Vector<Patch>();
   public final Vector<ParticleEffect> warpClouds = new Vector<ParticleEffect>();
   private boolean generated = false;
+  public boolean launchAfterGen = false;
   private int stage;
   private Vector<IVector2> worldEdges = new Vector<IVector2>();
 
@@ -83,6 +84,10 @@ public class World {
     return tiles[x][y];
   }
 
+  public Tile getIntroTile(int x, int y) {
+    return introTiles[x][y];
+  }
+
   private void reset(boolean includingIntro) {
     GameState.getInstance().reset(includingIntro);
     stage = 0;
@@ -98,6 +103,7 @@ public class World {
       }
     }
     setNeighbours(tiles, Param.TILES_X, Param.TILES_Y);
+
     if (includingIntro) {
       introTiles = new Tile[Param.TILES_INTRO_X][Param.TILES_INTRO_Y];
       for (int x = 0; x < Param.TILES_INTRO_X; ++x) {
@@ -105,7 +111,7 @@ public class World {
           introTiles[x][y] = new Tile(x, y);
           GameState.getInstance().getIntroTileStage().addActor(introTiles[x][y]);
           introTiles[x][y].level = 1;
-          if (x < Param.TILES_INTRO_X / 3) {
+          if (x < 2*Param.TILES_INTRO_X / 5) { // 2/5 or 40%
             introTiles[x][y].tileColour = Colour.kGREEN;
           } else {
             introTiles[x][y].tileColour = Colour.kRED;
@@ -115,6 +121,7 @@ public class World {
       setNeighbours(introTiles, Param.TILES_INTRO_X, Param.TILES_INTRO_Y);
       generateIntro(); // Fast
     }
+
     zones = new Zone[Param.ZONES_X][Param.ZONES_Y];
     allZones.clear();
     for (int x = 0; x < Param.ZONES_X; ++x) {
@@ -165,6 +172,8 @@ public class World {
     if (stage == 14) {
       Gdx.app.log("World", "Generation finished");
       generated = true;
+      if (launchAfterGen) GameState.getInstance().setToGameScreen();
+      launchAfterGen = false;
       for (int y = Param.ZONES_Y - 1; y >= 0; --y)
         Gdx.app.log("", (zones[0][y].tileColour == Colour.kRED ? "R " : "G ") + (zones[1][y].tileColour == Colour.kRED ? "R " : "G ") + (zones[2][y].tileColour == Colour.kRED ? "R " : "G "));
       for (int y = Param.ZONES_Y - 1; y >= 0; --y)
@@ -513,7 +522,7 @@ public class World {
       default:
         Gdx.app.error("increaseStep", "Unknown direction");
     }
-    if (Util.inBounds(v)) setGround(v, c, level, Edge.kFLAT);
+    if (Util.inBounds(v, false)) setGround(v, c, level, Edge.kFLAT);
   }
 
   private int distanceToDestination(final IVector2 v, final Cardinal D, final int endOffset,
@@ -926,7 +935,7 @@ public class World {
           increaseStep(location, D, toC, toLevel);
           distanceToDest = distanceToDestination(location, D, offset, destination, rightTurnNext);
           direction = krinkle(location, D, direction, distanceToDest, maxIncursion, destination, fromC, toC, fromLevel, toLevel);
-          if (!Util.inBounds(location)) {
+          if (!Util.inBounds(location, false)) {
             Gdx.app.error("doEdges", "Serious krinkle error, gone out-of-bounds");
             return true; // TODO make this an error, return false
           }

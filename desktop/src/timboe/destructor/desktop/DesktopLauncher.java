@@ -7,7 +7,7 @@ import timboe.destructor.DestructorGame;
 public class DesktopLauncher {
 	public static void main (String[] arg) {
 		LwjglApplicationConfiguration config = new LwjglApplicationConfiguration();
-		config.title = "Particle Destructor";
+		config.title = "VEV";
 		config.useHDPI = true;
 		config.width = 1920/2;
 		config.height = Math.round(config.width * (9f/18f));

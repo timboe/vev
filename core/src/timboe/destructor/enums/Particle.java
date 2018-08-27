@@ -68,6 +68,7 @@ public enum Particle {
     }
   }
 
+  // Offset of chevrons so that they don't overlap
   public int getStandingOrderOffset() {
     switch (this) {
       case kH: return 0;
@@ -95,12 +96,36 @@ public enum Particle {
   // TODO tweak
   public int getCreateEnergy() {
     switch (this) {
-      case kH: return 25;
-      case kW: return 25;
-      case kZ: return 25;
-      case kE: return 25;
-      case kM: return 25;
-      case kQ: return 25;
+      case kH: return 125 + 150;
+      case kW: return 80 + 20;
+      case kZ: return 90 + 20;
+      case kE: return 1 + 10;
+      case kM: return 1 + 10;
+      case kQ: return 1 + 5;
+      default: return 0;
+    }
+  }
+
+  public float getCreateChance() {
+    switch (this) {
+      case kH: return 0.05f;
+      case kW: return 0.15f;
+      case kZ: return 0.15f;
+      case kE: return 0.2f;
+      case kM: return 0.2f;
+      case kQ: return 0.25f;
+      default: return 0;
+    }
+  }
+
+  public float getDisassembleTime() {
+    switch (this) {
+      case kH: return 8f;
+      case kW: return 2.5f;
+      case kZ: return 2.5f;
+      case kE: return 1f;
+      case kM: return 1f;
+      case kQ: return 0.5f;
       default: return 0;
     }
   }

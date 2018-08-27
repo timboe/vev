@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 import timboe.destructor.Param;
+import timboe.destructor.Util;
 import timboe.destructor.enums.Cardinal;
 import timboe.destructor.enums.Colour;
 import timboe.destructor.enums.Particle;
@@ -81,6 +82,7 @@ public class Entity extends Actor {
       }
       setTexture(r, frame);
     }
+    frame = Util.R.nextInt(frames); // TODO check this doesn't mess anything up
     this.frames = frames;
     return ok;
   }

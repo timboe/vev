@@ -14,8 +14,8 @@ import timboe.destructor.enums.BuildingType;
 import timboe.destructor.enums.Cardinal;
 import timboe.destructor.enums.Particle;
 import timboe.destructor.manager.GameState;
+import timboe.destructor.manager.UI;
 import timboe.destructor.manager.World;
-import timboe.destructor.pathfinding.IVector2;
 import timboe.destructor.pathfinding.OrderlyQueue;
 import timboe.destructor.pathfinding.PathFinding;
 
@@ -32,12 +32,14 @@ public class Building extends Entity {
   private Tile pathingStartPoint;
   private float timeDisassemble, timeMove, timeBuild, timeHoldingPen, nextReleaseTime;
   public Sprite spriteProcessing = null;
+  private Vector<Entity> childSprites = new Vector<Entity>();
   private Entity banner;
   private Vector<Entity> accepts = new Vector<Entity>();
   private EnumMap<Particle, List<Sprite>> holdingPen = new EnumMap<Particle, List<Sprite>>(Particle.class);
   private int built;
   private boolean updateBuildingTexture;
-  private float dissasembleTime = 1f; //TODO real value here
+  private float getTimeDisassembleMax; // Used to get % complete
+  private float thisBuildingDisassembleBonus = 1f;
   private Patch myTiberiumPatch;
 
   public Building(Tile t, BuildingType type) {
@@ -79,8 +81,26 @@ public class Building extends Entity {
     return type;
   }
 
+  public void processSprite(Sprite s) {
+    if (spriteProcessing != null) {
+      Gdx.app.error("processSprite", "Already processing a sprite?! Logic error");
+    }
+    Particle p = s.getParticle();
+    spriteProcessing = s;
+    timeDisassemble = getDisassembleTime(p);
+    getTimeDisassembleMax = timeDisassemble;
+  }
+
+  public float getDisassembleTime(Particle p) {
+    return p.getDisassembleTime() * thisBuildingDisassembleBonus * type.getDissassembleBonus(p);
+  }
+
+  public float getDisassembleTime(int mode) {
+    return getDisassembleTime(type.getInput(mode));
+  }
+
   public void updatePathingStartPoint() {
-    pathingStartPoint = Sprite.findPathingLocation(centre, true, false, false); //reproducible=True, requireParking=False
+    pathingStartPoint = Sprite.findPathingLocation(centre, true, false, false, false); //reproducible=True, requireParking=False
     if (pathingStartPoint == null) {
       Gdx.app.error("updatePathingStartPoint", "Building could not find a pathing start point!");
       return;
@@ -135,7 +155,8 @@ public class Building extends Entity {
   }
 
   public Tile getQueuePathingTarget() {
-    return myQueue.getQueuePathingTarget();
+    if (myQueue != null) return myQueue.getQueuePathingTarget();
+    return getPathingStartPoint(null);
   }
 
   // Moves on any sprites under the building
@@ -170,6 +191,24 @@ public class Building extends Entity {
     }
   }
 
+  private void setBuiltTexture() {
+    setTexture("building_" + type.ordinal(), 1, false);
+    if (type != BuildingType.kMINE) {
+      banner = new Entity(coordinates.x + 2, coordinates.y);
+      banner.setTexture("board_vertical", 1, false);
+      childSprites.add(banner);
+      GameState.getInstance().getBuildingStage().addActor(banner);
+      for (int i = 0; i < BuildingType.N_MODES; ++i) {
+        Entity p = new Entity(Param.SPRITE_SCALE*(coordinates.x), Param.SPRITE_SCALE*(coordinates.y + 1));
+        p.moveBy(73, -5 + (20 * i)); // Fine tune-position of
+        Particle input = type.getInput(i);
+        p.setTexture("ball_" + input.getColourFromParticle().getString(), 1, false);
+        childSprites.add(p);
+        GameState.getInstance().getSpriteStage().addActor(p);
+      }
+    }
+  }
+
   @Override
   public void act(float delta) {
     if (built > 0) {
@@ -181,23 +220,15 @@ public class Building extends Entity {
     if (timeMove > Param.BUILDING_QUEUE_MOVE_TIME) {
       timeMove -= Param.BUILDING_QUEUE_MOVE_TIME;
       if (myQueue != null) myQueue.moveAlongMoveAlong();
+      // When built - set my final texture
       if (updateBuildingTexture) {
-        setTexture("building_" + type.ordinal(), 1, false);
         updateBuildingTexture = false;
-        if (type != BuildingType.kMINE) {
-          banner = new Entity(coordinates.x + 2, coordinates.y);
-          banner.setTexture("board_vertical", 1, false);
-          GameState.getInstance().getBuildingStage().addActor(banner);
-          for (int i = 0; i < BuildingType.N_MODES; ++i) {
-            Entity p = new Entity(Param.SPRITE_SCALE*(coordinates.x + 2), Param.SPRITE_SCALE*(coordinates.y + i));
-            Particle input = type.getInput(i);
-            p.setTexture("ball_" + input.getColourFromParticle().getString(), 1, false);
-            GameState.getInstance().getSpriteStage().addActor(p);
-          }
-        }
+        setBuiltTexture();
       }
     }
 
+    // Mostly used by Warps, this block of code spawns new particles into the world
+    // (used also by buildings where a particle is deconstructed to another particle)
     timeHoldingPen += delta;
     if (timeHoldingPen > nextReleaseTime) {
       timeHoldingPen -= nextReleaseTime;
@@ -216,11 +247,11 @@ public class Building extends Entity {
     }
 
     if (spriteProcessing == null) return;
-    timeDisassemble += delta;
-    if (timeDisassemble < dissasembleTime) return;
-    timeDisassemble -= dissasembleTime;
+    timeDisassemble -= delta;
+    UI.getInstance().buildingSelectProgress.get(type).setValue(timeDisassemble / getTimeDisassembleMax);
+    if (timeDisassemble > 0) return;
     Pair<Particle,Particle> myDecay = type.getOutputs( spriteProcessing.getParticle() );
-    placeParticle( myDecay.getKey() ); // Output #1
+    placeParticle( myDecay.getKey()   ); // Output #1
     placeParticle( myDecay.getValue() ); // Output #2
     GameState.getInstance().playerEnergy += type.getOutputEnergy( spriteProcessing.getParticle() );
     spriteProcessing = null; // Kill it
@@ -232,7 +263,7 @@ public class Building extends Entity {
     s.moveBy(Param.TILE_S / 2, Param.TILE_S / 2);
 
     List<Tile> pList = getBuildingPathingList(p); // Do I have a standing order?
-    if (pList == null) s.pathTo( s.findPathingLocation(getPathingStartPoint(p), true, true, true), null, null);  // random direction=True, needs parking=True, requireSameHeight=True
+    if (pList == null) s.pathTo( s.findPathingLocation(getPathingStartPoint(p), true, true, true, false), null, null);  // random direction=True, needs parking=True, requireSameHeight=True
     else s.pathingList = new LinkedList<Tile>(pList); // Clone
 
     s.setTexture("ball_" + p.getColourFromParticle().getString(), 6, false);

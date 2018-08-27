@@ -67,7 +67,7 @@ public class OrderlyQueue {
               // Goodby - this particle is now DEAD
               toRemove = s; // from its tile
               GameState.getInstance().killSprite(s); // from the game manager
-              myBuilding.spriteProcessing = s; // Now the last ref to the sprite is held only by the building
+              myBuilding.processSprite(s); // Now the last ref to the sprite is held only by the building
             }
           } else { // Not the final tile.
             // Is the entrance of the next tile free?
@@ -89,6 +89,7 @@ public class OrderlyQueue {
           }
         }
       }
+      // Can only remove reference from the tile at the end
       if (toRemove != null) tile.deRegSprite(toRemove);
     }
   }
@@ -174,7 +175,7 @@ public class OrderlyQueue {
     int step = 0, x = start.coordinates.x, y = start.coordinates.y, move = 3;
     World w = World.getInstance();
     while (step++ < GameState.getInstance().queueSize) {
-      if (!Util.inBounds(x,y) || !w.getTile(x,y).buildable()) return;
+      if (!Util.inBounds(x,y,false) || !w.getTile(x,y).buildable()) return;
       w.getTile(x,y).setHighlightColour(Param.HIGHLIGHT_YELLOW);
       if (Math.abs(move) > 1) {
         x += 1 * Math.signum(move);

@@ -26,6 +26,7 @@ public class Warp extends Building {
   private float[] rotAngle = {0f, 90f, 0f, -90f};
   private final float[] rotV = {Param.WARP_ROTATE_SPEED, Param.WARP_ROTATE_SPEED, -Param.WARP_ROTATE_SPEED, -Param.WARP_ROTATE_SPEED};
   private final int pathingStartPointSeed = Util.R.nextInt();
+  private float totalEnergy = 0;
 
   private final EnumMap<Particle, Tile> pathingStartPointWarp = new EnumMap<Particle, Tile>(Particle.class);
 
@@ -37,6 +38,7 @@ public class Warp extends Building {
     setTexture( Textures.getInstance().getTexture("void", false), 2);
     setTexture( Textures.getInstance().getTexture("void", true), 3);
     moveBy(0, -Param.TILE_S/2);
+    for (Particle p : Particle.values()) totalEnergy += p.getCreateEnergy();
     // UpdatePathingStartPoint is called later by World - we don't have a pathing grid yet!
   }
 
@@ -71,13 +73,25 @@ public class Warp extends Building {
 
   public boolean newParticles(int toPlace) {
     boolean placed = false;
+    float rand = Util.R.nextFloat() + 0.1f; // This extra allows for random
+    Particle toPlaceParticle = null;
+    for (Particle p : Particle.values()) {
+      rand -= p.getCreateChance();
+      if (rand <= 0) {
+        toPlaceParticle = p;
+        break;
+      }
+    }
     for (int tp = 0; tp < toPlace; ++tp) {
-      // TODO introduce different modes e.g. all of one type
-      Particle p = Particle.random();
-      if (GameState.getInstance().warpEnergy > p.getCreateEnergy()) {
+      // Occasional random spawn mode
+      Particle p = (toPlaceParticle == null ? Particle.random() : toPlaceParticle);
+      if (GameState.getInstance().warpEnergy > 0) {
         placeParticle(p);
         GameState.getInstance().warpEnergy -= p.getCreateEnergy();
         placed = true;
+        if (GameState.getInstance().warpEnergy < 0) {
+          GameState.getInstance().warpEnergy = 0;
+        }
       }
     }
     return placed;

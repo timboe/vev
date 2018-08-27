@@ -1,5 +1,6 @@
 {
   com.badlogic.gdx.graphics.g2d.BitmapFont: {
+  fixed-width-font: {file: VT323.fnt },
   default-font: {file: OpenSans-distance-field.fnt },
   small-font: {file: font-small.fnt }
 },
@@ -25,6 +26,7 @@
 },
   com.badlogic.gdx.scenes.scene2d.ui.TextButton$TextButtonStyle: {
   default: {over: button-over, disabled: button, font: default-font, fontColor: white, disabledFontColor: grey, down: button-down, up: button },
+  fixed-width: {over: button-over, disabled: button, font: fixed-width-font, fontColor: white, disabledFontColor: grey, down: button-down, up: button },
   blue: {over: button-blue-over, disabled: button, font: default-font, fontColor: white, disabledFontColor: grey, down: button-blue-down, up: button-blue },
   toggle: {font: default-font, fontColor: white, checked: button-down, down: button-down, up: button, over: button-over, disabled: button, disabledFontColor: grey }
 },
@@ -65,6 +67,7 @@
 },
   com.badlogic.gdx.scenes.scene2d.ui.Label$LabelStyle: {
   default: {font: default-font, fontColor: white },
+  title: {font: fixed-width-font, fontColor: white },
   link-label: {fontColor: link-label, font: default-font },
   small: {font: small-font, fontColor: white },
   menuitem-shortcut: {font: default-font, fontColor: menuitem }

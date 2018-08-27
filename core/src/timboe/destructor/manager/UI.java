@@ -15,6 +15,9 @@ import com.badlogic.gdx.scenes.scene2d.ui.ProgressBar;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Slider;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.TextTooltip;
+import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.NinePatchDrawable;
 import com.badlogic.gdx.utils.Align;
@@ -27,6 +30,7 @@ import java.util.Set;
 import timboe.destructor.LabelDF;
 import timboe.destructor.Pair;
 import timboe.destructor.Param;
+import timboe.destructor.TextButtonDF;
 import timboe.destructor.entity.Building;
 import timboe.destructor.entity.Sprite;
 import timboe.destructor.enums.BuildingType;
@@ -61,12 +65,16 @@ public class UI {
 
   private final int PAD = 4;
 
+  private Table tableIntro;
   private Table table;
   private Skin skin;
   private ShaderProgram dfShader;
+  public ShaderProgram dfShader_medium;
+  private ShaderProgram dfShader_large;
 
   private Table mainWindow;
   private Table selectWindow;
+  private Table titleWindow;
 
   private float displayPlayerEnergy;
   private float displayWarpEnergy;
@@ -86,9 +94,13 @@ public class UI {
   public EnumMap<BuildingType, LabelDF> buildingWindowQSize;
   public EnumMap<BuildingType, LabelDF> buildingWindowQPrice;
   public EnumMap<BuildingType, Slider> buildingWindowQSlider;
+  public EnumMap<BuildingType, LabelDF> buildingWindowTimeLabelA;
+  public EnumMap<BuildingType, LabelDF> buildingWindowTimeLabelB;
+  public EnumMap<BuildingType, LabelDF> buildingWindowTimeLabelC;
+
 
   private EnumMap<BuildingType, Table> buildingSelectWindow;
-  private EnumMap<BuildingType, ProgressBar> buildingSelectProgress;
+  public EnumMap<BuildingType, ProgressBar> buildingSelectProgress;
   public EnumMap<BuildingType, EnumMap<Particle, Button>> buildingSelectStandingOrder;
 
   public EnumMap<Particle, Button> selectButton;
@@ -96,6 +108,17 @@ public class UI {
   private Button selectCross;
 
   private UI() {
+    dfShader_large = new ShaderProgram(Gdx.files.internal("font.vert"), Gdx.files.internal("font_large.frag"));
+    if (!dfShader_large.isCompiled()) Gdx.app.error("dfShader_large", "compilation failed:\n" + dfShader_large.getLog());
+
+    dfShader_medium = new ShaderProgram(Gdx.files.internal("font.vert"), Gdx.files.internal("font_medium.frag"));
+    if (!dfShader_medium.isCompiled()) Gdx.app.error("dfShader_medium", "compilation failed:\n" + dfShader_medium.getLog());
+
+    dfShader = new ShaderProgram(Gdx.files.internal("font.vert"), Gdx.files.internal("font.frag"));
+    if (!dfShader.isCompiled()) Gdx.app.error("fontShader", "compilation failed:\n" + dfShader.getLog());
+
+    skin = new Skin(Gdx.files.internal("uiskin.json"));
+    skin.addRegions(Textures.getInstance().getUIAtlas());
   }
 
   private void separator(Table w, int colspan) {
@@ -109,6 +132,13 @@ public class UI {
     l.setWidth(SIZE_S);
     l.setHeight(SIZE_S);
     return l;
+  }
+
+  private Button getTextButton(String label) {
+    TextButtonDF b = new TextButtonDF(label, skin, "default");
+    b.getLabel().setFontScale(2);
+    b.getLabelCell().pad(10,30,10,30);
+    return b;
   }
 
   private Image getImage(String image) {
@@ -170,10 +200,10 @@ public class UI {
 
   private void addBuildingBlurb(Table bw, BuildingType bt) {
     if (bt == BuildingType.kMINE || bt == BuildingType.kWARP) return;
-    for (int i = 0; i < BuildingType.N_MODES; ++i) {
+    for (int mode = 0; mode < BuildingType.N_MODES; ++mode) {
       HorizontalGroup hg = new HorizontalGroup();
-      Particle from = bt.getInput(i);
-      Pair<Particle, Particle> to = bt.getOutputs(i);
+      Particle from = bt.getInput(mode);
+      Pair<Particle, Particle> to = bt.getOutputs(mode);
       addToWin(bw, getImage("ball_" + from.getColourFromParticle().getString()), SIZE_S);
       addToWin(bw, getImage("arrow"), SIZE_S);
       addToWin(bw, getImage("zap"), SIZE_S);
@@ -187,11 +217,17 @@ public class UI {
       } else {
         addToWin(bw, new Container<Actor>(), SIZE_S);
       }
-      addToWin(bw, new Container<Actor>(), SIZE_S);
+      LabelDF disassebleTimeLabel = getLabel("");
+      addToWin(bw, disassebleTimeLabel, SIZE_S);
+      switch(mode) {
+        case 0: buildingWindowTimeLabelA.put(bt, disassebleTimeLabel); break;
+        case 1: buildingWindowTimeLabelB.put(bt, disassebleTimeLabel); break;
+        case 2: buildingWindowTimeLabelC.put(bt, disassebleTimeLabel); break;
+      }
       bw.row();
       addToWin(bw, getLabel(from.getString()), SIZE_S);
       addToWin(bw, new Container<Actor>(), SIZE_S);
-      addToWin(bw, getLabel(formatter.format(bt.getOutputEnergy(i))), SIZE_S);
+      addToWin(bw, getLabel(formatter.format(bt.getOutputEnergy(mode))), SIZE_S);
       if (to.getKey() != null) {
         addToWin(bw, getLabel(to.getKey().getString()), SIZE_S);
       } else {
@@ -207,18 +243,74 @@ public class UI {
     }
   }
 
-  protected void reset() {
+  protected void resetTitle() {
+    tableIntro = new Table();
+    tableIntro.setFillParent(true);
+    tableIntro.debugAll();
+    tableIntro.left();
+    tableIntro.row().fillX();
+    tableIntro.pad(Param.TILE_S * 2);
+
+    GameState.getInstance().getUIStage().clear();
+    GameState.getInstance().getUIStage().addActor(tableIntro);
+
+
+    LabelDF vev = new LabelDF("VEV", skin, "title", dfShader_large);
+    vev.setFontScale(25f);
+    tableIntro.add(vev).padLeft(45);
+
+    tableIntro.add(new Actor()).expand();
+
+    titleWindow = getWindow();
+    Button newGame = getTextButton("NEW GAME");
+    newGame.addListener(new ChangeListener() {
+      @Override
+      public void changed(ChangeEvent event, Actor actor) {
+        if (!World.getInstance().getGenerated()) World.getInstance().launchAfterGen = true;
+        else GameState.getInstance().setToGameScreen();
+      }
+    });
+    newGame.addListener(new TextTooltip("You can press this", skin));
+    titleWindow.add( newGame ).pad(SIZE_S).colspan(2).fillX();
+    titleWindow.row();
+    separator(titleWindow, 2);
+    titleWindow.add( getTextButton("LOAD") ).pad(SIZE_S).colspan(2).fillX();
+    titleWindow.row();
+    separator(titleWindow, 2);
+    titleWindow.add( getTextButton("HELP") ).pad(SIZE_S).colspan(2).fillX();
+    titleWindow.row();
+    tableIntro.add(titleWindow).right().top();
+
+    LabelDF cred = getLabel("A game by Tim Martin");
+    LabelDF music1 = getLabel("Music by Chris Zabriskie (CC v4)");
+    LabelDF music2 = getLabel("    Is That You Or Are You You? / Divider / CGI Snake");
+    LabelDF art = getLabel("Open Game Art by Buch");
+
+    tableIntro.row();
+    tableIntro.bottom().left();
+    tableIntro.add(cred).left().colspan(3);
+    tableIntro.row();
+    tableIntro.add(music1).left().colspan(3);
+    tableIntro.row();
+    tableIntro.add(music2).left().colspan(3);
+    tableIntro.row();
+    tableIntro.add(art).left().colspan(3);
+
+    Gdx.app.log("resetTitle", "made intro UI");
+  }
+
+
+  protected void resetGame() {
+    Gdx.app.log("resetGame", "made game UI");
+
     table = new Table();
     table.setFillParent(true);
     table.row().fillY();
     table.top();
     table.right();
     table.pad(Param.TILE_S);
-    dfShader = new ShaderProgram(Gdx.files.internal("font.vert"), Gdx.files.internal("font.frag"));
-    if (!dfShader.isCompiled()) Gdx.app.error("fontShader", "compilation failed:\n" + dfShader.getLog());
-    skin = new Skin(Gdx.files.internal("uiskin.json"));
-    skin.addRegions(Textures.getInstance().getUIAtlas());
 
+    GameState.getInstance().getUIStage().clear();
     GameState.getInstance().getUIStage().addActor(table);
 
     BuildingButton buildingButtonHandler = new BuildingButton();
@@ -283,6 +375,9 @@ public class UI {
     buildingWindowQSize = new EnumMap<BuildingType, LabelDF>(BuildingType.class);
     buildingWindowQPrice = new EnumMap<BuildingType, LabelDF>(BuildingType.class);
     buildingWindowQSlider = new EnumMap<BuildingType, Slider>(BuildingType.class);
+    buildingWindowTimeLabelA = new EnumMap<BuildingType, LabelDF>(BuildingType.class);
+    buildingWindowTimeLabelB = new EnumMap<BuildingType, LabelDF>(BuildingType.class);
+    buildingWindowTimeLabelC = new EnumMap<BuildingType, LabelDF>(BuildingType.class);
     for (final BuildingType bt : BuildingType.values()) {
       Table bw = getWindow();
       buildingWindow.put(bt, bw);
@@ -352,8 +447,9 @@ public class UI {
         }
         separator(bw, 6);
         //////////////////////
-        ProgressBar progressBar = new ProgressBar(0, 100, 1, false, skin, "default-horizontal");
+        ProgressBar progressBar = new ProgressBar(0, 1, 0.01f, false, skin, "default-horizontal");
         addToWin(bw, progressBar, SIZE_L+SIZE_L, SIZE_M, 6);
+        buildingSelectProgress.put(bt, progressBar);
         bw.row();
         addToWin(bw, getImageButton("clock"), SIZE_L, SIZE_L, 3);
         addToWin(bw, getImageButton("wrecking"), SIZE_L, SIZE_L, 3);
@@ -393,6 +489,11 @@ public class UI {
       buildingWindowQSpiral.get(bt).setChecked(GameState.getInstance().queueType == QueueType.kSPIRAL);
       buildingWindowQSlider.get(bt).setValue(GameState.getInstance().queueSize);
     }
+    if (bt != BuildingType.kMINE && bt != BuildingType.kWARP) {
+      buildingWindowTimeLabelA.get(bt).setText("");
+      buildingWindowTimeLabelB.get(bt).setText("");
+      buildingWindowTimeLabelC.get(bt).setText("");
+    }
     table.add(buildingWindow.get(bt));
     if (GameState.getInstance().debug > 0) table.debugAll();
     uiMode = UIMode.kPLACE_BUILDING;
@@ -409,6 +510,11 @@ public class UI {
     }
     if (GameState.getInstance().debug > 0) table.debugAll();
     uiMode = UIMode.kWITH_BUILDING_SELECTION;
+    if (b.getType() != BuildingType.kMINE && b.getType() != BuildingType.kWARP) {
+      buildingWindowTimeLabelA.get(b.getType()).setText(String.valueOf(Math.round(b.getDisassembleTime(0))) + "s");
+      buildingWindowTimeLabelB.get(b.getType()).setText(String.valueOf(Math.round(b.getDisassembleTime(1))) + "s");
+      buildingWindowTimeLabelC.get(b.getType()).setText(String.valueOf(Math.round(b.getDisassembleTime(2))) + "s");
+    }
   }
 
   public void doSelectParticle(final Set<Sprite> selected) {
@@ -434,8 +540,9 @@ public class UI {
   }
 
   public void showMain() {
+    Gdx.app.log("showMain", "Show main In Game UI");
     table.clear();
-    table.add( mainWindow );
+    table.add(mainWindow);
     if (GameState.getInstance().debug > 0) table.debugAll();
     uiMode = UIMode.kNONE;
     doingPlacement = false;
