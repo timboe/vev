@@ -32,6 +32,7 @@ import timboe.destructor.Pair;
 import timboe.destructor.Param;
 import timboe.destructor.TextButtonDF;
 import timboe.destructor.entity.Building;
+import timboe.destructor.entity.Entity;
 import timboe.destructor.entity.Sprite;
 import timboe.destructor.enums.BuildingType;
 import timboe.destructor.enums.Particle;
@@ -122,7 +123,7 @@ public class UI {
   }
 
   private void separator(Table w, int colspan) {
-    w.add(new Image( Textures.getInstance().getTexture("separator", false) )).fillX().height(4).pad(2).colspan(colspan);
+    w.add(new Image( Textures.getInstance().getTexture("separator", false) )).fillX().height(4).pad(6,2,6,2).colspan(colspan);
     w.row();
   }
 
@@ -267,7 +268,7 @@ public class UI {
       @Override
       public void changed(ChangeEvent event, Actor actor) {
         if (!World.getInstance().getGenerated()) World.getInstance().launchAfterGen = true;
-        else GameState.getInstance().setToGameScreen();
+        else GameState.getInstance().transitionToGameScreen();
       }
     });
     newGame.addListener(new TextTooltip("You can press this", skin));
@@ -334,8 +335,23 @@ public class UI {
       Container<Actor> cont = new Container<Actor>();
       cont.setActor(ib);
       cont.width( ib.getWidth() * 2 ).height( ib.getHeight() * 2 );
+
       Button b = new Button(skin, "default");
       b.add(cont);
+
+      if (bt != BuildingType.kMINE) {
+        Table vert = new Table();
+        for (int mode = 0; mode < BuildingType.N_MODES; ++mode) {
+          Image ip = new Image(Textures.getInstance().getTexture("ball_" + bt.getInput(mode).getColourFromParticle().getString(), false));
+          Container<Actor> contIp = new Container<Actor>();
+          contIp.setActor(ip);
+          contIp.width(ip.getWidth() * 2).height(ip.getHeight() * 2);
+          vert.add(contIp);
+          vert.row();
+        }
+        b.add(vert).padLeft(10f);
+      }
+
       b.setUserObject(bt);
       b.addListener(buildingButtonHandler);
       addToWin(mainWindow, b, SIZE_L+SIZE_M, SIZE_L, 2);
