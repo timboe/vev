@@ -32,17 +32,21 @@ public class Building extends Entity {
   private final BuildingType type;
   private final Tile centre;
   private Tile pathingStartPoint;
-  private float timeDisassemble, timeMove, timeBuild, timeHoldingPen, nextReleaseTime;
+  public float timeDisassemble;
+  private float timeMove;
+  private float timeBuild;
+  private float timeHoldingPen;
+  private float nextReleaseTime;
+  public float timeUpgrade;
   public Sprite spriteProcessing = null;
   private Vector<Entity> childSprites = new Vector<Entity>();
-  private Entity banner;
-  private Vector<Entity> accepts = new Vector<Entity>();
   private EnumMap<Particle, List<Sprite>> holdingPen = new EnumMap<Particle, List<Sprite>>(Particle.class);
   private int built;
   private boolean updateBuildingTexture;
-  private float getTimeDisassembleMax; // Used to get % complete
-  private float thisBuildingDisassembleBonus = 1f;
+  public float getTimeDisassembleMax; // Used to get % complete
   private Patch myTiberiumPatch;
+  private int buildingLevel;
+  public boolean doUpgrade;
 
   public Building(Tile t, BuildingType type) {
     super(t.coordinates.x - (type == BuildingType.kWARP ? (Param.WARP_SIZE/2) - 2 : 1),
@@ -53,6 +57,8 @@ public class Building extends Entity {
     for (Particle p : Particle.values()) holdingPen.put(p, new LinkedList<Sprite>());
     setTexture("build_3_3", 1, false);
     built = 0;
+    buildingLevel = 0;
+    doUpgrade = false;
     if (type == BuildingType.kWARP) return; // Warp does not need anything below
     ////////////////////////////////////////////////////////////////////////////
     centre.setBuilding(this);
@@ -94,12 +100,26 @@ public class Building extends Entity {
     getTimeDisassembleMax = timeDisassemble;
   }
 
-  public float getDisassembleTime(Particle p) {
-    return p.getDisassembleTime() * thisBuildingDisassembleBonus * type.getDissassembleBonus(p);
+  private float getDisassembleTime(Particle p) {
+    return p.getDisassembleTime()
+        * getUpgradeFactor()
+        * type.getDissassembleBonus(p);
   }
 
   public float getDisassembleTime(int mode) {
     return getDisassembleTime(type.getInput(mode));
+  }
+
+  public float getUpgradeCost() {
+    return type.getUpgradeBaseCost() * (1f/getUpgradeFactor());
+  }
+
+  public float getUpgradeTime() {
+    return type.getUpgradeBaseTime() * (1f/getUpgradeFactor());
+  }
+
+  private float getUpgradeFactor() {
+    return (float)Math.pow(Param.BUILDING_DISASSEMBLE_BONUS, buildingLevel);
   }
 
   public void updatePathingStartPoint() {
@@ -204,7 +224,7 @@ public class Building extends Entity {
     setTexture("building_" + type.ordinal(), 1, false);
     if (Camera.getInstance().onScreen(this)) Sounds.getInstance().star();
     if (type != BuildingType.kMINE) {
-      banner = new Entity(coordinates.x + 2, coordinates.y);
+      Entity banner = new Entity(coordinates.x + 2, coordinates.y);
       banner.setTexture("board_vertical", 1, false);
       childSprites.add(banner);
       GameState.getInstance().getBuildingStage().addActor(banner);
@@ -217,6 +237,16 @@ public class Building extends Entity {
         GameState.getInstance().getSpriteStage().addActor(p);
       }
     }
+    Entity clock = new Entity(coordinates.x, coordinates.y);
+    clock.setTexture("clock_small", 1, false);
+    clock.moveBy(type == BuildingType.kMINE ? Param.TILE_S / 2f : 0, Param.TILE_S / 2f);
+    childSprites.add(clock);
+    clock.setVisible(false);
+    GameState.getInstance().getBuildingStage().addActor(clock);
+  }
+
+  private boolean isSelected() {
+    return (UI.getInstance().selectedBuilding == this);
   }
 
   @Override
@@ -224,6 +254,20 @@ public class Building extends Entity {
     if (built > 0) {
       build(delta);
       return;
+    }
+
+    // Upgrade. No spawning, no moving along (i.e. spriteProcessing will remain null until this ends)
+    if (doUpgrade && spriteProcessing == null) {
+      if (isSelected()) UI.getInstance().buildingSelectProgress.get(type).setValue(timeUpgrade / getUpgradeTime());
+      timeUpgrade -= delta;
+      if (timeUpgrade > 0) return;
+      ++buildingLevel;
+      // TODO update labels
+      doUpgrade = false;
+      childSprites.lastElement().setVisible(false);
+      Sounds.getInstance().star();
+      // Need to update multiple UI elements, so best to...
+      if (isSelected()) UI.getInstance().showBuildingInfo(this);
     }
 
     timeMove += delta;
@@ -259,7 +303,7 @@ public class Building extends Entity {
 
     if (spriteProcessing == null) return;
     timeDisassemble -= delta;
-    UI.getInstance().buildingSelectProgress.get(type).setValue(timeDisassemble / getTimeDisassembleMax);
+    if (isSelected()) UI.getInstance().buildingSelectProgress.get(type).setValue(timeDisassemble / getTimeDisassembleMax);
     if (timeDisassemble > 0) return;
     Pair<Particle,Particle> myDecay = type.getOutputs( spriteProcessing.getParticle() );
     placeParticle( myDecay.getKey()   ); // Output #1
@@ -300,5 +344,12 @@ public class Building extends Entity {
         w.updateTilePathfinding(t2);
       }
     }
+  }
+
+  public void upgradeBuilding() {
+    doUpgrade = true;
+    timeUpgrade = getUpgradeTime();
+    GameState.getInstance().playerEnergy += getUpgradeCost();
+    childSprites.lastElement().setVisible(true);
   }
 }

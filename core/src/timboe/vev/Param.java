@@ -73,6 +73,7 @@ public class Param {
   public static final float BUILD_TIME = .5f; // Time in seconds between build phases
   public static final float BUILDING_QUEUE_MOVE_TIME = .25f; // Time in seconds between particles moving through queue
   public static final float BUILDING_SHAKE = 2.5f;
+  public static final float BUILDING_DISASSEMBLE_BONUS = 0.9f; //^(building level)
 
   public static final float LONG_PRESS_TIME = 0.15f;
 
@@ -116,8 +117,8 @@ public class Param {
   public static final int DISPLAY_X = 1920;
   public static final int DISPLAY_Y = Math.round(DISPLAY_X * (9f/16f));
 
-  public static final float PLAYER_STARTING_ENERGY = 50000;
-  public static final float WARP_STARTING_ENERGY = 1000000;
+  public static final float PLAYER_STARTING_ENERGY = 0;
+  public static final float WARP_STARTING_ENERGY = 500000;
 
   public static final Color PARTICLE_H = new Color(60/255f, 52/255f, 123/255f, 1f);
   public static final Color PARTICLE_W = new Color(206 / 255f, 101 / 255f, 80 / 255f, 1f);

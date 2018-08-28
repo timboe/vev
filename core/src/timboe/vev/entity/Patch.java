@@ -11,6 +11,6 @@ public class Patch extends Entity {
 
   public Patch(int x, int y) {
     super(x,y);
-    energy = 50000f + Util.R.nextFloat(); // Cosmetic only
+    energy = 50000f * Util.R.nextFloat(); // Cosmetic only
   }
 }

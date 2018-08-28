@@ -8,6 +8,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
 import com.badlogic.gdx.scenes.scene2d.ui.HorizontalGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.ProgressBar;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -38,6 +39,7 @@ import timboe.vev.input.ParticleSelectButton;
 import timboe.vev.input.QueueButton;
 import timboe.vev.input.QueueLengthSlider;
 import timboe.vev.input.StandingOrderButton;
+import timboe.vev.input.UpgradeBuildingButton;
 import timboe.vev.input.YesNoButton;
 
 public class UI {
@@ -81,6 +83,7 @@ public class UI {
 
   private final YesNoButton yesNoButton = new YesNoButton();
   private final StandingOrderButton standingOrderButton = new StandingOrderButton();
+  private final UpgradeBuildingButton upgradeBuildingButton = new UpgradeBuildingButton();
 
   public Button selectParticlesButton;
 
@@ -93,7 +96,7 @@ public class UI {
   public EnumMap<BuildingType, LabelDF> buildingWindowTimeLabelA;
   public EnumMap<BuildingType, LabelDF> buildingWindowTimeLabelB;
   public EnumMap<BuildingType, LabelDF> buildingWindowTimeLabelC;
-
+  public EnumMap<BuildingType, Button> buildingWindowUpgradeButton;
 
   private EnumMap<BuildingType, Table> buildingSelectWindow;
   public EnumMap<BuildingType, ProgressBar> buildingSelectProgress;
@@ -264,7 +267,7 @@ public class UI {
       @Override
       public void changed(ChangeEvent event, Actor actor) {
         if (!World.getInstance().getGenerated()) World.getInstance().launchAfterGen = true;
-        else GameState.getInstance().transitionToGameScreen();
+        else if (GameState.getInstance().theTitleScreen.fadeTimer == 0) GameState.getInstance().transitionToGameScreen();
       }
     });
     newGame.addListener(new TextTooltipDF("You can press this", skin));
@@ -347,7 +350,7 @@ public class UI {
           vert.add(contIp);
           vert.row();
         }
-        b.add(vert).padLeft(10f);
+        b.add(vert).padLeft(SIZE_S / 2);
       }
 
       b.setUserObject(bt);
@@ -392,6 +395,7 @@ public class UI {
     buildingWindowTimeLabelA = new EnumMap<BuildingType, LabelDF>(BuildingType.class);
     buildingWindowTimeLabelB = new EnumMap<BuildingType, LabelDF>(BuildingType.class);
     buildingWindowTimeLabelC = new EnumMap<BuildingType, LabelDF>(BuildingType.class);
+    buildingWindowUpgradeButton = new EnumMap<BuildingType, Button>(BuildingType.class);
     for (final BuildingType bt : BuildingType.values()) {
       Table bw = getWindow();
       buildingWindow.put(bt, bw);
@@ -465,8 +469,19 @@ public class UI {
         addToWin(bw, progressBar, SIZE_L+SIZE_L, SIZE_M, 6);
         buildingSelectProgress.put(bt, progressBar);
         bw.row();
-        addToWin(bw, getImageButton("clock"), SIZE_L, SIZE_L, 3);
-        addToWin(bw, getImageButton("wrecking"), SIZE_L, SIZE_L, 3);
+        separator(bw, 6);
+        //////////////////////////////
+        Button ib = getImageButton("clock", "toggle", 0);
+        ib.addListener(upgradeBuildingButton);
+        Table inButtonTable = new Table();
+        addToWin(inButtonTable, getImage("zap"), SIZE_S, SIZE_S, 1);
+        inButtonTable.add( getLabel("10000") );
+        inButtonTable.row();
+        inButtonTable.add( getLabel("x1.00") ).colspan(2).expandX();
+        ib.add(inButtonTable).padLeft(PAD);
+        addToWin(bw, ib, 2*SIZE_L, SIZE_L, 6);
+        buildingWindowUpgradeButton.put(bt, ib);
+//        addToWin(bw, getImageButton("wrecking"), SIZE_L, SIZE_L, 3);
       }
       bw.row();
 //      separator(bw, 6);
@@ -528,6 +543,13 @@ public class UI {
       buildingWindowTimeLabelA.get(b.getType()).setText(String.valueOf(Math.round(b.getDisassembleTime(0))) + "s");
       buildingWindowTimeLabelB.get(b.getType()).setText(String.valueOf(Math.round(b.getDisassembleTime(1))) + "s");
       buildingWindowTimeLabelC.get(b.getType()).setText(String.valueOf(Math.round(b.getDisassembleTime(2))) + "s");
+
+      buildingWindowUpgradeButton.get(b.getType()).setChecked( b.doUpgrade );
+      float progress = 0;
+      if (b.doUpgrade) progress = b.timeUpgrade / b.getUpgradeTime();
+      else if (b.spriteProcessing != null)  progress = b.timeDisassemble / b.getTimeDisassembleMax;
+      buildingSelectProgress.get(b.getType()).setValue(progress);
+      // TODO set labels in upgrade button
     }
   }
 

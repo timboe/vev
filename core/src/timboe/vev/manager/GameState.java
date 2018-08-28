@@ -96,7 +96,7 @@ public class GameState {
   public ParticleEffectPool dustEffectPool;
   public Array<ParticleEffectPool.PooledEffect> dustEffects;
 
-  private TitleScreen theTitleScreen;
+  TitleScreen theTitleScreen;
   private GameScreen theGameScreen;
   private VEVGame game;
 

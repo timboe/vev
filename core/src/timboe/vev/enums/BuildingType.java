@@ -58,7 +58,6 @@ public enum BuildingType {
     }
   }
 
-  // TODO
   public float getQueueCost() {
     switch (this) {
       case kHZE: return 100;
@@ -68,6 +67,21 @@ public enum BuildingType {
       case kMINE: return 0;
       default: return 100;
     }
+  }
+
+  public float getUpgradeBaseCost() {
+    switch (this) {
+      case kHZE: return 1000;
+      case kHWM: return 1000;
+      case kWEQ: return 1000;
+      case kZMQ: return 1000;
+      case kMINE: return 2500;
+      default: return 1000;
+    }
+  }
+
+  public float getUpgradeBaseTime() {
+    return 5f;
   }
 
   public Particle getInput(int mode) {
