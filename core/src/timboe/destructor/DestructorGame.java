@@ -46,11 +46,7 @@ public class DestructorGame extends Game {
   private void persist() throws IOException, ClassNotFoundException {
     FileOutputStream fileOutputStream = new FileOutputStream("VEV_save.txt");
     ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
-    for (int x = 0; x < Param.TILES_X; ++x ) {
-      for (int y = 0; y < Param.TILES_Y; ++y) {
-        objectOutputStream.writeObject(World.getInstance().getTile(x,y));
-      }
-    }
+    objectOutputStream.writeObject(World.getInstance().getTile(0,0));
     objectOutputStream.flush();
     objectOutputStream.close();
   }

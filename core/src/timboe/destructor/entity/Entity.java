@@ -46,7 +46,7 @@ public class Entity extends Actor implements Serializable {
   protected List<Tile> pathingList; // Used by building and sprite
   protected Particle pathingParticle; // Used only by building
 
-  public final TextureRegion[] textureRegion = new TextureRegion[Param.MAX_FRAMES];
+  transient public final TextureRegion[] textureRegion = new TextureRegion[Param.MAX_FRAMES];
 
   public Entity(int x, int y, int scale) {
     construct(x, y, scale);

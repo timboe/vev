@@ -118,7 +118,6 @@ public class GameState {
   public GameScreen getGameScreen() { return theGameScreen; }
 
   public void act(float delta) {
-    tickTime += delta;
 
     uiStage.act(delta);
 
@@ -168,6 +167,7 @@ public class GameState {
       }
     }
 
+    tickTime += delta;
     if (tickTime < warpSpawnTime) return;
     tickTime -= warpSpawnTime;
     if (warpSpawnTime > Param.WARP_SPAWN_TIME_MIN) {

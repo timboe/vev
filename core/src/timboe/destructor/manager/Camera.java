@@ -115,20 +115,13 @@ public class Camera {
   }
 
   public boolean onScreen(Sprite s) {
-    Rectangle.tmp.set(s.getX()/Param.SPRITE_SCALE,
-        s.getY()/Param.SPRITE_SCALE,
-        s.getWidth()/Param.SPRITE_SCALE,
-        s.getHeight()/Param.SPRITE_SCALE);
-    return onScreen(Rectangle.tmp);
+    Rectangle.tmp.set(s.getX(), s.getY(), s.getWidth(), s.getHeight());
+    return cullBoxSprite.contains(Rectangle.tmp) || cullBoxSprite.overlaps(Rectangle.tmp);
   }
 
   public boolean onScreen(Entity t) {
     Rectangle.tmp.set(t.getX(), t.getY(), t.getWidth(), t.getHeight());
-    return onScreen(Rectangle.tmp);
-  }
-
-  public boolean onScreen(Rectangle r) {
-    return cullBoxTile.contains(r) || cullBoxTile.overlaps(r);
+    return cullBoxTile.contains(Rectangle.tmp) || cullBoxTile.overlaps(Rectangle.tmp);
   }
 
   private void reset() {
@@ -192,18 +185,17 @@ public class Camera {
     uiCamera.position.add(shake * (float)Math.sin(shakeAngle) / currentZoom , shake * (float)Math.cos(shakeAngle) / currentZoom, 0);
     uiCamera.update();
 
-//    Gdx.app.log("Camera","camera current " + currentPos);
+    cullBoxTile.set(
+        tileCamera.position.x - (tileViewport.getWorldWidth()/2) * currentZoom,
+        tileCamera.position.y - (tileViewport.getWorldHeight()/2) * currentZoom,
+        tileViewport.getWorldWidth() * currentZoom,
+        tileViewport.getWorldHeight() * currentZoom);
 
-    cullBoxTile.set(tileCamera.position.x - tileViewport.getScreenWidth()/2*currentZoom,
-        tileCamera.position.y - tileViewport.getScreenHeight()/2*currentZoom,
-        tileViewport.getScreenWidth() * currentZoom,
-        tileViewport.getScreenHeight() * currentZoom);
-
-    // TODO fix
-    cullBoxSprite.set(spriteCamera.position.x - Param.SPRITE_SCALE*spriteViewport.getScreenWidth()/2*currentZoom,
-        spriteCamera.position.y - Param.SPRITE_SCALE*spriteViewport.getScreenHeight()/2*currentZoom,
-        Param.SPRITE_SCALE * spriteViewport.getScreenWidth() * currentZoom,
-        Param.SPRITE_SCALE * spriteViewport.getScreenHeight() * currentZoom);
+    cullBoxSprite.set(
+        spriteCamera.position.x - (Param.SPRITE_SCALE*spriteViewport.getWorldWidth()/2) * currentZoom,
+        spriteCamera.position.y - (Param.SPRITE_SCALE*spriteViewport.getWorldHeight()/2) * currentZoom,
+        Param.SPRITE_SCALE * spriteViewport.getWorldWidth() * currentZoom,
+        Param.SPRITE_SCALE * spriteViewport.getWorldHeight() * currentZoom);
   }
 
 }

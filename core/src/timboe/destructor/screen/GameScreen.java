@@ -167,6 +167,7 @@ public class GameScreen implements Screen {
 
     state.getUIStage().draw();
 
+
     ////////////////////////////////////////////////
     // Fade in
 
@@ -178,6 +179,14 @@ public class GameScreen implements Screen {
       sr.end();
       fadeIn -= delta * 70f;
     }
+
+
+    // Debug - border
+    sr.setProjectionMatrix(Camera.getInstance().getUiCamera().combined);
+    sr.begin(ShapeRenderer.ShapeType.Line);
+    sr.setColor(1, 0, 0, 1);
+    sr.rect(0,0,Param.DISPLAY_X,Param.DISPLAY_Y);
+    sr.end();
   }
 
   @Override

@@ -9,7 +9,7 @@ public class DesktopLauncher {
 		LwjglApplicationConfiguration config = new LwjglApplicationConfiguration();
 		config.title = "VEV";
 		config.useHDPI = true;
-		config.width = 1920;
+		config.width = 1920/2;
 		config.height = Math.round(config.width * (9f/16f));
 		config.vSyncEnabled = true;
 		config.foregroundFPS = 60;
