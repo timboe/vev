@@ -14,7 +14,7 @@ import timboe.vev.manager.Textures;
 import timboe.vev.manager.UI;
 import timboe.vev.manager.World;
 
-public class DestructorGame extends Game {
+public class VEVGame extends Game {
 
   @Override
   public void create () {

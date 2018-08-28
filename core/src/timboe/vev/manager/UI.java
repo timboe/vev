@@ -104,6 +104,8 @@ public class UI {
   private Button selectCross;
 
   private UI() {
+    ShaderProgram.pedantic = false;
+
     dfShader_large = new ShaderProgram(Gdx.files.internal("font.vert"), Gdx.files.internal("font_large.frag"));
     if (!dfShader_large.isCompiled()) Gdx.app.error("dfShader_large", "compilation failed:\n" + dfShader_large.getLog());
 

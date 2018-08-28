@@ -2,7 +2,7 @@ package timboe.vev.desktop;
 
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
-import timboe.vev.DestructorGame;
+import timboe.vev.VEVGame;
 
 public class DesktopLauncher {
 	public static void main (String[] arg) {
@@ -15,6 +15,6 @@ public class DesktopLauncher {
 		config.foregroundFPS = 60;
 		config.samples = 2;
 		config.fullscreen = false;
-		new LwjglApplication(new DestructorGame(), config);
+		new LwjglApplication(new VEVGame(), config);
 	}
 }

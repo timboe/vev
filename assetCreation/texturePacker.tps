@@ -6,7 +6,7 @@
         <key>texturePackerVersion</key>
         <string>4.6.1</string>
         <key>fileName</key>
-        <string>C:/Users/Tim/Dropbox/git/destructor/assetCreation/texturePacker.tps</string>
+        <string>C:/Users/Tim/Dropbox/git/vev/assetCreation/texturePacker.tps</string>
         <key>autoSDSettings</key>
         <array>
             <struct type="AutoSDSettings">

@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
-import timboe.vev.DestructorGame;
+import timboe.vev.VEVGame;
 import timboe.vev.Param;
 import timboe.vev.Util;
 import timboe.vev.entity.Building;
@@ -98,7 +98,7 @@ public class GameState {
 
   private TitleScreen theTitleScreen;
   private GameScreen theGameScreen;
-  private DestructorGame game;
+  private VEVGame game;
 
   public boolean isGameOn() {
     return gameOn;
@@ -110,7 +110,7 @@ public class GameState {
     reset(true);
   }
 
-  public void setGame(DestructorGame theGame) {
+  public void setGame(VEVGame theGame) {
     game = theGame;
     theTitleScreen = new TitleScreen();
     theGameScreen = new GameScreen();
