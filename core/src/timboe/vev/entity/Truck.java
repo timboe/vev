@@ -46,10 +46,11 @@ public class Truck extends Sprite {
 
     switch (truckState) {
       case kLOAD:
-        holding += speed * delta;
+        // Have to wait if building is upgrading
+        if (!myBuilding.doUpgrade) holding += speed * delta;
         if (holding >= capacity) {
           holding = capacity;
-          pathTo(myBuilding.getBuildingDestination(Particle.kH), null, null);
+          pathTo(myBuilding.getBuildingDestination(Particle.kBlank), null, null);
           truckState = TruckState.kGO_TO_PATCH;
         }
         break;
@@ -59,7 +60,7 @@ public class Truck extends Sprite {
         holding -= toRemove;
         GameState.getInstance().playerEnergy -= toRemove;
         if (holding < 1f) {
-          pathTo(myBuilding.getPathingStartPoint(Particle.kH), null, null);
+          pathTo(myBuilding.getPathingStartPoint(Particle.kBlank), null, null);
           truckState = TruckState.kRETURN_FROM_PATCH;
         }
         break;

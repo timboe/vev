@@ -7,6 +7,7 @@ import com.badlogic.gdx.math.Vector3;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -15,6 +16,7 @@ import timboe.vev.Pair;
 import timboe.vev.Param;
 import timboe.vev.enums.Cardinal;
 import timboe.vev.enums.Colour;
+import timboe.vev.enums.Particle;
 import timboe.vev.enums.TileType;
 import timboe.vev.pathfinding.Node;
 
@@ -112,13 +114,24 @@ public class Tile extends Entity implements Node {
     boolean isStartOfQueue = (mySprite != null && mySprite.getClass() == Building.class);
 
     if (isStartOfQueue && !isTruck) {
-      Pair<Tile, Cardinal> slot = null;
-      // If thi is my final destination
-      if (s.pathingList.size() == 0) slot = ((Building) mySprite).getFreeLocationInQueue(s);
-
-      if (slot == null) { // Cannot stay here
+      // If this is not my final destination - you cannot reg here, but you're just about to move on so OK
+      if (s.pathingList.size() > 0) {
         visitingSprite(s);
         return false;
+      }
+
+      // This *is* my final destination. Can I stay here?
+      Pair<Tile, Cardinal> slot = ((Building) mySprite).getFreeLocationInQueue(s);
+      if (slot == null) { // Cannot stay here
+        // Do we have a standing order for overflow? This is the kBlank particle type
+        List<Tile> pList = mySprite.getBuildingPathingList(Particle.kBlank);
+        if (pList != null) { // We have an overflow destination configured
+          s.pathingList = new LinkedList<Tile>(pList); // Off you go little one!
+          return true;
+        } else { // You're on your own. Find somewhere nearby to loiter
+          visitingSprite(s);
+          return false;
+        }
       } else { // We reg the sprite to (potentially) ANOTHER tile
         s.myTile = slot.getKey();
         slot.getKey().parkSprite(s, slot.getValue());

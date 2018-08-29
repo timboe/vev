@@ -64,7 +64,6 @@ public class Building extends Entity {
     centre.setBuilding(this);
     for (Cardinal D : Cardinal.n8) centre.n8.get(D).setBuilding(this);
     updatePathingGrid();
-    updatePathingStartPoint();
     if (type != BuildingType.kMINE) {
       myQueue = new OrderlyQueue(centre.coordinates.x - 1, centre.coordinates.y - 2, null, this);
       built = myQueue.getQueue().size();
@@ -75,10 +74,13 @@ public class Building extends Entity {
           myTiberiumPatch = p;
         }
       }
-      updateDemoPathingList(Particle.kH, World.getInstance().getTile(
+      // kBLank pathing is used for the truck
+      Tile tibTile = World.getInstance().getTile(
           myTiberiumPatch.coordinates.x + (-Param.WARP_SIZE/2) + Util.R.nextInt( Param.WARP_SIZE ),
-          myTiberiumPatch.coordinates.y + (-Param.WARP_SIZE/2) + Util.R.nextInt( Param.WARP_SIZE )
-          ));
+          myTiberiumPatch.coordinates.y + (-Param.WARP_SIZE/2) + Util.R.nextInt( Param.WARP_SIZE ));
+      Tile tibGoal = Sprite.findPathingLocation(tibTile, true, false, false, false);
+      updatePathingStartPoint();
+      updateDemoPathingList(Particle.kBlank, tibGoal);
       savePathingList();
     }
     // Move any sprites which are here
@@ -110,20 +112,23 @@ public class Building extends Entity {
     return getDisassembleTime(type.getInput(mode));
   }
 
-  public float getUpgradeCost() {
-    return type.getUpgradeBaseCost() * (1f/getUpgradeFactor());
+  public int getUpgradeCost() {
+    return Math.round(type.getUpgradeBaseCost() * (1f/getUpgradeFactor()));
   }
 
   public float getUpgradeTime() {
     return type.getUpgradeBaseTime() * (1f/getUpgradeFactor());
   }
 
-  private float getUpgradeFactor() {
+  public float getUpgradeFactor() {
     return (float)Math.pow(Param.BUILDING_DISASSEMBLE_BONUS, buildingLevel);
   }
 
   public void updatePathingStartPoint() {
-    pathingStartPoint = Sprite.findPathingLocation(centre, true, false, false, false); //reproducible=True, requireParking=False
+//    Gdx.app.log("updatePathingStartPoint", "CALLED myQueue:" + myQueue);
+    Tile queueStart = myQueue != null ? myQueue.getQueuePathingTarget() : centre;
+    // TODO graphically, appears to be starting from within the queue?
+    pathingStartPoint = Sprite.findPathingLocation(queueStart, true, false, false, false); //reproducible=True, requireParking=False
     if (pathingStartPoint == null) {
       Gdx.app.error("updatePathingStartPoint", "Building could not find a pathing start point!");
       return;
@@ -198,6 +203,7 @@ public class Building extends Entity {
   private void addTruck() {
     // This can be NULL as WARP will never call this
     Truck t = new Truck(getPathingStartPoint(null), this);
+    t.setUserObject( Particle.kBlank ); // This is so that Sprite::doMove does not crash
     GameState.getInstance().getSpriteStage().addActor(t);
   }
 
@@ -238,7 +244,7 @@ public class Building extends Entity {
       }
     }
     Entity clock = new Entity(coordinates.x, coordinates.y);
-    clock.setTexture("clock_small", 1, false);
+    clock.setTexture("clock", 1, false);
     clock.moveBy(type == BuildingType.kMINE ? Param.TILE_S / 2f : 0, Param.TILE_S / 2f);
     childSprites.add(clock);
     clock.setVisible(false);
@@ -266,8 +272,10 @@ public class Building extends Entity {
       doUpgrade = false;
       childSprites.lastElement().setVisible(false);
       Sounds.getInstance().star();
+      for (Cardinal D : Cardinal.n8) GameState.getInstance().upgradeDustEffect(centre.n8.get(D));
+      if (myQueue != null) for (Tile t : myQueue.getQueue()) GameState.getInstance().upgradeDustEffect(t);
       // Need to update multiple UI elements, so best to...
-      if (isSelected()) UI.getInstance().showBuildingInfo(this);
+      if (isSelected()) UI.getInstance().refreshBuildingLabels(this);
     }
 
     timeMove += delta;
@@ -346,10 +354,12 @@ public class Building extends Entity {
     }
   }
 
-  public void upgradeBuilding() {
+  public boolean upgradeBuilding() {
+    if (built > 0) return false; // Not built yet
     doUpgrade = true;
     timeUpgrade = getUpgradeTime();
     GameState.getInstance().playerEnergy += getUpgradeCost();
     childSprites.lastElement().setVisible(true);
+    return true;
   }
 }

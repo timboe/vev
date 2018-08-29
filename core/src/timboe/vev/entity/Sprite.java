@@ -57,7 +57,7 @@ public class Sprite extends Entity {
   private boolean doMove(float x, float y, float delta) {
     velocity.set(x - (getX() + getWidth()/2), y - (getY() + getWidth()/2));
     boolean atDestination = (velocity.len() < Param.PARTICLE_AT_TARGET);
-    velocity.setLength(Param.PARTICLE_VELOCITY);
+    velocity.setLength(Param.PARTICLE_VELOCITY * ((Particle)getUserObject()).getSpeedMod() );
     moveBy(velocity.x * delta, velocity.y * delta);
     return atDestination;
   }

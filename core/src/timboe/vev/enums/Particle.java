@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
+import sun.security.krb5.internal.PAData;
 import timboe.vev.Param;
 
 /**
@@ -20,10 +21,11 @@ public enum Particle {
   kZ,
   kE,
   kM,
-  kQ;
+  kQ,
+  kBlank;
 
   private static final List<Particle> values = Collections.unmodifiableList(Arrays.asList(values()));
-  private static final int size = values.size();
+  private static final int size = values.size() - 1; // Do not return kBlank
   private static final Random R = new Random();
 
   public static Particle random() {
@@ -38,6 +40,7 @@ public enum Particle {
       case kE: return "e";
       case kM: return "μ";
       case kQ: return "q";
+      case kBlank:
       default: return "?";
     }
   }
@@ -62,6 +65,7 @@ public enum Particle {
       case kE: return Param.PARTICLE_E;
       case kM: return Param.PARTICLE_M;
       case kQ: return Param.PARTICLE_Q;
+      case kBlank: return Param.PARTICLE_Blank;
       default:
         Gdx.app.error("getHighlightColour","Unknown particle " + getString());
         return null;
@@ -77,6 +81,7 @@ public enum Particle {
       case kE: return 6;
       case kM: return 8;
       case kQ: return 10;
+      case kBlank: return 12;
       default: return 0;
     }
   }
@@ -89,6 +94,7 @@ public enum Particle {
       case kE: return Colour.kRED;
       case kM: return Colour.kGREEN;
       case kQ: return Colour.kBLUE;
+      case kBlank:
       default: return null;
     }
   }
@@ -102,7 +108,21 @@ public enum Particle {
       case kE: return 1 + 10;
       case kM: return 1 + 10;
       case kQ: return 1 + 5;
+      case kBlank:
       default: return 0;
+    }
+  }
+
+  public float getSpeedMod() {
+    switch (this) {
+      case kH: return 0.6f;
+      case kW: return 0.8f;
+      case kZ: return 0.8f;
+      case kE: return 1f;
+      case kM: return 1f;
+      case kQ: return 1.2f;
+      case kBlank:
+      default: return 1f;
     }
   }
 
@@ -114,6 +134,7 @@ public enum Particle {
       case kE: return 0.2f;
       case kM: return 0.2f;
       case kQ: return 0.25f;
+      case kBlank:
       default: return 0;
     }
   }
@@ -126,6 +147,7 @@ public enum Particle {
       case kE: return 1f;
       case kM: return 1f;
       case kQ: return 0.5f;
+      case kBlank:
       default: return 0;
     }
   }

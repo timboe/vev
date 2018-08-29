@@ -64,6 +64,7 @@ public class GameState {
   private Stage buildingStage;
 
   public int queueSize;
+  public int nMines;
   public QueueType queueType;
 
   private final Random R = new Random();
@@ -93,7 +94,7 @@ public class GameState {
   }
   public static void create() { ourInstance = new GameState(); }
 
-  public ParticleEffectPool dustEffectPool;
+  private ParticleEffectPool dustEffectPool, upgradeDustEffectPool;
   public Array<ParticleEffectPool.PooledEffect> dustEffects;
 
   TitleScreen theTitleScreen;
@@ -162,7 +163,11 @@ public class GameState {
         if (cursorTile != null) {
           placeLocation = mapPathingDestination(cursorTile);
           if (placeLocation != null) {
-            UI.getInstance().selectedBuilding.updateDemoPathingList(UI.getInstance().selectedBuildingStandingOrderParticle, placeLocation);
+            // Don't allow loop
+            if (placeLocation.mySprite != null && placeLocation.mySprite == UI.getInstance().selectedBuilding) placeLocation = null;
+            if (placeLocation != null) {
+              UI.getInstance().selectedBuilding.updateDemoPathingList(UI.getInstance().selectedBuildingStandingOrderParticle, placeLocation);
+            }
           }
         }
       }
@@ -204,6 +209,12 @@ public class GameState {
     }
   }
 
+  public void upgradeDustEffect(Tile t) {
+    ParticleEffectPool.PooledEffect e = upgradeDustEffectPool.obtain();
+    e.setPosition(t.centreScaleTile.x, t.centreScaleTile.y);
+    dustEffects.add(e);
+  }
+
   public void dustEffect(Tile t) {
     ParticleEffectPool.PooledEffect e = dustEffectPool.obtain();
     e.setPosition(t.centreScaleTile.x, t.centreScaleTile.y);
@@ -242,8 +253,10 @@ public class GameState {
     buildingStage.addActor(b);
     buildingSet.add(b);
     playerEnergy += UI.getInstance().buildingBeingPlaced.getCost();
+    if (UI.getInstance().buildingBeingPlaced == BuildingType.kMINE) ++nMines;
     Camera.getInstance().addShake(Param.BUILDING_SHAKE);
     Sounds.getInstance().thud();
+    Sounds.getInstance().OK();
     repath();
     UI.getInstance().showMain();
   }
@@ -423,7 +436,10 @@ public class GameState {
       }
     } while (anotherRoundNeeded);
     Gdx.app.log("pathingInternal","Pathing of " + pathed.size() + " sprites took " + rounds + " rounds");
-    if (!doRepath && pathed.size() > 0) Sounds.getInstance().moveOrder();
+    if (!doRepath && pathed.size() > 0) {
+      Sounds.getInstance().moveOrder();
+      Sounds.getInstance().OK();
+    }
 
     if (doRepath) {
       for (Building b : buildingSet) b.doRepath();
@@ -514,7 +530,10 @@ public class GameState {
     dustEffects = new Array<ParticleEffectPool.PooledEffect>();
     ParticleEffect dustEffect = new ParticleEffect();
     dustEffect.load(Gdx.files.internal("dust_effect.txt"), Textures.getInstance().getAtlas());
+    ParticleEffect upgradeDustEffect = new ParticleEffect();
+    upgradeDustEffect.load(Gdx.files.internal("upgrade_dust_effect.txt"), Textures.getInstance().getAtlas());
     dustEffectPool = new ParticleEffectPool(dustEffect, 10, 100);
+    upgradeDustEffectPool = new ParticleEffectPool(upgradeDustEffect, 10, 150);
     playerEnergy = Param.PLAYER_STARTING_ENERGY;
     warpEnergy = Param.WARP_STARTING_ENERGY;
     debug = Param.DEBUG_INTIAL;
@@ -524,6 +543,7 @@ public class GameState {
     newParticlesMean = Param.NEW_PARTICLE_MEAN;
     newParticlesWidth = Param.NEW_PARTICLE_WIDTH;
     pathingCache.clear();
+    nMines = 0;
     gameOn = false;
   }
 

@@ -30,6 +30,8 @@ public class Sounds {
   private int track;
   private boolean sfx = true, music = true;
 
+  private float level = 1;
+
   private static Sounds ourInstance;
   public static Sounds getInstance() {
     return ourInstance;
@@ -51,6 +53,10 @@ public class Sounds {
     for (int i = 0; i < nSelect; ++i) select[i].dispose();
     for (int i = 0; i < nElectric; ++i) electric[i].dispose();
     ourInstance = null;
+  }
+
+  public void sfxLevel(float level) {
+    this.level = level;
   }
 
   private Sounds() {
@@ -76,7 +82,7 @@ public class Sounds {
 
   public void poof() {
     if (!sfx) return;
-    poof.play();
+    poof.play(level);
   }
 
   public void click() {
@@ -91,22 +97,22 @@ public class Sounds {
 
   public void star() {
     if (!sfx) return;
-    star.play();
+    star.play(level);
   }
 
   public void thud() {
     if (!sfx) return;
-    thud.play();
+    thud.play(level);
   }
 
   public void boop() {
     if (!sfx) return;
-    blop.play();
+    blop.play(level);
   }
 
   public void zap() {
     if (!sfx) return;
-    electric[ R.nextInt(nElectric) ].play();
+    electric[ R.nextInt(nElectric) ].play(level);
   }
 
   public void moveOrder() {
@@ -121,7 +127,7 @@ public class Sounds {
 
   public void foot() {
     if (!sfx) return;
-    foot.play();
+    foot.play(level);
   }
 
   public void pulse() {

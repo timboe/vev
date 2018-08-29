@@ -18,6 +18,7 @@ import timboe.vev.enums.Colour;
 import timboe.vev.enums.Particle;
 import timboe.vev.manager.GameState;
 import timboe.vev.manager.Textures;
+import timboe.vev.manager.UI;
 import timboe.vev.pathfinding.IVector2;
 
 public class Entity extends Actor implements Serializable {
@@ -140,7 +141,7 @@ public class Entity extends Actor implements Serializable {
   }
 
   public void drawPath(ShapeRenderer sr) {
-    if (!selected && GameState.getInstance().debug == 0) return;
+    if (!selected && !UI.getInstance().showPathsButton.isChecked()) return;
     if (pathingList != null) { // in-progress
       sr.setColor(pathingParticle.getHighlightColour());
       drawList(pathingList, sr, pathingParticle.getStandingOrderOffset());

@@ -45,8 +45,8 @@ public class TitleScreen implements Screen {
 
   void addParticles() {
     int pType = 0;
-    for (double a = -Math.PI; a <= Math.PI; a += (2*Math.PI) / (double)Particle.values().length ) {
-      if (pType == Particle.values().length) break; // Else rely on floating point in for loop
+    for (double a = -Math.PI; a <= Math.PI; a += (2*Math.PI) / (double)(Particle.values().length - 1) ) { // -1 due to kBlank
+      if (pType == (Particle.values().length - 1)) break; // Else rely on floating point in for loop
       Particle p = Particle.values()[ pType++ ];
       int tileX = (Param.TILES_INTRO_X/2) + (int)Math.round( (Param.TILES_INTRO_X/3) * Math.cos(a) );
       int tileY = (Param.TILES_INTRO_Y/2) + (int)Math.round( (Param.TILES_INTRO_Y/3) * Math.sin(a) );
@@ -102,11 +102,13 @@ public class TitleScreen implements Screen {
       sr.end();
       fadeTimer += (delta * 5);
       fadeTimer *= 1.1;
-      if (fadeTimer > 2.5) {
+      if (fadeTimer > 2.5 && fadeTimer2 == 0) fadeTimer2 = fadeTimer - 2.5f;
+      if (fadeTimer2 > 0) {
         fadeTimer2 += (delta * 10);
         fadeTimer2 *= 1.1;
       }
-      if (fadeTimer2 > 2.5) {
+      if (fadeTimer2 > 2.5 && fadeTimer3 == 0) fadeTimer3 = fadeTimer2 - 2.5f;
+      if (fadeTimer3 > 0) {
         fadeTimer3 += (delta * 10);
         fadeTimer3 *= 1.1;
       }

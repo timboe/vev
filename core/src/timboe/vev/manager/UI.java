@@ -8,7 +8,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
 import com.badlogic.gdx.scenes.scene2d.ui.HorizontalGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
-import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.ProgressBar;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -50,6 +49,8 @@ public class UI {
   }
   public static void create() { ourInstance = new UI(); }
   public void dispose() { ourInstance = null; }
+  private static DecimalFormat df2 = new DecimalFormat(".##");
+
 
   public UIMode uiMode = UIMode.kNONE;
   public BuildingType buildingBeingPlaced = null;
@@ -86,6 +87,7 @@ public class UI {
   private final UpgradeBuildingButton upgradeBuildingButton = new UpgradeBuildingButton();
 
   public Button selectParticlesButton;
+  public Button showPathsButton;
 
   private EnumMap<BuildingType, Table> buildingWindow;
   public EnumMap<BuildingType, Button> buildingWindowQSimple;
@@ -101,6 +103,9 @@ public class UI {
   private EnumMap<BuildingType, Table> buildingSelectWindow;
   public EnumMap<BuildingType, ProgressBar> buildingSelectProgress;
   public EnumMap<BuildingType, EnumMap<Particle, Button>> buildingSelectStandingOrder;
+  public EnumMap<BuildingType, LabelDF> buildingUpgradeLabelCost;
+  public EnumMap<BuildingType, LabelDF> buildingUpgradeLabelTime;
+  public EnumMap<BuildingType, LabelDF> buildingUpgradeLabelBonus;
 
   public EnumMap<Particle, Button> selectButton;
   private EnumMap<Particle, Label> selectLabel;
@@ -184,24 +189,26 @@ public class UI {
     w.add(a).colspan(colspan).width(sizeX).height(sizeY).pad(PAD);
   }
 
-  private Button addStandingOrderButton(BuildingType bt, Particle p) {
-    Button b = getImageButton("ball_" + p.getColourFromParticle().getString(), "toggle", SIZE_M);
+  private Button getAndAddStandingOrderButton(BuildingType bt, Particle p) {
+    String path = (p == Particle.kBlank ? "queue_full" : "ball_" + p.getColourFromParticle().getString());
+    Button b = getImageButton(path, "toggle", SIZE_M);
     b.setUserObject(new Pair<BuildingType, Particle>(bt, p));
     b.addListener(standingOrderButton);
     buildingSelectStandingOrder.get(bt).put(p, b);
     Image arrow = getImage("arrow");
     Container<Actor> ac = new Container<Actor>(arrow);
     ac.width(SIZE_M).height(SIZE_M);
-    b.add(ac);
-    b.row();
-    b.add(getLabel(p.getString())).colspan(2);
+    b.add(ac).padLeft(PAD*2);
+    if (p != Particle.kBlank) {
+      b.row();
+      b.add(getLabel(p.getString())).colspan(2);
+    }
     return b;
   }
 
   private void addBuildingBlurb(Table bw, BuildingType bt) {
     if (bt == BuildingType.kMINE || bt == BuildingType.kWARP) return;
     for (int mode = 0; mode < BuildingType.N_MODES; ++mode) {
-      HorizontalGroup hg = new HorizontalGroup();
       Particle from = bt.getInput(mode);
       Pair<Particle, Particle> to = bt.getOutputs(mode);
       addToWin(bw, getImage("ball_" + from.getColourFromParticle().getString()), SIZE_S);
@@ -217,12 +224,12 @@ public class UI {
       } else {
         addToWin(bw, new Container<Actor>(), SIZE_S);
       }
-      LabelDF disassebleTimeLabel = getLabel("");
-      addToWin(bw, disassebleTimeLabel, SIZE_S);
+      LabelDF disassembleTimeLabel = getLabel("");
+      addToWin(bw, disassembleTimeLabel, SIZE_S);
       switch(mode) {
-        case 0: buildingWindowTimeLabelA.put(bt, disassebleTimeLabel); break;
-        case 1: buildingWindowTimeLabelB.put(bt, disassebleTimeLabel); break;
-        case 2: buildingWindowTimeLabelC.put(bt, disassebleTimeLabel); break;
+        case 0: buildingWindowTimeLabelA.put(bt, disassembleTimeLabel); break;
+        case 1: buildingWindowTimeLabelB.put(bt, disassembleTimeLabel); break;
+        case 2: buildingWindowTimeLabelC.put(bt, disassembleTimeLabel); break;
       }
       bw.row();
       addToWin(bw, getLabel(from.getString()), SIZE_S);
@@ -330,7 +337,7 @@ public class UI {
     separator(mainWindow, 2);
     for (BuildingType bt : BuildingType.values()) {
       if (bt == BuildingType.kWARP) continue;
-      if (bt == BuildingType.kMINE) separator(mainWindow, 2);
+//      if (bt == BuildingType.kMINE) separator(mainWindow, 2);
 
       Image ib = new Image( Textures.getInstance().getTexture("building_" + bt.ordinal(), false) );
       Container<Actor> cont = new Container<Actor>();
@@ -355,11 +362,12 @@ public class UI {
 
       b.setUserObject(bt);
       b.addListener(buildingButtonHandler);
+      b.addListener(new TextTooltipDF("L", skin) );
       addToWin(mainWindow, b, SIZE_L+SIZE_M, SIZE_L, 2);
       mainWindow.row();
     }
     separator(mainWindow, 2);
-    selectParticlesButton = getImageButton("select", "toggle", 0);
+    selectParticlesButton = getImageButton("select", "toggle", SIZE_M);
     selectParticlesButton.addListener(new ChangeListener() {
       @Override
       public void changed(ChangeEvent event, Actor actor) {
@@ -367,14 +375,18 @@ public class UI {
       }
     });
     addToWin(mainWindow, selectParticlesButton, SIZE_L, SIZE_L, 1);
-    Button settings = getImageButton("select", "default", 0);
-    addToWin(mainWindow, settings, SIZE_L, SIZE_L, 1);
+    showPathsButton = getImageButton("show_arrows", "toggle", SIZE_M);
+    addToWin(mainWindow, showPathsButton, SIZE_L, SIZE_L, 1);
+    mainWindow.row();
+    Button settings = getImageButton("settings", "default", SIZE_M);
+    addToWin(mainWindow, settings, SIZE_L, SIZE_L, 2);
 
     // Selected window
     selectButton = new EnumMap<Particle, Button>(Particle.class);
     selectLabel = new EnumMap<Particle, Label>(Particle.class);
     selectCross = getImageButton("cross");
     for (Particle p : Particle.values()) {
+      if (p == Particle.kBlank) continue;
       Button b = getImageButton("ball_" + p.getColourFromParticle().getString(), "default", SIZE_M);
       b.setUserObject(p);
       b.addListener(particleSelectButton);
@@ -400,44 +412,51 @@ public class UI {
       Table bw = getWindow();
       buildingWindow.put(bt, bw);
       addBuildingBlurb(bw, bt);
-      separator(bw, 6);
+      int colspan = 2;
       /////////////////////
-      Button qSimple = getImageButton("queue_simple", "toggle", 0);
-      buildingWindowQSimple.put(bt, qSimple);
-      qSimple.setUserObject(QueueType.kSIMPLE);
-      addToWin(bw, qSimple, SIZE_L, SIZE_L, 3);
-      Button qSpiral = getImageButton("queue_spiral", "toggle", 0);
-      buildingWindowQSpiral.put(bt, qSpiral);
-      qSpiral.setUserObject(QueueType.kSPIRAL);
-      addToWin(bw, qSpiral, SIZE_L, SIZE_L, 3);
-      qSimple.addListener(queueButton);
-      qSpiral.addListener(queueButton);
-      bw.row();
-      ///////////////////////
-      Slider slider = new Slider(1, 99, 1, false, skin, "default-horizontal");
-      slider.addListener(queueLengthSlider);
-      buildingWindowQSlider.put(bt, slider);
-      addToWin(bw, getImage("queue_g_E_N"), SIZE_S, SIZE_S, 1);
-      bw.add(slider).height(SIZE_M).width(SIZE_L+SIZE_M+SIZE_S).colspan(4);
-      LabelDF sliderLabel = getLabel("");
-      buildingWindowQSize.put(bt, sliderLabel);
-      addToWin(bw, sliderLabel, SIZE_S);
-      bw.row();
+      if (bt != BuildingType.kMINE) {
+        separator(bw, 6);
+        Button qSimple = getImageButton("queue_simple", "toggle", 0);
+        buildingWindowQSimple.put(bt, qSimple);
+        qSimple.setUserObject(QueueType.kSIMPLE);
+        addToWin(bw, qSimple, SIZE_L, SIZE_L, 3);
+        Button qSpiral = getImageButton("queue_spiral", "toggle", 0);
+        buildingWindowQSpiral.put(bt, qSpiral);
+        qSpiral.setUserObject(QueueType.kSPIRAL);
+        addToWin(bw, qSpiral, SIZE_L, SIZE_L, 3);
+        qSimple.addListener(queueButton);
+        qSpiral.addListener(queueButton);
+        bw.row();
+        ///////////////////////
+        Slider slider = new Slider(1, 99, 1, false, skin, "default-horizontal");
+        slider.addListener(queueLengthSlider);
+        buildingWindowQSlider.put(bt, slider);
+        addToWin(bw, getImage("queue_g_E_N"), SIZE_S, SIZE_S, 1);
+        bw.add(slider).height(SIZE_M).width(SIZE_L + SIZE_M + SIZE_S).colspan(4);
+        LabelDF sliderLabel = getLabel("");
+        buildingWindowQSize.put(bt, sliderLabel);
+        addToWin(bw, sliderLabel, SIZE_S);
+        bw.row();
+        colspan = 6;
+      }
       addToWin(bw, getImage("zap"), SIZE_S, SIZE_S, 1);
       LabelDF buildingCost = getLabel( formatter.format(bt.getCost()) );
       buildingWindowQPrice.put(bt, buildingCost);
-      addToWin(bw, buildingCost, SIZE_L, SIZE_S, 5);
+      addToWin(bw, buildingCost, SIZE_L, SIZE_S, colspan-1);
       bw.row();
-      separator(bw, 6);
+      separator(bw, colspan);
       ///////////////////////
-      addToWin(bw, getImageButton("tick"), SIZE_L, SIZE_L, 3);
-      addToWin(bw, getImageButton("cross"), SIZE_L, SIZE_L, 3);
+      addToWin(bw, getImageButton("tick"), SIZE_L, SIZE_L, colspan/2);
+      addToWin(bw, getImageButton("cross"), SIZE_L, SIZE_L, colspan/2);
     }
 
     // Building info windows
     buildingSelectWindow = new EnumMap<BuildingType, Table>(BuildingType.class);
     buildingSelectProgress = new EnumMap<BuildingType, ProgressBar>(BuildingType.class);
     buildingSelectStandingOrder = new EnumMap<BuildingType, EnumMap<Particle, Button>>(BuildingType.class);
+    buildingUpgradeLabelCost = new EnumMap<BuildingType, LabelDF>(BuildingType.class);
+    buildingUpgradeLabelTime = new EnumMap<BuildingType, LabelDF>(BuildingType.class);
+    buildingUpgradeLabelBonus = new EnumMap<BuildingType, LabelDF>(BuildingType.class);
     for (final BuildingType bt : BuildingType.values()) {
       buildingSelectStandingOrder.put(bt, new EnumMap<Particle, Button>(Particle.class));
       Table bw = getWindow();
@@ -449,21 +468,27 @@ public class UI {
         addToWin(bw, displayWarpEnergyLabel, SIZE_L+SIZE_M-SIZE_S, SIZE_S, 5);
         bw.row();
         for (Particle p : Particle.values()) {
-          Button b = addStandingOrderButton(bt, p);
+          if (p == Particle.kBlank) continue;
+          Button b = getAndAddStandingOrderButton(bt, p);
           addToWin(bw, b, SIZE_L+SIZE_M, SIZE_L, 6);
           bw.row();
         }
       } else {
-        addBuildingBlurb(bw, bt);
-        separator(bw, 6);
-        for (int i = 0; i < BuildingType.N_MODES; ++i) {
-          Particle p = bt.getOutputs(i).getKey(); // Key and value are always the same
-          if (p == null) continue;
-          Button b = addStandingOrderButton(bt, p);
-          addToWin(bw, b, SIZE_L+SIZE_M, SIZE_L, 6);
+        if (bt != BuildingType.kMINE) {
+          addBuildingBlurb(bw, bt);
+          separator(bw, 6);
+          for (int i = 0; i < BuildingType.N_MODES; ++i) {
+            Particle p = bt.getOutputs(i).getKey(); // Key and value are always the same
+            if (p == null) continue;
+            Button b = getAndAddStandingOrderButton(bt, p);
+            addToWin(bw, b, SIZE_L + SIZE_M, SIZE_L, 6);
+            bw.row();
+          }
+          Button bBlank = getAndAddStandingOrderButton(bt, Particle.kBlank);
+          addToWin(bw, bBlank, SIZE_L + SIZE_M, SIZE_M + SIZE_S, 6);
           bw.row();
+          separator(bw, 6);
         }
-        separator(bw, 6);
         //////////////////////
         ProgressBar progressBar = new ProgressBar(0, 1, 0.01f, false, skin, "default-horizontal");
         addToWin(bw, progressBar, SIZE_L+SIZE_L, SIZE_M, 6);
@@ -471,17 +496,21 @@ public class UI {
         bw.row();
         separator(bw, 6);
         //////////////////////////////
-        Button ib = getImageButton("clock", "toggle", 0);
+        Button ib = getImageButton("clock", "toggle", SIZE_M);
         ib.addListener(upgradeBuildingButton);
-        Table inButtonTable = new Table();
-        addToWin(inButtonTable, getImage("zap"), SIZE_S, SIZE_S, 1);
-        inButtonTable.add( getLabel("10000") );
-        inButtonTable.row();
-        inButtonTable.add( getLabel("x1.00") ).colspan(2).expandX();
-        ib.add(inButtonTable).padLeft(PAD);
+        addToWin(ib, getImage("zap"), SIZE_S, SIZE_S, 1);
+        LabelDF cost = getLabel("10000");
+        buildingUpgradeLabelCost.put(bt, cost);
+        ib.add( cost );
+        ib.row();
+        LabelDF bonus = getLabel("x1.00");
+        buildingUpgradeLabelBonus.put(bt, bonus);
+        ib.add( bonus );
+        LabelDF time = getLabel("10 s");
+        buildingUpgradeLabelTime.put(bt, time);
+        ib.add( time ).colspan(2);
         addToWin(bw, ib, 2*SIZE_L, SIZE_L, 6);
         buildingWindowUpgradeButton.put(bt, ib);
-//        addToWin(bw, getImageButton("wrecking"), SIZE_L, SIZE_L, 3);
       }
       bw.row();
 //      separator(bw, 6);
@@ -518,6 +547,9 @@ public class UI {
       buildingWindowQSpiral.get(bt).setChecked(GameState.getInstance().queueType == QueueType.kSPIRAL);
       buildingWindowQSlider.get(bt).setValue(GameState.getInstance().queueSize);
     }
+    if (bt != BuildingType.kWARP) {
+      buildingWindowQPrice.get(bt).setText( formatter.format( bt.getCost() ) );
+    }
     if (bt != BuildingType.kMINE && bt != BuildingType.kWARP) {
       buildingWindowTimeLabelA.get(bt).setText("");
       buildingWindowTimeLabelB.get(bt).setText("");
@@ -539,17 +571,24 @@ public class UI {
     }
     if (GameState.getInstance().debug > 0) table.debugAll();
     uiMode = UIMode.kWITH_BUILDING_SELECTION;
+    refreshBuildingLabels(b);
+  }
+
+  public void refreshBuildingLabels(Building b) {
     if (b.getType() != BuildingType.kMINE && b.getType() != BuildingType.kWARP) {
       buildingWindowTimeLabelA.get(b.getType()).setText(String.valueOf(Math.round(b.getDisassembleTime(0))) + "s");
       buildingWindowTimeLabelB.get(b.getType()).setText(String.valueOf(Math.round(b.getDisassembleTime(1))) + "s");
       buildingWindowTimeLabelC.get(b.getType()).setText(String.valueOf(Math.round(b.getDisassembleTime(2))) + "s");
-
+    }
+    if (b.getType() != BuildingType.kWARP) {
       buildingWindowUpgradeButton.get(b.getType()).setChecked( b.doUpgrade );
       float progress = 0;
       if (b.doUpgrade) progress = b.timeUpgrade / b.getUpgradeTime();
       else if (b.spriteProcessing != null)  progress = b.timeDisassemble / b.getTimeDisassembleMax;
       buildingSelectProgress.get(b.getType()).setValue(progress);
-      // TODO set labels in upgrade button
+      buildingUpgradeLabelBonus.get(b.getType()).setText( "x" + df2.format(1f/b.getUpgradeFactor()) );
+      buildingUpgradeLabelCost.get(b.getType()).setText( String.valueOf(b.getUpgradeCost()) );
+      buildingUpgradeLabelTime.get(b.getType()).setText( df2.format(b.getUpgradeTime()) + " s" );
     }
   }
 

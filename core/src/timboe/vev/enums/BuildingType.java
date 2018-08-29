@@ -46,14 +46,13 @@ public enum BuildingType {
     return Math.round(getBaseCost() + (getQueueCost() * GameState.getInstance().queueSize));
   }
 
-  // TODO
   public float getBaseCost() {
     switch (this) {
       case kHZE: return 5000;
       case kHWM: return 5000;
       case kWEQ: return 2500;
       case kZMQ: return 2500;
-      case kMINE: return 10000;
+      case kMINE: return (10000 + (5000 * GameState.getInstance().nMines));
       default: return 10000;
     }
   }

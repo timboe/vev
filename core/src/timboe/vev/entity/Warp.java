@@ -72,6 +72,7 @@ public class Warp extends Building {
     float rand = Util.R.nextFloat() + 0.1f; // This extra allows for random
     Particle toPlaceParticle = null;
     for (Particle p : Particle.values()) {
+      if (p == Particle.kBlank) continue;
       rand -= p.getCreateChance();
       if (rand <= 0) {
         toPlaceParticle = p;

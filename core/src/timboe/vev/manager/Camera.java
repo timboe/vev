@@ -1,6 +1,7 @@
 package timboe.vev.manager;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
@@ -144,13 +145,15 @@ public class Camera {
   }
 
   public void modZoom(float z){
-    desiredZoom += z;
-    desiredZoom = Util.clamp(desiredZoom, Param.ZOOM_MIN, Param.ZOOM_MAX);
+    setZoom(desiredZoom + z);
   }
 
   public void setZoom(float z) {
     desiredZoom = z;
     desiredZoom = Util.clamp(desiredZoom, Param.ZOOM_MIN, Param.ZOOM_MAX);
+    float sfx = Util.clamp( 1f / (desiredZoom + 0.75f), 0.2f, 1f);
+    Sounds.getInstance().sfxLevel( sfx );
+    Gdx.app.log("setZoom","zoom:"+desiredZoom+ " sfx:"+sfx);
   }
 
   public float getZoom() {

@@ -126,6 +126,7 @@ public class Param {
   public static final Color PARTICLE_E = new Color(220/255f, 138/255f, 92/255f, 1f);
   public static final Color PARTICLE_M = new Color(147 / 255f, 178 / 255f, 155 / 255f, 1f);
   public static final Color PARTICLE_Q = new Color(64/255f, 141/255f, 174/255f, 1f);
+  public static final Color PARTICLE_Blank = new Color(128/255f, 128/255f, 128/255f, 1f);
 
   public static final int DEBUG_INTIAL = 0;
   private static final boolean FAKE_ANDROID = true;
