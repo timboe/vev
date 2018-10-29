@@ -368,6 +368,7 @@
             <key type="filename">16/tiberium_2.png</key>
             <key type="filename">16/tiberium_3.png</key>
             <key type="filename">16/zap.png</key>
+            <key type="filename">large/queue_full.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
                 <point_f>0.5,0.5</point_f>
@@ -448,14 +449,6 @@
             <key type="filename">large/cloud_sprite.png</key>
             <key type="filename">large/cross.png</key>
             <key type="filename">large/tick.png</key>
-            <key type="filename">large/truck_0.png</key>
-            <key type="filename">large/truck_1.png</key>
-            <key type="filename">large/truck_2.png</key>
-            <key type="filename">large/truck_3.png</key>
-            <key type="filename">large/truck_4.png</key>
-            <key type="filename">large/truck_5.png</key>
-            <key type="filename">large/truck_6.png</key>
-            <key type="filename">large/truck_7.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
                 <point_f>0.5,0.5</point_f>
@@ -469,6 +462,14 @@
                 <false/>
             </struct>
             <key type="filename">large/clock.png</key>
+            <key type="filename">large/pyramid_0.png</key>
+            <key type="filename">large/pyramid_1.png</key>
+            <key type="filename">large/pyramid_2.png</key>
+            <key type="filename">large/pyramid_3.png</key>
+            <key type="filename">large/pyramid_4.png</key>
+            <key type="filename">large/pyramid_5.png</key>
+            <key type="filename">large/pyramid_6.png</key>
+            <key type="filename">large/pyramid_7.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
                 <point_f>0.5,0.5</point_f>
@@ -517,6 +518,8 @@
                 <false/>
             </struct>
             <key type="filename">large/select.png</key>
+            <key type="filename">large/settings.png</key>
+            <key type="filename">large/show_arrows.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
                 <point_f>0.5,0.5</point_f>

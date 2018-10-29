@@ -122,7 +122,7 @@ public class Entity extends Actor implements Serializable {
 //    draw(TextureRegion region, float x, float y, float originX, float originY, float width, float height, float scaleX, float scaleY, float rotation)
   }
 
-  private void doDraw(Batch batch) {
+  protected void doDraw(Batch batch) {
     batch.draw(textureRegion[frame],this.getX(),this.getY(),this.getOriginX(),this.getOriginY(),this.getWidth(),this.getHeight(),this.getScaleX(),this.getScaleY(),this.getRotation());
   }
 
