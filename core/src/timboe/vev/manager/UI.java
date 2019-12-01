@@ -55,7 +55,7 @@ public class UI {
   public UIMode uiMode = UIMode.kNONE;
   public BuildingType buildingBeingPlaced = null;
   public boolean doingPlacement = false;
-  public Building selectedBuilding;
+  public Integer selectedBuilding;
   public Particle selectedBuildingStandingOrderParticle;
 
   private final int SIZE_S = 32;
@@ -563,7 +563,7 @@ public class UI {
 
   public void showBuildingInfo(Building b) {
     table.clear();
-    selectedBuilding = b;
+    selectedBuilding = b.id;
     table.add(buildingSelectWindow.get(b.getType()));
     for (Particle p : Particle.values()) {
       if (!buildingSelectStandingOrder.get(b.getType()).containsKey(p)) continue;
@@ -592,10 +592,11 @@ public class UI {
     }
   }
 
-  public void doSelectParticle(final Set<Sprite> selected) {
+  public void doSelectParticle(final Set<Integer> selected) {
     Set<Particle> selectedParticles = new HashSet<Particle>();
     int counter[] = new int[Particle.values().length];
-    for (final Sprite s : selected) {
+    for (final int sID : selected) {
+      Sprite s = GameState.getInstance().getParticleMap().get(sID);
       selectedParticles.add((Particle) s.getUserObject());
       ++counter[((Particle) s.getUserObject()).ordinal()];
     }
@@ -621,7 +622,7 @@ public class UI {
     if (GameState.getInstance().debug > 0) table.debugAll();
     uiMode = UIMode.kNONE;
     doingPlacement = false;
-    if (selectedBuilding != null) selectedBuilding.cancelUpdatePathingList();
+    if (selectedBuilding != null) GameState.getInstance().getBuildingMap().get(selectedBuilding).cancelUpdatePathingList();
     selectedBuilding = null;
     selectedBuildingStandingOrderParticle = null;
     buildingBeingPlaced = null;

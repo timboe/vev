@@ -22,7 +22,7 @@ public class Truck extends Sprite {
   }
 
   private TruckState truckState = TruckState.kLOAD;
-  float holding = 0f, capacity = 1000f, speed = 200f;
+  private float holding = 0f, capacity = Param.TRUCK_INITIAL_CAPACITY, speed = Param.TRUCK_LOAD_SPEED;
   private Building myBuilding;
   private int extraFrames;
 
@@ -72,6 +72,7 @@ public class Truck extends Sprite {
       case kOFFLOAD:
         float toRemove = speed * delta;
         if (toRemove > holding) toRemove = holding;
+        if (toRemove > GameState.getInstance().playerEnergy) toRemove = GameState.getInstance().playerEnergy;
         holding -= toRemove;
         extraFrames = Math.round((holding / capacity) * (Param.N_TRUCK - 1));
         GameState.getInstance().playerEnergy -= toRemove;

@@ -94,6 +94,10 @@ public class World {
     return introTiles[x][y];
   }
 
+  public Tile getIntroTile(IVector2 v) {
+    return introTiles[v.x][v.y];
+  }
+
   private void reset(boolean includingIntro) {
     GameState.getInstance().reset(includingIntro);
     stage = 0;
@@ -290,7 +294,7 @@ public class World {
 
       Warp w = new Warp(tiles[_x][_y]);
       GameState.getInstance().getWarpStage().addActor(w);
-      GameState.getInstance().buildingSet.add(w);
+      GameState.getInstance().getBuildingMap().put(w.id, w);
 
       ParticleEffect clouds = new ParticleEffect();
       clouds.load(Gdx.files.internal("hell_portal_effect.txt"), Textures.getInstance().getAtlas());

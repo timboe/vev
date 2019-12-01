@@ -65,13 +65,13 @@ public class Param {
   public static final float WARP_ROTATE_SPEED = 3f;
   public static final float WARP_SHAKE = 5f;
   public static final float WARP_SPAWN_TIME_INITIAL = 5f; // seconds between spawn
-  public static final float WARP_SPAWN_TIME_REDUCTION = 0.0051f; // time reduced by this every spawn TODO make no higher than .01f
+  public static final float WARP_SPAWN_TIME_REDUCTION = 0.01f; // time reduced by this every spawn TODO make no higher than .01f
   public static final float WARP_SPAWN_MEAN_INCREASE = .25f; // increase in mean number of spawned
   public static final float WARP_SPAWN_WIDTH_INCREASE = 0.1f; // increase in width of mean number
   public static final float WARP_SPAWN_TIME_MIN = 0.5f; // min time between spawn
 
   public static final float BUILD_TIME = .5f; // Time in seconds between build phases
-  public static final float BUILDING_QUEUE_MOVE_TIME = .25f; // Time in seconds between particles moving through queue
+  public static final float BUILDING_QUEUE_MOVE_TIME = .2f; // Time in seconds between particles moving through queue
   public static final float BUILDING_SHAKE = 2.5f;
   public static final float BUILDING_DISASSEMBLE_BONUS = 0.9f; //^(building level)
 
@@ -118,7 +118,10 @@ public class Param {
   public static final int DISPLAY_Y = Math.round(DISPLAY_X * (9f/16f));
 
   public static final float PLAYER_STARTING_ENERGY = 0;
-  public static final float WARP_STARTING_ENERGY = 500000;
+  public static final float WARP_STARTING_ENERGY = 400000;
+
+  public static final float TRUCK_INITIAL_CAPACITY = 1500f;
+  public static final float TRUCK_LOAD_SPEED = 500f;
 
   public static final Color PARTICLE_H = new Color(60/255f, 52/255f, 123/255f, 1f);
   public static final Color PARTICLE_W = new Color(206 / 255f, 101 / 255f, 80 / 255f, 1f);

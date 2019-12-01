@@ -18,6 +18,7 @@ import timboe.vev.enums.Cardinal;
 import timboe.vev.enums.Colour;
 import timboe.vev.enums.Particle;
 import timboe.vev.enums.TileType;
+import timboe.vev.manager.World;
 import timboe.vev.pathfinding.Node;
 
 import static timboe.vev.enums.Colour.kBLACK;
@@ -108,7 +109,8 @@ public class Tile extends Entity implements Node {
   // Return wasParked
   public boolean tryRegSprite(Sprite s) {
     // De-reg from current
-    s.myTile.deRegSprite(s);
+    Tile t = World.getInstance().getTile(s.myTile);
+    t.deRegSprite(s);
 
     boolean isTruck = (s.getClass() == Truck.class);
     boolean isStartOfQueue = (mySprite != null && mySprite.getClass() == Building.class);
@@ -133,7 +135,7 @@ public class Tile extends Entity implements Node {
           return false;
         }
       } else { // We reg the sprite to (potentially) ANOTHER tile
-        s.myTile = slot.getKey();
+        s.myTile = slot.getKey().coordinates;
         slot.getKey().parkSprite(s, slot.getValue());
         return true;
       }
@@ -153,12 +155,12 @@ public class Tile extends Entity implements Node {
   }
 
   public void visitingSprite(Sprite s) {
-    s.myTile = this;
+    s.myTile = coordinates;
     containedSprites.add(s);
   }
 
   public void parkSprite(Sprite s, Cardinal parking) {
-    s.myTile = this;
+    s.myTile = coordinates;
     containedSprites.add(s);
     parkingSpaces.put(s, parking);
     s.setNudgeDestination(this, parking);

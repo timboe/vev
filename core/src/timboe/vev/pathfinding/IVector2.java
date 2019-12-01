@@ -1,10 +1,25 @@
 package timboe.vev.pathfinding;
 
+import com.google.gwt.thirdparty.json.JSONException;
+import com.google.gwt.thirdparty.json.JSONObject;
+
 import java.io.Serializable;
 
 public class IVector2 implements Comparable, Serializable {
   public int x;
   public int y;
+
+  public JSONObject serialise() throws JSONException {
+    JSONObject json = new JSONObject();
+    json.put("x", x);
+    json.put("y", y);
+    return json;
+  }
+
+  public void deserialise(JSONObject json) throws JSONException {
+    x = json.getInt("x");
+    y = json.getInt("y");
+  }
 
   public IVector2(int x, int y) {
     this.x = x;

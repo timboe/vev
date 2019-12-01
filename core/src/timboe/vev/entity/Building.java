@@ -27,10 +27,11 @@ import timboe.vev.pathfinding.PathFinding;
 
 public class Building extends Entity {
 
-  private OrderlyQueue myQueue = null;
-
+  // Persistent properties
   private final BuildingType type;
   private final Tile centre;
+  //
+  private OrderlyQueue myQueue = null;
   private Tile pathingStartPoint;
   public float timeDisassemble;
   private float timeMove;
@@ -252,7 +253,11 @@ public class Building extends Entity {
   }
 
   private boolean isSelected() {
-    return (UI.getInstance().selectedBuilding == this);
+    if (UI.getInstance().selectedBuilding != null) {
+      Building b = GameState.getInstance().getBuildingMap().get( UI.getInstance().selectedBuilding );
+      return (b == this);
+    }
+    return false;
   }
 
   @Override
@@ -302,8 +307,8 @@ public class Building extends Entity {
           Sprite s = holdingPen.get(p).remove(0);
           s.moveBy( Util.R.nextInt(Param.TILE_S ), Util.R.nextInt(Param.TILE_S )  );
           GameState.getInstance().getSpriteStage().addActor(s);
-          GameState.getInstance().getParticleSet().add(s);
-          GameState.getInstance().dustEffect(s.myTile);
+          GameState.getInstance().getParticleMap().put(s.id, s);
+          GameState.getInstance().dustEffect( s.getTile() );
           if (Camera.getInstance().onScreen(s)) Sounds.getInstance().boop();
         }
       }

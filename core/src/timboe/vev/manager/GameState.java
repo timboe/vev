@@ -10,8 +10,11 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.Array;
+import com.google.gwt.thirdparty.json.JSONException;
+import com.google.gwt.thirdparty.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +33,7 @@ import timboe.vev.enums.Cardinal;
 import timboe.vev.enums.Particle;
 import timboe.vev.enums.QueueType;
 import timboe.vev.enums.UIMode;
+import timboe.vev.pathfinding.IVector2;
 import timboe.vev.pathfinding.OrderlyQueue;
 import timboe.vev.pathfinding.PathingCache;
 import timboe.vev.screen.GameScreen;
@@ -40,18 +44,68 @@ import static timboe.vev.enums.Cardinal.kSW;
 
 public class GameState {
 
-  // UI interactions
-
+  // Persistent
   public final Vector3 selectStartScreen = new Vector3();
   public Vector3 selectStartWorld = new Vector3();
   public final Vector3 selectEndScreen = new Vector3();
   public Vector3 selectEndWorld = new Vector3();
-
-  public Vector3 cursor = new Vector3();
-
+  private Vector3 cursor = new Vector3();
+  //
+  private IVector2 placeLocation;
   private boolean buildingLocationGood = false;
+  //
+  public int queueSize;
+  public int nMines;
+  public QueueType queueType;
+  //
+  private float tickTime = 0;
+  public float playerEnergy;
+  public float warpEnergy;
+  private float warpSpawnTime;
+  private float newParticlesMean;
+  private float newParticlesWidth;
+  //
+  public int debug;
+  public int entitiyID;
+  private final HashMap<Integer,Sprite> particleMap = new HashMap<Integer,Sprite>(); // All movable sprites
+  private final HashMap<Integer,Building> buildingMap = new HashMap<Integer,Building>(); // All buildings
+  //
+  public final Set<Integer> selectedSet = new HashSet<Integer>(); // Sub-set, selected sprites
+  public Integer selectedBuilding = null;
 
-  private Tile placeLocation;
+  public JSONObject serialise() throws JSONException {
+    JSONObject json = new JSONObject();
+    json.put("selectStartScreen", Util.serialiseVec3(selectStartScreen));
+    json.put("selectStartWorld", Util.serialiseVec3(selectStartWorld));
+    json.put("selectEndScreen", Util.serialiseVec3(selectEndScreen));
+    json.put("selectEndWorld", Util.serialiseVec3(selectEndWorld));
+    json.put("cursor", Util.serialiseVec3(cursor));
+    //
+    json.put("placeLocation", placeLocation == null ? null : placeLocation.serialise());
+    json.put("buildingLocationGood", buildingLocationGood);
+    json.put("queueSize", queueSize);
+    json.put("nMines", nMines);
+    //
+    json.put("tickTime", tickTime);
+    json.put("playerEnergy", playerEnergy);
+    json.put("warpEnergy", warpEnergy);
+    json.put("warpSpawnTime", warpSpawnTime);
+    json.put("newParticlesMean", newParticlesMean);
+    json.put("newParticlesWidth", newParticlesWidth);
+    json.put("debug", debug);
+    json.put("entityID", entitiyID);
+    //
+    JSONObject particles = new JSONObject();
+    for (Map.Entry<Integer,Sprite> entry : particleMap.entrySet()) {
+      particles.put(entry.getKey().toString(), entry.getValue().serialise());
+    }
+    json.put("particles",particles);
+    return json;
+  }
+
+
+  public PathingCache<Tile> pathingCache = new PathingCache<Tile>();
+  private final Random R = new Random();
 
   private Stage introTileStage;
   private Stage tileStage;
@@ -62,31 +116,6 @@ public class GameState {
   private Stage warpStage;
   private Stage uiStage;
   private Stage buildingStage;
-
-  public int queueSize;
-  public int nMines;
-  public QueueType queueType;
-
-  private final Random R = new Random();
-
-  private float tickTime = 0;
-
-  public float playerEnergy;
-  public float warpEnergy;
-
-  private float warpSpawnTime;
-  private float newParticlesMean;
-  private float newParticlesWidth;
-
-  public int debug;
-
-  public final Set<Sprite> particleSet = new HashSet<Sprite>(); // All movable sprites
-  public final Set<Building> buildingSet = new HashSet<Building>(); // All buildings
-
-  public final Set<Sprite> selectedSet = new HashSet<Sprite>(); // Sub-set, selected sprites
-  public Building selectedBuilding = null;
-
-  public PathingCache<Tile> pathingCache = new PathingCache<Tile>();
 
   private static GameState ourInstance;
   public static GameState getInstance() {
@@ -123,7 +152,7 @@ public class GameState {
 
     uiStage.act(delta);
 
-    if (!gameOn) {
+    if (!isGameOn()) {
       introSpriteStage.act(delta);
       return;
     }
@@ -148,8 +177,8 @@ public class GameState {
         if (cursorTile != null
             && cursorTile.n8 != null
             && cursorTile.n8.get(kSW).n8 != null) {
-          if (placeLocation != cursorTile) Sounds.getInstance().click();
-          placeLocation = cursorTile;
+          if (placeLocation != cursorTile.coordinates) Sounds.getInstance().click();
+          placeLocation = cursorTile.coordinates;
           buildingLocationGood = cursorTile.setBuildableHighlight();
           for (Cardinal D : Cardinal.n8)
             buildingLocationGood &= cursorTile.n8.get(D).setBuildableHighlight();
@@ -161,12 +190,14 @@ public class GameState {
         }
       } else if (UI.getInstance().uiMode == UIMode.kWITH_BUILDING_SELECTION) {
         if (cursorTile != null) {
-          placeLocation = mapPathingDestination(cursorTile);
-          if (placeLocation != null) {
+          Tile t = mapPathingDestination(cursorTile);
+          if (t != null) {
+            placeLocation = t.coordinates;
             // Don't allow loop
-            if (placeLocation.mySprite != null && placeLocation.mySprite == UI.getInstance().selectedBuilding) placeLocation = null;
+            if (t.mySprite != null && t.mySprite.id == UI.getInstance().selectedBuilding) placeLocation = null;
             if (placeLocation != null) {
-              UI.getInstance().selectedBuilding.updateDemoPathingList(UI.getInstance().selectedBuildingStandingOrderParticle, placeLocation);
+              Building b = buildingMap.get( UI.getInstance().selectedBuilding );
+              b.updateDemoPathingList(UI.getInstance().selectedBuildingStandingOrderParticle, t);
             }
           }
         }
@@ -222,9 +253,9 @@ public class GameState {
   }
 
   public void killSprite(Sprite s) {
-    particleSet.remove(s);
-    selectedSet.remove(s);
-    dustEffect(s.myTile);
+    particleMap.remove(s.id);
+    selectedSet.remove(s.id);
+    dustEffect(s.getTile());
     s.remove(); // From its renderer
   }
 
@@ -248,10 +279,10 @@ public class GameState {
   }
 
   public void placeBuilding() {
-    if (!buildingLocationGood) return;
-    Building b = new Building(placeLocation, UI.getInstance().buildingBeingPlaced);
+    if (!buildingLocationGood || placeLocation == null) return;
+    Building b = new Building(World.getInstance().getTile(placeLocation), UI.getInstance().buildingBeingPlaced);
     buildingStage.addActor(b);
-    buildingSet.add(b);
+    buildingMap.put(b.id, b);
     playerEnergy += UI.getInstance().buildingBeingPlaced.getCost();
     if (UI.getInstance().buildingBeingPlaced == BuildingType.kMINE) ++nMines;
     Camera.getInstance().addShake(Param.BUILDING_SHAKE);
@@ -271,8 +302,9 @@ public class GameState {
   }
 
   public void doConfirmStandingOrder() {
-    BuildingType bt = UI.getInstance().selectedBuilding.getType();
-    boolean didSave = UI.getInstance().selectedBuilding.savePathingList(); // Save the pathing list
+    Building b = buildingMap.get( UI.getInstance().selectedBuilding );
+    BuildingType bt = b.getType();
+    boolean didSave = b.savePathingList(); // Save the pathing list
     if (!didSave) return;
     UI.getInstance().doingPlacement = false;
     Sounds.getInstance().OK();
@@ -285,12 +317,13 @@ public class GameState {
 
 
   public void reduceSelectedSet(Particle p, boolean invert) {
-    Set<Sprite> toRemove = new HashSet<Sprite>();
-    for (Sprite s : selectedSet) {
+    Set<Integer> toRemove = new HashSet<Integer>();
+    for (int sID : selectedSet) {
+      Sprite s = particleMap.get(sID);
       boolean removeMe = (s.getParticle() != p);
       if (invert) removeMe = !removeMe;
       if (removeMe) {
-        toRemove.add(s);
+        toRemove.add(sID);
         s.selected = false;
       }
     }
@@ -300,9 +333,15 @@ public class GameState {
   }
 
   private void clearSelect() {
-    for (Sprite s : selectedSet) s.selected = false;
+    for (int sID : selectedSet) {
+      Sprite s = particleMap.get(sID);
+      s.selected = false;
+    }
     selectedSet.clear();
-    if (selectedBuilding != null) selectedBuilding.selected = false;
+    if (selectedBuilding != null) {
+      Building b = buildingMap.get(selectedBuilding);
+      b.selected = false;
+    }
     selectedBuilding = null;
   }
 
@@ -315,9 +354,9 @@ public class GameState {
           Math.min(selectStartWorld.y, selectEndWorld.y),
           Math.abs(selectEndWorld.x - selectStartWorld.x),
           Math.abs(selectEndWorld.y - selectStartWorld.y));
-      for (Sprite s : particleSet) {
+      for (Sprite s : particleMap.values()) {
         s.selected = Rectangle.tmp.contains(s.getX() / Param.SPRITE_SCALE, s.getY() / Param.SPRITE_SCALE);
-        if (s.selected) selectedSet.add(s);
+        if (s.selected) selectedSet.add(s.id);
       }
       UI.getInstance().uiMode = UIMode.kNONE; // Remove "selecting"
       UI.getInstance().selectParticlesButton.setChecked( false );
@@ -331,22 +370,22 @@ public class GameState {
       // We only let a building or individual particle be selected if no particles are selected
       // if particles are selected then we want to path to the building/location
 
-      for (Building b : buildingSet) {
+      for (Building b : buildingMap.values()) {
         Rectangle.tmp.set(b.getX(), b.getY(), b.getWidth(), b.getHeight());
         if (Rectangle.tmp.contains(selectStartWorld.x, selectStartWorld.y)) {
           clearSelect();
           b.selected = true;
-          selectedBuilding = b;
+          selectedBuilding = b.id;
           UI.getInstance().showBuildingInfo(b);
           return true;
         }
       }
-      for (Sprite s : particleSet) {
+      for (Sprite s : particleMap.values()) {
         Rectangle.tmp.set(s.getX(), s.getY(), s.getWidth(), s.getHeight());
         if (Rectangle.tmp.contains(selectStartWorld.x * Param.SPRITE_SCALE, selectStartWorld.y * Param.SPRITE_SCALE)) {
           clearSelect();
           s.selected = true;
-          selectedSet.add(s);
+          selectedSet.add(s.id);
           UI.getInstance().doSelectParticle(selectedSet);
           return true;
         }
@@ -389,7 +428,7 @@ public class GameState {
       Set<Tile> solutionKnownFrom = new HashSet<Tile>();
       anotherRoundNeeded = false;
       Sprite firstSprite = null;
-      for (Sprite s : particleSet) {
+      for (Sprite s : particleMap.values()) {
         if (pathed.contains(s)) continue; // Already done in another loop
         if (doRepath) { // DOING REPATH
 
@@ -442,7 +481,7 @@ public class GameState {
     }
 
     if (doRepath) {
-      for (Building b : buildingSet) b.doRepath();
+      for (Building b : buildingMap.values()) b.doRepath();
     }
   }
 
@@ -525,8 +564,8 @@ public class GameState {
     Color warpStageC = warpStage.getBatch().getColor();
     warpStageC.a = Param.WARP_TRANSPARENCY;
     warpStage.getBatch().setColor(warpStageC);
-    particleSet.clear();
-    buildingSet.clear();
+    particleMap.clear();
+    buildingMap.clear();
     dustEffects = new Array<ParticleEffectPool.PooledEffect>();
     ParticleEffect dustEffect = new ParticleEffect();
     dustEffect.load(Gdx.files.internal("dust_effect.txt"), Textures.getInstance().getAtlas());
@@ -544,6 +583,7 @@ public class GameState {
     newParticlesWidth = Param.NEW_PARTICLE_WIDTH;
     pathingCache.clear();
     nMines = 0;
+    entitiyID = 0;
     gameOn = false;
   }
 
@@ -567,7 +607,11 @@ public class GameState {
   }
 
 
-  public Set<Sprite> getParticleSet() {
-    return particleSet;
+  public HashMap<Integer, Sprite> getParticleMap() {
+    return particleMap;
+  }
+
+  public HashMap<Integer, Building> getBuildingMap() {
+    return buildingMap;
   }
 }

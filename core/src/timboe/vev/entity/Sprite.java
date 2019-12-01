@@ -2,6 +2,8 @@ package timboe.vev.entity;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Vector2;
+import com.google.gwt.thirdparty.json.JSONException;
+import com.google.gwt.thirdparty.json.JSONObject;
 
 import java.util.Arrays;
 import java.util.List;
@@ -13,6 +15,7 @@ import timboe.vev.enums.Cardinal;
 import timboe.vev.enums.Particle;
 import timboe.vev.manager.GameState;
 import timboe.vev.manager.World;
+import timboe.vev.pathfinding.IVector2;
 import timboe.vev.pathfinding.PathFinding;
 
 import static timboe.vev.enums.Cardinal.kNE;
@@ -21,20 +24,31 @@ import static timboe.vev.enums.Cardinal.kSE;
 
 public class Sprite extends Entity {
 
-  protected final Vector2 velocity = new Vector2();
-  public final Vector2 nudgeDestination = new Vector2();
   private static final List<Integer> walkSearchRandom = Arrays.asList(0,1,2,3);
   private static final List<Integer> walkSearchReproducible = Arrays.asList(0,1,2,3);
-  public Tile myTile;
+
+  // Persistent
+  private final Vector2 velocity = new Vector2();
+  public final Vector2 nudgeDestination = new Vector2();
+  public IVector2 myTile;
   public float idleTime;
-  public final float boredTime = 10f + (Param.PARTICLE_BORED_TIME * Util.R.nextFloat()); // Leave at least 10 seconds
-  public boolean isIntroSprite;
+  public final float boredTime; // Leave at least 10 seconds
 
   public Sprite(Tile t) {
     super(t.coordinates.x, t.coordinates.y, Param.TILE_S * Param.SPRITE_SCALE);
-    myTile = t;
-    isIntroSprite = false;
+    myTile = t.coordinates;
     idleTime = 0;
+    boredTime = 10f + (Param.PARTICLE_BORED_TIME * Util.R.nextFloat()); // Leave at least 10 seconds
+  }
+
+  public JSONObject serialise() throws JSONException {
+    JSONObject json = super.serialise();
+    json.put("velocity", Util.serialiseVec2(velocity));
+    json.put("nudgeDestimation", Util.serialiseVec2(nudgeDestination));
+    json.put("myTime", myTile.serialise());
+    json.put("idleTime", idleTime);
+    json.put("boredTime", boredTime);
+    return json;
   }
 
   public Particle getParticle() {
@@ -43,12 +57,13 @@ public class Sprite extends Entity {
 
   public void pathTo(Tile target, Set<Tile> solutionKnownFrom, Set<Sprite> doneSet) {
     if (target == null) return;
-    if (myTile.getPathFindNeighbours().isEmpty()) {
-      Tile jumpTo = findPathingLocation(myTile, true, false, true, isIntroSprite); // Find nearby, reproducible TRUE, require parking FALSE, sameHeight TRUE
+    Tile t = getTile();
+    if (t.getPathFindNeighbours().isEmpty()) {
+      Tile jumpTo = findPathingLocation(t, true, false, true, isIntroSprite); // Find nearby, reproducible TRUE, require parking FALSE, sameHeight TRUE
       if (jumpTo != null) jumpTo.tryRegSprite(this);
     }
     if (target.getPathFindNeighbours().isEmpty()) target = findPathingLocation(target, true, false, true, isIntroSprite); // Find nearby, reproducible TRUE, require parking FALSE, sameHeight TRUE
-    pathingList = (myTile != null && target != null ? PathFinding.doAStar(myTile, target, solutionKnownFrom, doneSet, GameState.getInstance().pathingCache) : null);
+    pathingList = (t != null && target != null ? PathFinding.doAStar(t, target, solutionKnownFrom, doneSet, GameState.getInstance().pathingCache) : null);
     if (pathingList == null) Gdx.app.error("pathTo", "Warning, pathTo failed for " + this);
     if (!isIntroSprite) idleTime = 0;
     Gdx.app.debug("pathTo", "Pathed in " + (pathingList != null ? pathingList.size() : " NULL ") + " steps");
@@ -69,6 +84,10 @@ public class Sprite extends Entity {
     }
   }
 
+  public Tile getTile() {
+    return isIntroSprite ? World.getInstance().getIntroTile(myTile) : World.getInstance().getTile(myTile);
+  }
+
   protected void actMovement(float delta) {
     // Pathing
     if (pathingList != null && !pathingList.isEmpty()) { // We've got some walkin' to do
@@ -81,7 +100,7 @@ public class Sprite extends Entity {
     } else if (!nudgeDestination.isZero()) { // Nudge
       boolean atDestination = doMove(nudgeDestination.x, nudgeDestination.y, delta);
       if (atDestination) nudgeDestination.setZero();
-    } else if (myTile.mySprite == null) { // I.e. I am not in a queue, otherwise this would be a building
+    } else if (getTile().mySprite == null) { // I.e. I am not in a queue, otherwise this would be a building
       idleTime += delta;
     }
   }
@@ -93,8 +112,8 @@ public class Sprite extends Entity {
     if (frames == 1 || time < Param.ANIM_TIME) return;
     time -= Param.ANIM_TIME;
     if (idleTime > boredTime && Util.R.nextFloat() < Param.PARTICLE_WANDER_CHANCE) {
-      int newX = (int) Util.clamp(myTile.coordinates.x - (Param.PARTICLE_WANDER_R/2) + Util.R.nextInt(Param.PARTICLE_WANDER_R), 1, Param.TILES_X - 2);
-      int newY = (int) Util.clamp(myTile.coordinates.y - (Param.PARTICLE_WANDER_R/2) + Util.R.nextInt(Param.PARTICLE_WANDER_R), 1, Param.TILES_Y - 2);
+      int newX = (int) Util.clamp(myTile.x - (Param.PARTICLE_WANDER_R/2) + Util.R.nextInt(Param.PARTICLE_WANDER_R), 1, Param.TILES_X - 2);
+      int newY = (int) Util.clamp(myTile.y - (Param.PARTICLE_WANDER_R/2) + Util.R.nextInt(Param.PARTICLE_WANDER_R), 1, Param.TILES_Y - 2);
       Tile idleWander = null;
       if (Util.inBounds(newX, newY, isIntroSprite)) {
         if (isIntroSprite) {

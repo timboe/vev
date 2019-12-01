@@ -8,7 +8,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
-import sun.security.krb5.internal.PAData;
 import timboe.vev.Param;
 
 /**
@@ -43,6 +42,16 @@ public enum Particle {
       case kBlank:
       default: return "?";
     }
+  }
+
+  public Particle fromString(String s) {
+    if      (s.equals("H")) return kH;
+    else if (s.equals("W")) return kW;
+    else if (s.equals("Z")) return kZ;
+    else if (s.equals("e")) return kE;
+    else if (s.equals("μ")) return kM;
+    else if (s.equals("q")) return kQ;
+    else return kBlank;
   }
 
   public static Particle getParticleFromColour(Colour c) {

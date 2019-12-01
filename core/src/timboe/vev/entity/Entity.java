@@ -6,6 +6,8 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.utils.Align;
+import com.google.gwt.thirdparty.json.JSONException;
+import com.google.gwt.thirdparty.json.JSONObject;
 
 import java.io.Serializable;
 import java.util.EnumMap;
@@ -23,28 +25,54 @@ import timboe.vev.pathfinding.IVector2;
 
 public class Entity extends Actor implements Serializable {
 
+  // Persistable
+  public int id;
   public boolean mask;
   public Colour tileColour;
   public int level;
   protected int scale;
   public int x, y;
-  protected int frames;
-  protected int frame;
-  protected float time;
+  int frames;
+  int frame;
+  float time;
   public boolean selected;
   public boolean doTint = false;
   public final IVector2 coordinates = new IVector2(); // (initial) X-Y tile grid coordinates
-
+  protected List<Tile> pathingList; // Used by building and sprite
+  Particle pathingParticle; // Used only by building
   protected EnumMap<Particle, List<Tile>> buildingPathingLists;
+  private String texString;
+  private int texFrames;
+  private boolean texFlipped;
+
+  transient public final TextureRegion[] textureRegion = new TextureRegion[Param.MAX_FRAMES];
+
+  public JSONObject serialise() throws JSONException {
+    JSONObject json = new JSONObject();
+    json.put("id", id);
+    json.put("mask", mask);
+    json.put("tileColour", tileColour == null ? null : tileColour.getString());
+    json.put("level", level);
+    json.put("x",x);
+    json.put("y",y);
+    json.put("frames", frames);
+    json.put("frame", frame);
+    json.put("time", time);
+    json.put("selected", selected);
+    json.put("doTint", doTint);
+    json.put("coordinates", coordinates.serialise());
+    // pathingList
+    json.put("pathingParticle", pathingParticle == null ? null : pathingParticle.toString());
+    // buildingPathingLists
+    json.put("texString", texString);
+    json.put("texFrames", texFrames);
+    json.put("texFlipped", texFlipped);
+    return json;
+  }
 
   public List<Tile> getPathingList() {
     return pathingList;
   }
-
-  protected List<Tile> pathingList; // Used by building and sprite
-  protected Particle pathingParticle; // Used only by building
-
-  transient public final TextureRegion[] textureRegion = new TextureRegion[Param.MAX_FRAMES];
 
   public Entity(int x, int y, int scale) {
     construct(x, y, scale);
@@ -55,6 +83,7 @@ public class Entity extends Actor implements Serializable {
   }
 
   private void construct(int x, int y, int scale) {
+    this.id = GameState.getInstance().entitiyID++;
     this.scale = scale;
     this.frames = 1;
     this.frame = 0;
@@ -62,6 +91,9 @@ public class Entity extends Actor implements Serializable {
     coordinates.set(x,y);
     textureRegion[0] = null;
     selected = false;
+    texString = "";
+    texFrames = 0;
+    texFlipped = false;
     setBounds(x * scale, y * scale, scale, scale);
   }
 
@@ -70,19 +102,26 @@ public class Entity extends Actor implements Serializable {
   }
 
   public boolean setTexture(final String name, final int frames, boolean flipped) {
+    texString = name;
+    texFrames = frames;
+    texFlipped = flipped;
+    return loadTexture();
+  }
+
+  public boolean loadTexture() {
     boolean ok = true;
-    for (int frame = 0; frame < frames; ++frame) {
-      final String texName = name + (frames > 1 ? "_" + frame : "");
-      TextureRegion r = Textures.getInstance().getTexture(texName, flipped);
+    for (int f = 0; f < texFrames; ++f) {
+      final String texName = texString + (texFrames > 1 ? "_" + f : "");
+      TextureRegion r = Textures.getInstance().getTexture(texName, texFlipped);
       if (r == null) {
         Gdx.app.error("setTexture", "Texture error " + texName);
         r = Textures.getInstance().getTexture("missing3", false);
         ok = false;
       }
-      setTexture(r, frame);
+      setTexture(r, f);
     }
-    frame = Util.R.nextInt(frames); // TODO check this doesn't mess anything up
-    this.frames = frames;
+    this.frame = Util.R.nextInt(texFrames); // TODO check this doesn't mess anything up
+    this.frames = texFrames;
     return ok;
   }
 

@@ -1,5 +1,7 @@
 package timboe.vev.enums;
 
+import com.google.gwt.thirdparty.json.JSONObject;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -19,6 +21,15 @@ public enum Colour {
 
   public static Colour random() {
     return values.get(R.nextInt(size));
+  }
+
+  public static Colour fromString(String s) {
+    if      (s.equals("r")) return kRED;
+    else if (s.equals("r_dark")) return kRED_DARK;
+    else if (s.equals("g")) return kGREEN;
+    else if (s.equals("g_dark")) return kGREEN_DARK;
+    else if (s.equals("blue")) return kBLUE;
+    else return kBLACK;
   }
 
   public String getString() {

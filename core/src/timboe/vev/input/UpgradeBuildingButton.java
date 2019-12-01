@@ -4,7 +4,9 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 
+import timboe.vev.entity.Building;
 import timboe.vev.enums.BuildingType;
+import timboe.vev.manager.GameState;
 import timboe.vev.manager.Sounds;
 import timboe.vev.manager.UI;
 
@@ -16,7 +18,8 @@ public class UpgradeBuildingButton  extends ChangeListener {
       b.setChecked(true); // Do not allow user to un-toggle
       return;
     }
-    boolean canUpgrade = UI.getInstance().selectedBuilding.upgradeBuilding();
+    Building building = GameState.getInstance().getBuildingMap().get( UI.getInstance().selectedBuilding );
+    boolean canUpgrade = building.upgradeBuilding();
     b.setChecked(canUpgrade);
     if (canUpgrade) Sounds.getInstance().OK();
 

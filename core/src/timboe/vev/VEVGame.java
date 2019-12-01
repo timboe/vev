@@ -3,6 +3,7 @@ package timboe.vev;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.FloatArray;
@@ -12,13 +13,12 @@ import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.esotericsoftware.kryo.serializers.FieldSerializer;
+import com.google.gwt.thirdparty.json.JSONException;
+import com.google.gwt.thirdparty.json.JSONObject;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
 
 import timboe.vev.entity.Entity;
-import timboe.vev.entity.Tile;
 import timboe.vev.manager.Camera;
 import timboe.vev.manager.GameState;
 import timboe.vev.manager.Sounds;
@@ -51,6 +51,17 @@ public class VEVGame extends Game {
 //    } catch (ClassNotFoundException ex) {
 //      Gdx.app.error("persist class exception",ex.getMessage());
 //    }
+    boolean isLocAvailable = Gdx.files.isLocalStorageAvailable();
+    if (isLocAvailable) {
+      FileHandle handle = Gdx.files.local("data/VEV_save.json");
+      try {
+        JSONObject json = new JSONObject();
+        json.put("GameState", GameState.getInstance().serialise());
+        handle.writeString(json.toString(), false);
+      } catch (JSONException e) {
+        e.printStackTrace();
+      }
+    }
     UI.getInstance().dispose();
     Textures.getInstance().dispose();
     Sounds.getInstance().dispose();
@@ -60,12 +71,12 @@ public class VEVGame extends Game {
   }
 
   private void persist() throws IOException, ClassNotFoundException {
-    Kryo kryo = new Kryo();
-    kryoReg(kryo);
-
-    Output output = new Output(new FileOutputStream("VEV_save.bin"));
-    kryo.writeObject(output, World.getInstance().getTile(0,0));
-    output.close();
+//    Kryo kryo = new Kryo();
+//    kryoReg(kryo);
+//
+//    Output output = new Output(new FileOutputStream("VEV_save.bin"));
+//    kryo.writeObject(output, World.getInstance().getTile(0,0));
+//    output.close();
   }
 
   private void kryoReg(Kryo kryo) {

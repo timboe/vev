@@ -2,14 +2,41 @@ package timboe.vev;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
+import com.google.gwt.thirdparty.json.JSONException;
+import com.google.gwt.thirdparty.json.JSONObject;
 
 import java.util.Random;
 
+import timboe.vev.enums.Colour;
 import timboe.vev.pathfinding.IVector2;
 
 public class Util {
 
   public static final Random R = new Random();
+
+  public static JSONObject serialiseVec3(Vector3 v) throws JSONException {
+    if (v == null) {
+      return null;
+    }
+    JSONObject json = new JSONObject();
+    json.put("x", v.x);
+    json.put("y", v.y);
+    json.put("z", v.z);
+    return json;
+  }
+
+  public static JSONObject serialiseVec2(Vector2 v) throws JSONException {
+    if (v == null) {
+      return null;
+    }
+    JSONObject json = new JSONObject();
+    json.put("x", v.x);
+    json.put("y", v.y);
+    return json;
+  }
+
 
   // Why -2? It's to allow for an buffer for odd world sizes
   public static boolean inBounds(int x, int y, boolean checkAgainstIntro) {

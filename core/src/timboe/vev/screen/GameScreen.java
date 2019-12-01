@@ -136,7 +136,7 @@ public class GameScreen implements Screen {
 
     sr.setProjectionMatrix(camera.getTileCamera().combined);
     sr.begin(ShapeRenderer.ShapeType.Filled);
-    for (Building b : state.buildingSet) {
+    for (Building b : state.getBuildingMap().values()) {
       b.drawSelected(sr);
       b.drawPath(sr);
     }
@@ -144,7 +144,7 @@ public class GameScreen implements Screen {
 
     sr.setProjectionMatrix(camera.getSpriteCamera().combined);
     sr.begin(ShapeRenderer.ShapeType.Filled);
-    for (Sprite s : state.particleSet) s.drawSelected(sr);
+    for (Sprite s : state.getParticleMap().values()) s.drawSelected(sr);
     sr.end();
 
     ////////////////////////////////////////////////
