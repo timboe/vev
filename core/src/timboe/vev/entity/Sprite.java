@@ -55,7 +55,7 @@ public class Sprite extends Entity {
     return (Particle) getUserObject();
   }
 
-  public void pathTo(Tile target, Set<Tile> solutionKnownFrom, Set<Sprite> doneSet) {
+  public void pathTo(Tile target, Set<IVector2> solutionKnownFrom, Set<Sprite> doneSet) {
     if (target == null) return;
     Tile t = getTile();
     if (t.getPathFindNeighbours().isEmpty()) {
@@ -63,7 +63,7 @@ public class Sprite extends Entity {
       if (jumpTo != null) jumpTo.tryRegSprite(this);
     }
     if (target.getPathFindNeighbours().isEmpty()) target = findPathingLocation(target, true, false, true, isIntroSprite); // Find nearby, reproducible TRUE, require parking FALSE, sameHeight TRUE
-    pathingList = (t != null && target != null ? PathFinding.doAStar(t, target, solutionKnownFrom, doneSet, GameState.getInstance().pathingCache) : null);
+    pathingList = (t != null && target != null ? PathFinding.doAStar(t.coordinates, target.coordinates, solutionKnownFrom, doneSet, GameState.getInstance().pathingCache) : null);
     if (pathingList == null) Gdx.app.error("pathTo", "Warning, pathTo failed for " + this);
     if (!isIntroSprite) idleTime = 0;
     Gdx.app.debug("pathTo", "Pathed in " + (pathingList != null ? pathingList.size() : " NULL ") + " steps");
@@ -91,10 +91,10 @@ public class Sprite extends Entity {
   protected void actMovement(float delta) {
     // Pathing
     if (pathingList != null && !pathingList.isEmpty()) { // We've got some walkin' to do
-      Tile next = pathingList.get(0);
+      Tile next = coordinateToTile( pathingList.get(0) );
       boolean atDestination = doMove(next.centreScaleSprite.x, next.centreScaleSprite.y, delta);
       if (atDestination) { // Reached destination
-        boolean wasParked = pathingList.remove(0).tryRegSprite(this);
+        boolean wasParked = coordinateToTile( pathingList.remove(0) ).tryRegSprite(this);
         if (pathingList.isEmpty()) atFinalDestination(next, wasParked);
       }
     } else if (!nudgeDestination.isZero()) { // Nudge

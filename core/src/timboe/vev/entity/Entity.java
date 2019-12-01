@@ -21,6 +21,7 @@ import timboe.vev.enums.Particle;
 import timboe.vev.manager.GameState;
 import timboe.vev.manager.Textures;
 import timboe.vev.manager.UI;
+import timboe.vev.manager.World;
 import timboe.vev.pathfinding.IVector2;
 
 public class Entity extends Actor implements Serializable {
@@ -38,9 +39,10 @@ public class Entity extends Actor implements Serializable {
   public boolean selected;
   public boolean doTint = false;
   public final IVector2 coordinates = new IVector2(); // (initial) X-Y tile grid coordinates
-  protected List<Tile> pathingList; // Used by building and sprite
+  protected List<IVector2> pathingList; // Used by building and sprite
   Particle pathingParticle; // Used only by building
-  protected EnumMap<Particle, List<Tile>> buildingPathingLists;
+  public boolean isIntroSprite;
+  protected EnumMap<Particle, List<IVector2>> buildingPathingLists;
   private String texString;
   private int texFrames;
   private boolean texFlipped;
@@ -61,16 +63,41 @@ public class Entity extends Actor implements Serializable {
     json.put("selected", selected);
     json.put("doTint", doTint);
     json.put("coordinates", coordinates.serialise());
-    // pathingList
+    if (pathingList != null) {
+      JSONObject pathing = new JSONObject();
+      Integer count = 0;
+      for (IVector2 v : pathingList) {
+        pathing.put(count.toString(), v.serialise());
+        ++count;
+      }
+      json.put("pathingList", pathing);
+    } else {
+      json.put("pathingList", null);
+    }
     json.put("pathingParticle", pathingParticle == null ? null : pathingParticle.toString());
-    // buildingPathingLists
+    json.put("isIntroSprite", isIntroSprite);
+    if (buildingPathingLists != null) {
+      JSONObject mapObj = new JSONObject();
+      for (EnumMap.Entry<Particle, List<IVector2>> entry : buildingPathingLists.entrySet()) {
+        JSONObject vecList = new JSONObject();
+        Integer count = 0;
+        for (IVector2 v : entry.getValue()) {
+          vecList.put(count.toString(), v.serialise());
+          ++count;
+        }
+        mapObj.put(entry.getKey().getString(), vecList);
+      }
+      json.put("buildingPathingLists", mapObj);
+    } else {
+      json.put("buildingPathingLists", null);
+    }
     json.put("texString", texString);
     json.put("texFrames", texFrames);
     json.put("texFlipped", texFlipped);
     return json;
   }
 
-  public List<Tile> getPathingList() {
+  public List<IVector2> getPathingList() {
     return pathingList;
   }
 
@@ -94,6 +121,7 @@ public class Entity extends Actor implements Serializable {
     texString = "";
     texFrames = 0;
     texFlipped = false;
+    isIntroSprite = false;
     setBounds(x * scale, y * scale, scale, scale);
   }
 
@@ -125,22 +153,26 @@ public class Entity extends Actor implements Serializable {
     return ok;
   }
 
+  public Tile coordinateToTile(IVector2 v) {
+    return (isIntroSprite ? World.getInstance().getIntroTile(v) : World.getInstance().getTile(v));
+  }
+
   public Tile getDestination() {
     if (pathingList == null || pathingList.isEmpty()) return null;
-    return pathingList.get( pathingList.size() - 1 );
+    return coordinateToTile( pathingList.get( pathingList.size() - 1 ));
   }
 
   public Tile getBuildingDestination(Particle p) {
     if (buildingPathingLists.get(p) == null || buildingPathingLists.get(p).isEmpty()) return null;
     final int s = buildingPathingLists.get(p).size();
-    return buildingPathingLists.get(p).get( s - 1 );
+    return coordinateToTile( buildingPathingLists.get(p).get( s - 1 ) );
   }
 
-  public List<Tile> getBuildingPathingList(Particle p) {
+  public List<IVector2> getBuildingPathingList(Particle p) {
     return buildingPathingLists.get(p);
   }
 
-  protected void setTexture(TextureRegion r, int frame) {
+  void setTexture(TextureRegion r, int frame) {
     textureRegion[frame] = r;
     setWidth(textureRegion[frame].getRegionWidth());
     setHeight(textureRegion[frame].getRegionHeight());
@@ -194,13 +226,13 @@ public class Entity extends Actor implements Serializable {
     }
   }
 
-  private void drawList(List<Tile> l, ShapeRenderer sr, int standingOrderOffset) {
+  private void drawList(List<IVector2> l, ShapeRenderer sr, int standingOrderOffset) {
     if (l == null || l.size() == 0) return;
     final int off = ((Param.FRAME / 2) + standingOrderOffset) % Param.TILE_S;
-    Tile fin = l.get( l.size() - 1 );
+    Tile fin = coordinateToTile( l.get( l.size() - 1 ) );
     for (int i = 0; i < l.size(); ++i) {
       Tile previous = null;
-      Tile current = l.get(i);
+      Tile current = coordinateToTile( l.get(i) );
       if (i == 0) {
         for (Cardinal D : Cardinal.n8) {
           if (current.n8.get(D).mySprite == this) { // This connects to the queue too.... TODO change
@@ -209,7 +241,7 @@ public class Entity extends Actor implements Serializable {
           }
         }
       } else {
-        previous = l.get(i - 1);
+        previous = coordinateToTile( l.get(i - 1) );
       }
       if (previous == null) continue;
       sr.rectLine(previous.centreScaleTile.x, previous.centreScaleTile.y,

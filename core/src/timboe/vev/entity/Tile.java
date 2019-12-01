@@ -19,18 +19,18 @@ import timboe.vev.enums.Colour;
 import timboe.vev.enums.Particle;
 import timboe.vev.enums.TileType;
 import timboe.vev.manager.World;
+import timboe.vev.pathfinding.IVector2;
 import timboe.vev.pathfinding.Node;
 
 import static timboe.vev.enums.Colour.kBLACK;
 import static timboe.vev.enums.Colour.kGREEN;
 
-public class Tile extends Entity implements Node {
+public class Tile extends Entity {
 
   public TileType type; // Ground, building, foliage, queue, cliff, stairs
   public Cardinal direction; // If stairs, then my direction (EW or NS)
 
   public final List<Cardinal> pathFindDebug = new ArrayList<Cardinal>(); // Neighbours - but only used to draw debug gfx
-  public final Set<Tile> pathFindNeighbours = new HashSet<Tile>(); // Neighbours - used in pathfinding
 
   public final Vector3 centreScaleTile = new Vector3(); // My centre in TILE coordinates
   public final Vector3 centreScaleSprite = new Vector3(); // My centre in SPRITE coordinated (scaled x2)
@@ -54,8 +54,8 @@ public class Tile extends Entity implements Node {
     centreScaleSprite.scl(Param.SPRITE_SCALE); // Sprite scale
   }
 
-  public Set<Tile> getPathFindNeighbours() {
-    return pathFindNeighbours;
+  public Set<IVector2> getPathFindNeighbours() {
+    return coordinates.pathFindNeighbours;
   }
 
   private void removeSprite() {
@@ -126,9 +126,9 @@ public class Tile extends Entity implements Node {
       Pair<Tile, Cardinal> slot = ((Building) mySprite).getFreeLocationInQueue(s);
       if (slot == null) { // Cannot stay here
         // Do we have a standing order for overflow? This is the kBlank particle type
-        List<Tile> pList = mySprite.getBuildingPathingList(Particle.kBlank);
+        List<IVector2> pList = mySprite.getBuildingPathingList(Particle.kBlank);
         if (pList != null) { // We have an overflow destination configured
-          s.pathingList = new LinkedList<Tile>(pList); // Off you go little one!
+          s.pathingList = new LinkedList<IVector2>(pList); // Off you go little one!
           return true;
         } else { // You're on your own. Find somewhere nearby to loiter
           visitingSprite(s);
@@ -189,7 +189,7 @@ public class Tile extends Entity implements Node {
   }
 
   public boolean hasParkingSpace() {
-    return (!pathFindNeighbours.isEmpty() && parkingSpaces.size() < Cardinal.corners.size());
+    return (!coordinates.pathFindNeighbours.isEmpty() && parkingSpaces.size() < Cardinal.corners.size());
   }
 
   public void setType(TileType t, Colour c, int l) {
@@ -228,19 +228,5 @@ public class Tile extends Entity implements Node {
     }
   }
 
-  @Override
-  public double getHeuristic(Object goal) {
-    Tile g = (Tile)goal;
-    return Math.hypot(x - g.x, y - g.y);
-  }
 
-  @Override
-  public double getTraversalCost(Object neighbour) {
-    return 1; // TODO tweak
-  }
-
-  @Override
-  public Set getNeighbours() {
-    return pathFindNeighbours;
-  }
 }

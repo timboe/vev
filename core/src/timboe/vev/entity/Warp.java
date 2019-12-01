@@ -49,7 +49,7 @@ public class Warp extends Building {
         int tryX = (int) Math.round(coordinates.x + Param.WARP_SIZE/2 - 2 + ((Param.WARP_SIZE/2 + 1) * Math.cos(rAngle)));
         int tryY = (int) Math.round(coordinates.y + Param.WARP_SIZE/2 - 2 + ((Param.WARP_SIZE/2 + 1) * Math.sin(rAngle)));
         Tile tryTile = World.getInstance().getTile(tryX, tryY);
-        if (tryTile.getNeighbours().size() == 0) continue; // Non-pathable
+        if (tryTile.coordinates.getNeighbours().size() == 0) continue; // Non-pathable
         boolean used = false;
         for (Particle p2 : Particle.values()) {
           if (p == p2) continue;

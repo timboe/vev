@@ -31,6 +31,16 @@ public enum BuildingType {
     return false;
   }
 
+  public BuildingType fromString(String s) {
+    if      (s.equals("H/Z/e")) return kHZE;
+    else if (s.equals("H/W/μ")) return kHWM;
+    else if (s.equals("W/e/q")) return kWEQ;
+    else if (s.equals("Z/μ/q")) return kZMQ;
+    else if (s.equals("Mine")) return kMINE;
+    else if (s.equals("Warp")) return kWARP;
+    else return kWARP;
+  }
+
   public String getString() {
     switch (this) {
       case kHZE: return "H/Z/e";
@@ -38,6 +48,7 @@ public enum BuildingType {
       case kWEQ: return "W/e/q";
       case kZMQ: return "Z/μ/q";
       case kMINE: return "Mine";
+      case kWARP: return "Warp";
       default: return "?";
     }
   }

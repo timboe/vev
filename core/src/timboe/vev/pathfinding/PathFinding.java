@@ -73,7 +73,7 @@ public class PathFinding {
 
       } else if (solutionKnownFrom != null && solutionKnownFrom.contains(current)) { // Someone else knows how to take it from here
 
-        List<Tile> otherSolution = null;
+        List<IVector2> otherSolution = null;
         for (Sprite done : doneSet) {
           if (done.getPathingList().contains(current)) {
             otherSolution = done.getPathingList();

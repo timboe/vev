@@ -4,15 +4,32 @@ import com.google.gwt.thirdparty.json.JSONException;
 import com.google.gwt.thirdparty.json.JSONObject;
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
-public class IVector2 implements Comparable, Serializable {
+import timboe.vev.entity.Tile;
+
+public class IVector2 implements Comparable, Serializable, Node {
   public int x;
   public int y;
+  public Set<IVector2> pathFindNeighbours = null; // Neighbours - used in pathfinding
 
   public JSONObject serialise() throws JSONException {
     JSONObject json = new JSONObject();
     json.put("x", x);
     json.put("y", y);
+    if (pathFindNeighbours != null) {
+      JSONObject n = new JSONObject();
+      Integer count = 0;
+      for (IVector2 v : pathFindNeighbours) {
+        JSONObject sub = new JSONObject();
+        sub.put("x", v.x);
+        sub.put("y", v.y);
+        n.put(count.toString(), sub);
+        ++count;
+      }
+      json.put("n", n);
+    }
     return json;
   }
 
@@ -70,5 +87,21 @@ public class IVector2 implements Comparable, Serializable {
 
   public IVector2 clone()  {
     return new IVector2(this);
+  }
+
+  @Override
+  public double getHeuristic(Object goal) {
+    IVector2 v = (IVector2) goal;
+    return Math.hypot(x - v.x, y - v.y);
+  }
+
+  @Override
+  public double getTraversalCost(Object neighbour) {
+    return 1; // TODO tweak
+  }
+
+  @Override
+  public Set getNeighbours() {
+    return pathFindNeighbours;
   }
 }

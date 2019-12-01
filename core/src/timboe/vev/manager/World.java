@@ -6,6 +6,7 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Queue;
@@ -215,11 +216,11 @@ public class World {
 
   public void updateTilePathfinding(Tile t) {
     t.pathFindDebug.clear();
-    t.pathFindNeighbours.clear();
+    t.coordinates.pathFindNeighbours = new HashSet<IVector2>();
     for (Cardinal D : Cardinal.n8) {
       if (shouldLink(t, t.n8.get(D))) {
         t.pathFindDebug.add(D);
-        t.pathFindNeighbours.add(t.n8.get(D));
+        t.coordinates.pathFindNeighbours.add( t.n8.get(D).coordinates );
       }
     }
   }
