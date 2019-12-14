@@ -6,7 +6,6 @@ import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
-import com.badlogic.gdx.scenes.scene2d.ui.HorizontalGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.ProgressBar;
@@ -15,6 +14,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Slider;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.NinePatchDrawable;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 
 import java.text.DecimalFormat;
@@ -43,20 +43,17 @@ import timboe.vev.input.YesNoButton;
 
 public class UI {
 
-  private static UI ourInstance;
+  private static UI ourInstance = null;
   public static UI getInstance() {
     return ourInstance;
   }
   public static void create() { ourInstance = new UI(); }
+  public static boolean constructed() { return ourInstance != null; }
   public void dispose() { ourInstance = null; }
   private static DecimalFormat df2 = new DecimalFormat(".##");
 
 
   public UIMode uiMode = UIMode.kNONE;
-  public BuildingType buildingBeingPlaced = null;
-  public boolean doingPlacement = false;
-  public Integer selectedBuilding;
-  public Particle selectedBuildingStandingOrderParticle;
 
   private final int SIZE_S = 32;
   private final int SIZE_M = 2*SIZE_S;
@@ -111,6 +108,8 @@ public class UI {
   private EnumMap<Particle, Label> selectLabel;
   private Button selectCross;
 
+  private Set<Image> ballImages = new HashSet<Image>();
+
   private UI() {
     ShaderProgram.pedantic = false;
 
@@ -148,8 +147,16 @@ public class UI {
 
   private Image getImage(String image) {
     Image i = new Image( Textures.getInstance().getTexture(image, false) );
+    i.setUserObject(image);
     i.setAlign(Align.center);
     return i;
+  }
+
+  public void retextureSprites() {
+    for (Image i : ballImages) {
+      String tex = (String)i.getUserObject();
+      i.setDrawable( new TextureRegionDrawable( Textures.getInstance().getTexture(tex, false) ) );
+    }
   }
 
   private Table getWindow() {
@@ -250,7 +257,11 @@ public class UI {
     }
   }
 
-  protected void resetTitle() {
+  public void cancelSettingsChanges() {
+
+  }
+
+  protected void resetTitle(String toShow) {
     tableIntro = new Table();
     tableIntro.setFillParent(true);
     tableIntro.debugAll();
@@ -269,23 +280,134 @@ public class UI {
     tableIntro.add(new Actor()).expand();
 
     titleWindow = getWindow();
-    Button newGame = getTextButton("NEW GAME");
-    newGame.addListener(new ChangeListener() {
-      @Override
-      public void changed(ChangeEvent event, Actor actor) {
-        if (!World.getInstance().getGenerated()) World.getInstance().launchAfterGen = true;
-        else if (GameState.getInstance().theTitleScreen.fadeTimer == 0) GameState.getInstance().transitionToGameScreen();
+
+    if (toShow.equals("main")) {
+
+      uiMode = UIMode.kNONE;
+
+      Button newGame = getTextButton("NEW GAME");
+      newGame.addListener(new ChangeListener() {
+        @Override
+        public void changed(ChangeEvent event, Actor actor) {
+          if (!World.getInstance().getGenerated()) World.getInstance().launchAfterGen = true;
+          else if (GameState.getInstance().theTitleScreen.fadeTimer == 0)
+            GameState.getInstance().transitionToGameScreen();
+        }
+      });
+      newGame.addListener(new TextTooltipDF("You can press this", skin));
+      titleWindow.add(newGame).pad(SIZE_S).colspan(2).fillX();
+
+      titleWindow.row();
+      separator(titleWindow, 2);
+      Button loadGame = getTextButton("LOAD GAME");
+      loadGame.addListener(new ChangeListener() {
+        @Override
+        public void changed(ChangeEvent event, Actor actor) {
+          World.getInstance().doLoad = true;
+        }
+      });
+      if (World.getInstance().loadedSave == null) {
+        loadGame.setDisabled(true);
       }
-    });
-    newGame.addListener(new TextTooltipDF("You can press this", skin));
-    titleWindow.add( newGame ).pad(SIZE_S).colspan(2).fillX();
-    titleWindow.row();
-    separator(titleWindow, 2);
-    titleWindow.add( getTextButton("LOAD") ).pad(SIZE_S).colspan(2).fillX();
-    titleWindow.row();
-    separator(titleWindow, 2);
-    titleWindow.add( getTextButton("HELP") ).pad(SIZE_S).colspan(2).fillX();
-    titleWindow.row();
+      titleWindow.add(loadGame).pad(SIZE_S).colspan(2).fillX();
+
+      titleWindow.row();
+      separator(titleWindow, 2);
+      Button settingsButton = getTextButton("SETTINGS");
+      settingsButton.addListener(new ChangeListener() {
+        @Override
+        public void changed(ChangeEvent event, Actor actor) {
+          resetTitle("settings");
+        }
+      });
+      titleWindow.add(settingsButton).pad(SIZE_S).colspan(2).fillX();
+
+      titleWindow.row();
+      separator(titleWindow, 2);
+      Button howToPlayButton = getTextButton("HOW TO PLAY");
+      howToPlayButton.addListener(new ChangeListener() {
+        @Override
+        public void changed(ChangeEvent event, Actor actor) {
+        }
+      });
+      titleWindow.add(howToPlayButton).pad(SIZE_S).colspan(2).fillX();;
+
+      titleWindow.row();
+      separator(titleWindow, 2);
+      Button exitGame = getTextButton("EXIT");
+      exitGame.addListener(new ChangeListener() {
+        @Override
+        public void changed(ChangeEvent event, Actor actor) {
+          Gdx.app.exit();
+        }
+      });
+      titleWindow.add(exitGame).pad(SIZE_S).colspan(2).fillX();
+
+    } else if (toShow.equals("settings")) {
+
+      uiMode = UIMode.kSETTINGS;
+
+      LabelDF musicL = getLabel("M");
+      titleWindow.add(musicL).pad(SIZE_S).fillX();
+      Slider musicSlider = new Slider(0, 1, .01f, false, skin, "default-horizontal");
+      musicSlider.setValue(Param.MUSIC_LEVEL);
+      musicSlider.addListener(new ChangeListener() {
+        @Override
+        public void changed(ChangeEvent event, Actor actor) {
+          Param.MUSIC_LEVEL = ((Slider)actor).getValue();
+          Sounds.getInstance().musicVolume();
+        }
+      });
+      titleWindow.add(musicSlider).pad(SIZE_S).width(SIZE_S+SIZE_M+SIZE_L).fillX();
+
+      titleWindow.row();
+      LabelDF sfxL = getLabel("S");
+      titleWindow.add(sfxL).pad(SIZE_S).fillX();
+      Slider sfxSlider = new Slider(0, 1, .01f, false, skin, "default-horizontal");
+      sfxSlider.setValue(Param.SFX_LEVEL);
+      sfxSlider.addListener(new ChangeListener() {
+        @Override
+        public void changed(ChangeEvent event, Actor actor) {
+          Param.SFX_LEVEL = ((Slider)actor).getValue();
+        }
+      });
+      addToWin(titleWindow, sfxSlider, SIZE_S+SIZE_M+SIZE_L, SIZE_S, 1);
+
+      titleWindow.row();
+      separator(titleWindow, 2);
+
+      ballImages.clear();
+      for (Particle p : Particle.values()) {
+        if (p == Particle.kBlank) continue;
+        Image i = getImage("ball_" + p.getColourFromParticle().getString());
+        ballImages.add(i);
+        addToWin(titleWindow, i, SIZE_M);
+        Slider pSlider = new Slider(0, 360, 1, false, skin, "default-horizontal");
+        pSlider.setValue( Param.PARTICLE_HUE.get(p) );
+        pSlider.setUserObject(p);
+        pSlider.addListener(new ChangeListener() {
+          @Override
+          public void changed(ChangeEvent event, Actor actor) {
+            Param.PARTICLE_HUE.put( (Particle)actor.getUserObject(), (int) ((Slider)actor).getValue() );
+            Textures.getInstance().updateParticleHues();
+          }
+        });
+        addToWin(titleWindow, pSlider, SIZE_M+SIZE_L, SIZE_M, 1);
+        titleWindow.row();
+      }
+
+      separator(titleWindow, 2);
+
+      addToWin(titleWindow, getImageButton("tick"), SIZE_L, SIZE_L, 1);
+      addToWin(titleWindow, getImageButton("cross"), SIZE_L, SIZE_L, 1);
+
+
+    } else {
+      Gdx.app.error("Intro UI","Unknown mode "+toShow);
+      Gdx.app.exit();
+    }
+
+
     tableIntro.add(titleWindow).right().top();
 
     LabelDF cred = getLabel("A game by Tim Martin");
@@ -305,7 +427,6 @@ public class UI {
 
     Gdx.app.log("resetTitle", "made intro UI");
   }
-
 
   protected void resetGame() {
     Gdx.app.log("resetGame", "made game UI");
@@ -541,7 +662,7 @@ public class UI {
 
   public void showBuildBuilding(BuildingType bt) {
     table.clear();
-    buildingBeingPlaced = bt;
+    GameState.getInstance().buildingBeingPlaced = bt;
     if (bt != BuildingType.kMINE) {
       buildingWindowQSimple.get(bt).setChecked(GameState.getInstance().queueType == QueueType.kSIMPLE);
       buildingWindowQSpiral.get(bt).setChecked(GameState.getInstance().queueType == QueueType.kSPIRAL);
@@ -558,12 +679,12 @@ public class UI {
     table.add(buildingWindow.get(bt));
     if (GameState.getInstance().debug > 0) table.debugAll();
     uiMode = UIMode.kPLACE_BUILDING;
-    doingPlacement = true;
+    GameState.getInstance().doingPlacement = true;
   }
 
   public void showBuildingInfo(Building b) {
     table.clear();
-    selectedBuilding = b.id;
+    GameState.getInstance().selectedBuilding = b.id;
     table.add(buildingSelectWindow.get(b.getType()));
     for (Particle p : Particle.values()) {
       if (!buildingSelectStandingOrder.get(b.getType()).containsKey(p)) continue;
@@ -584,7 +705,7 @@ public class UI {
       buildingWindowUpgradeButton.get(b.getType()).setChecked( b.doUpgrade );
       float progress = 0;
       if (b.doUpgrade) progress = b.timeUpgrade / b.getUpgradeTime();
-      else if (b.spriteProcessing != null)  progress = b.timeDisassemble / b.getTimeDisassembleMax;
+      else if (b.spriteProcessing != 0)  progress = b.timeDisassemble / b.getTimeDisassembleMax;
       buildingSelectProgress.get(b.getType()).setValue(progress);
       buildingUpgradeLabelBonus.get(b.getType()).setText( "x" + df2.format(1f/b.getUpgradeFactor()) );
       buildingUpgradeLabelCost.get(b.getType()).setText( String.valueOf(b.getUpgradeCost()) );
@@ -597,8 +718,8 @@ public class UI {
     int counter[] = new int[Particle.values().length];
     for (final int sID : selected) {
       Sprite s = GameState.getInstance().getParticleMap().get(sID);
-      selectedParticles.add((Particle) s.getUserObject());
-      ++counter[((Particle) s.getUserObject()).ordinal()];
+      selectedParticles.add(s.getParticle());
+      ++counter[s.getParticle().ordinal()];
     }
     selectWindow.clear();
     for (Particle p : selectedParticles) {
@@ -621,11 +742,13 @@ public class UI {
     table.add(mainWindow);
     if (GameState.getInstance().debug > 0) table.debugAll();
     uiMode = UIMode.kNONE;
-    doingPlacement = false;
-    if (selectedBuilding != null) GameState.getInstance().getBuildingMap().get(selectedBuilding).cancelUpdatePathingList();
-    selectedBuilding = null;
-    selectedBuildingStandingOrderParticle = null;
-    buildingBeingPlaced = null;
+    GameState.getInstance().doingPlacement = false;
+    if (GameState.getInstance().selectedBuilding != 0) {
+      GameState.getInstance().getBuildingMap().get( GameState.getInstance().selectedBuilding ).cancelUpdatePathingList();
+    }
+    GameState.getInstance().selectedBuilding = 0;
+    GameState.getInstance().selectedBuildingStandingOrderParticle = null;
+    GameState.getInstance().buildingBeingPlaced = null;
   }
 
 }

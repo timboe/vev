@@ -8,11 +8,13 @@ import com.badlogic.gdx.graphics.TextureData;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 
 import timboe.vev.Param;
 import timboe.vev.enums.Colour;
+import timboe.vev.enums.Particle;
 
 public class Textures {
 
@@ -22,6 +24,13 @@ public class Textures {
   private final TextureAtlas atlas = new TextureAtlas(Gdx.files.internal("sprites.txt"));
   private final TextureAtlas ui = new TextureAtlas(Gdx.files.internal("uiskin.atlas"));
   private static Textures ourInstance;
+
+  private final Color redHighlight = new Color(220 / 255f, 138 / 255f, 92 / 255f, 1f);
+  private final Color redTexture = new Color(206 / 255f, 101 / 255f, 80 / 255f, 1f);
+  private final Color redMain = new Color(176 / 255f, 78 / 255f, 80 / 255f, 1f);
+  private final Color redOutline = new Color(136 / 255f, 57 / 255f, 80 / 255f, 1f);
+  private final Color redDark = new Color(72 / 255f, 43 / 255f, 81 / 255f, 1f);
+  private final Color redBlack = new Color(39 / 255f, 32 / 255f, 49 / 255f, 1f);
 
   public static Textures getInstance() {
     return ourInstance;
@@ -39,8 +48,24 @@ public class Textures {
     ourInstance = null;
   }
 
-  private Textures() {
+  public void updateParticleHues() {
+    for (Particle p : Particle.values()) {
+      final int hue = Param.PARTICLE_HUE.get(p);
+      java.awt.Color awtColor = java.awt.Color.getHSBColor(hue / 360f, Param.HSB_BASE_SATURATION / 100f, Param.HSB_BASE_BRIGHTNESS / 100f);
+      Param.PARTICLE_BASE_COLOUR.put(p, new Color(awtColor.getRed() / 255f, awtColor.getGreen() / 255f, awtColor.getBlue() / 255f, 1f));
+    }
     loadMultiColouredBall();
+  }
+
+  private Color mod(Particle p, int hueMod, int s, int b) {
+    int hue = Param.PARTICLE_HUE.get(p) + hueMod;
+    if (hue > 360) hue -= 360;
+    java.awt.Color awtColor = java.awt.Color.getHSBColor(hue / 360f, s / 100f, b / 100f);
+    return new Color(awtColor.getRed() / 255f, awtColor.getGreen() / 255f, awtColor.getBlue() / 255f, 1f);
+  }
+
+  private Textures() {
+    updateParticleHues();
   }
 
   public TextureAtlas getAtlas() {
@@ -52,8 +77,8 @@ public class Textures {
   }
 
   public TextureRegion getTexture(String name, boolean flipped) {
-    TextureRegion r = atlas.findRegion(name);
-    if (r == null) r = retexturedMap.get(name);
+    TextureRegion r = retexturedMap.get(name);
+    if (r == null) r = atlas.findRegion(name);
     if (flipped) {
       if (!flippedMap.containsKey(name)) {
         TextureRegion newRegion = new TextureRegion(r);
@@ -67,69 +92,42 @@ public class Textures {
 
   private void loadMultiColouredBall() {
     // Images in the ATLAS are red
-    final int redHighlight[] = {220, 138, 92};
-    final int redTexture[] = {206, 101, 80};
-    final int redMain[] = {176, 78, 80};
-    final int redShadow[] = {136, 57, 80};
-    final int redDark[] = {72, 43, 81};
-    final int redBlack[] = {39, 32, 49};
 
     TextureData data = atlas.getTextures().first().getTextureData();
     data.prepare();
     Pixmap fullMap = data.consumePixmap();
-    for (Colour c : Colour.values()) {
-      if (c == Colour.kRED) continue;
+    for (Particle p : Particle.values()) {
+      if (p == Particle.kBlank) continue;
       for (int i = 0; i <= Param.N_BALLS; ++i) {
         TextureRegion r;
         if (i == Param.N_BALLS) r = new TextureRegion(atlas.findRegion("ball_r"));
         else r = new TextureRegion(atlas.findRegion("ball_r_" + i));
+
         Pixmap pixmap = new Pixmap(r.getRegionWidth(), r.getRegionHeight(), Pixmap.Format.RGBA8888);
         pixmap.drawPixmap(fullMap, 0, 0, r.getRegionX(), r.getRegionY(), r.getRegionWidth(), r.getRegionHeight());
-        if (c == Colour.kGREEN) {
-          colourReplace(pixmap, redHighlight, new Color(147 / 255f, 178 / 255f, 155 / 255f, 1f));
-          colourReplace(pixmap, redTexture, new Color(101 / 255f, 143 / 255f, 135 / 255f, 1f));
-          colourReplace(pixmap, redMain, new Color(58 / 255f, 91 / 255f, 106 / 255f, 1f));
-          colourReplace(pixmap, redShadow, new Color(45 / 255f, 59 / 255f, 89 / 255f, 1f));
-          colourReplace(pixmap, redDark, new Color(50 / 255f, 43 / 255f, 81 / 255f, 1f));
-          colourReplace(pixmap, redBlack, new Color(39 / 255f, 32 / 255f, 49 / 255f, 1f));
-        } else if (c == Colour.kGREEN_DARK) {
-          colourReplace(pixmap, redHighlight, new Color(101 / 255f, 143 / 255f, 135 / 255f, 1f)); // texture
-          colourReplace(pixmap, redTexture, new Color(45 / 255f, 59 / 255f, 89 / 255f, 1f)); //shaddow
-          colourReplace(pixmap, redMain, new Color(58/255f, 91/255f, 106/255f, 1f));
-          colourReplace(pixmap, redShadow, new Color(50 / 255f, 43 / 255f, 81 / 255f, 1f)); // dark
-          colourReplace(pixmap, redDark, new Color(50 / 255f, 43 / 255f, 81 / 255f, 1f)); // dark
-          colourReplace(pixmap, redBlack, new Color(39/255f, 32/255f, 49/255f,1f));
-        } else if (c == Colour.kRED_DARK) {
-          colourReplace(pixmap, redTexture, new Color(136 / 255f, 57 / 255f, 80 / 255f, 1f));  // redShadow[] = {136, 57, 80};
-          colourReplace(pixmap, redHighlight, new Color(206 / 255f, 101 / 255f, 80 / 255f, 1f)); //  redTexture[] = {206, 101, 80};
-//          colourReplace(pixmap, redMain, new Color(58/255f, 91/255f, 106/255f, 1f));
-          colourReplace(pixmap, redShadow, new Color(72 / 255f, 43 / 255f, 81 / 255f, 1f)); //redDark[] = {72, 43, 81};
-          colourReplace(pixmap, redDark, new Color(72 / 255f, 43 / 255f, 81 / 255f, 1f));  //redDark[] = {72, 43, 81};
-//          colourReplace(pixmap, redBlack, new Color(39/255f, 32/255f, 49/255f,1f));
-        } else if (c == Colour.kBLUE) {
-          colourReplace(pixmap, redHighlight, new Color(64/255f, 141/255f, 174/255f, 1f));
-          colourReplace(pixmap, redTexture, new Color(53/255f, 85/255f, 149/255f, 1f));
-          colourReplace(pixmap, redMain, new Color(60/255f, 52/255f, 123/255f, 1f));
-          colourReplace(pixmap, redShadow, new Color(50/255f, 43/255f, 81/255f, 1f));
-          colourReplace(pixmap, redDark, new Color(50/255f, 43/255f, 81/255f, 1f));
-          colourReplace(pixmap, redBlack, new Color(39/255f, 32/255f, 49/255f,1f));
-        } else if (c == Colour.kBLACK) {
-          colourReplace(pixmap, redHighlight, new Color(60/255f, 52/255f, 123/255f, 1f));
-          colourReplace(pixmap, redTexture, new Color(50/255f, 43/255f, 81/255f, 1f));
-          colourReplace(pixmap, redMain, new Color(50/255f, 43/255f, 81/255f, 1f));
-          colourReplace(pixmap, redShadow, new Color(50/255f, 43/255f, 81/255f, 1f));
-          colourReplace(pixmap, redDark, new Color(39/255f, 32/255f, 49/255f,1f));
-          colourReplace(pixmap, redBlack, new Color(39/255f, 32/255f, 49/255f,1f));
-        }
+
+        colourReplace(pixmap, redHighlight, mod(p, Param.HSB_HIGHLIGHT_HUE_MOD, Param.HSB_HIGHLIGHT_SATURATION, Param.HSB_HIGHLIGHT_BRIGHTNESS));
+        colourReplace(pixmap, redTexture, Param.PARTICLE_BASE_COLOUR.get(p));
+        colourReplace(pixmap, redOutline, mod(p, Param.HSB_OUTLINE_HUE_MOD, Param.HSB_OUTLINE_SATURATION, Param.HSB_OUTLINE_BRIGHTNESS));
+        colourReplace(pixmap, redDark, mod(p, Param.HSB_SHADOW_HUE_MOD, Param.HSB_SHADOW_SATURATION, Param.HSB_SHADOW_BRIGHTNESS));
+
         Texture newTex = new Texture(pixmap);
         TextureRegion newTexRegion = new TextureRegion(newTex);
         pixmap.dispose();
+        Colour c = p.getColourFromParticle();
         if (i == Param.N_BALLS) retexturedMap.put("ball_" + c.getString(), newTexRegion);
         else retexturedMap.put("ball_" + c.getString() + "_" + i, newTexRegion);
       }
     }
     fullMap.dispose();
     data.disposePixmap();
+
+    if (GameState.constructed()) {
+      GameState.getInstance().retextureSprites();
+    }
+    if (UI.constructed()) {
+      UI.getInstance().retextureSprites();
+    }
   }
 
   private int[] getColorFromHex(Color c) {
@@ -137,14 +135,15 @@ public class Textures {
     return colourInt;
   }
 
-  private void colourReplace(Pixmap pixmap, int from[], Color to) {
+  private void colourReplace(Pixmap pixmap, Color from, Color to) {
     pixmap.setColor(to);
+    Color color = new Color();
+    int fromInt[] = getColorFromHex(from);
     for (int y = 0; y < pixmap.getHeight(); y++) {
       for (int x = 0; x < pixmap.getWidth(); x++) {
-        Color color = new Color();
         Color.rgba8888ToColor(color, pixmap.getPixel(x, y));
         int colorInt[] = getColorFromHex(color);
-        if (from[0] == colorInt[0] && from[1] == colorInt[1] && from[2] == colorInt[2]) {
+        if (fromInt[0] == colorInt[0] && fromInt[1] == colorInt[1] && fromInt[2] == colorInt[2]) {
           pixmap.fillRectangle(x, y, 1, 1);
         }
       }

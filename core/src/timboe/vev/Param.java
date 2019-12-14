@@ -4,20 +4,32 @@ import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 
+import java.util.EnumMap;
+
+import timboe.vev.enums.Particle;
 import timboe.vev.enums.QueueType;
 
 public class Param {
 
+  // Persistent
+  public static float MUSIC_LEVEL = 0.f;
+  public static float SFX_LEVEL = 1.f;
+  public static EnumMap<Particle,Integer> PARTICLE_HUE = new EnumMap<Particle,Integer>(Particle.class);
+
+  // Transient
+  public static EnumMap<Particle,Color> PARTICLE_BASE_COLOUR = new EnumMap<Particle,Color>(Particle.class);
+
+
   public static final int ZONES_X = 3; // Constant... or not to constant
   public static final int ZONES_Y = 3;
-  public static final int ZONES_MAX = Math.max(ZONES_X, ZONES_Y);
+  private static final int ZONES_MAX = Math.max(ZONES_X, ZONES_Y);
 
   public static final int TILES_INTRO_X = 64;
   public static final int TILES_INTRO_Y = 64;
 
   public static final int TILES_X = 128+32;
   public static final int TILES_Y = 128+32;
-  public static final int TILES_MIN = Math.min(TILES_X, TILES_Y);
+  private static final int TILES_MIN = Math.min(TILES_X, TILES_Y);
   public static final int TILES_MAX = Math.max(TILES_X, TILES_Y);
 
   public static final int TILE_S = 16;
@@ -122,20 +134,31 @@ public class Param {
 
   public static final float TRUCK_INITIAL_CAPACITY = 1500f;
   public static final float TRUCK_LOAD_SPEED = 500f;
-
-  public static final Color PARTICLE_H = new Color(60/255f, 52/255f, 123/255f, 1f);
-  public static final Color PARTICLE_W = new Color(206 / 255f, 101 / 255f, 80 / 255f, 1f);
-  public static final Color PARTICLE_Z = new Color(101 / 255f, 143 / 255f, 135 / 255f, 1f);
-  public static final Color PARTICLE_E = new Color(220/255f, 138/255f, 92/255f, 1f);
-  public static final Color PARTICLE_M = new Color(147 / 255f, 178 / 255f, 155 / 255f, 1f);
-  public static final Color PARTICLE_Q = new Color(64/255f, 141/255f, 174/255f, 1f);
+  
   public static final Color PARTICLE_Blank = new Color(128/255f, 128/255f, 128/255f, 1f);
 
+  public static final int HSB_BASE_SATURATION = 61;
+  public static final int HSB_BASE_BRIGHTNESS = 81;
+
+  public static final int HSB_HIGHLIGHT_HUE_MOD = 12;
+  public static final int HSB_HIGHLIGHT_SATURATION = 51;
+  public static final int HSB_HIGHLIGHT_BRIGHTNESS = 86;
+
+  public static final int HSB_OUTLINE_HUE_MOD = 333;
+  public static final int HSB_OUTLINE_SATURATION = 58;
+  public static final int HSB_OUTLINE_BRIGHTNESS = 53;
+
+  public static final int HSB_SHADOW_HUE_MOD = 276;
+  public static final int HSB_SHADOW_SATURATION = 46;
+  public static final int HSB_SHADOW_BRIGHTNESS = 31;
+
   public static final int DEBUG_INTIAL = 0;
-  private static final boolean FAKE_ANDROID = true;
+  private static final boolean FAKE_ANDROID = false;
   public static final boolean IS_ANDROID = FAKE_ANDROID || Gdx.app.getType() == Application.ApplicationType.Android;
 
   public static final int QUEUE_INITIAL_SIZE = 9;
   public static final QueueType QUEUE_INITIAL_TYPE = QueueType.kSIMPLE;
 
+  public static final String SAVE_FILE = "data/VEV_save.dat";
+  public static final String SETTINGS_FILE = "data/VEV_settings.json";
 }

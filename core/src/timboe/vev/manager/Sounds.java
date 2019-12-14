@@ -6,6 +6,7 @@ import com.badlogic.gdx.audio.Sound;
 
 import java.util.Random;
 
+import timboe.vev.Param;
 import timboe.vev.Util;
 
 public class Sounds {
@@ -28,9 +29,7 @@ public class Sounds {
   private Music[] theme = new Music[nMusic];
 
   private int track;
-  private boolean sfx = true, music = true;
-
-  private float level = 1;
+  private float sfxMod = 1f;
 
   private static Sounds ourInstance;
   public static Sounds getInstance() {
@@ -56,88 +55,77 @@ public class Sounds {
   }
 
   public void sfxLevel(float level) {
-    this.level = level;
+    this.sfxMod = level;
   }
 
   private Sounds() {
     reset();
   }
 
-  public void toggleMusic() {
-    music = !music;
-    doMusic();
+
+  public void musicVolume() {
+    Gdx.app.log("musicVolume","Now " + Param.MUSIC_LEVEL);
+    theme[track].setVolume(Param.MUSIC_LEVEL);
   }
 
-  public void doMusic() {
-    if (music) {
-      theme[track].play();
+  public void doMusic(boolean initial) {
+    if (!initial) {
       int trackTemp = track;
       while (trackTemp == track) trackTemp = Util.R.nextInt(nMusic);
       track = trackTemp; // Random - but not the same
-    } else {
-      theme[track].stop();
-      track = 0;
+
     }
+    theme[track].play();
+    musicVolume();
   }
 
   public void poof() {
-    if (!sfx) return;
-    poof.play(level);
+    poof.play(Param.SFX_LEVEL * sfxMod);
   }
 
   public void click() {
-    if (!sfx) return;
-    click.play();
+    click.play(Param.SFX_LEVEL);
   }
 
   public void OK() {
-    if (!sfx) return;
-    OK.play();
+    OK.play(Param.SFX_LEVEL);
   }
 
   public void star() {
-    if (!sfx) return;
-    star.play(level);
+    star.play(Param.SFX_LEVEL * sfxMod);
   }
 
   public void thud() {
-    if (!sfx) return;
-    thud.play(level);
+    thud.play(Param.SFX_LEVEL * sfxMod);
   }
 
   public void boop() {
-    if (!sfx) return;
-    blop.play(level);
+    blop.play(Param.SFX_LEVEL * sfxMod);
   }
 
   public void zap() {
-    if (!sfx) return;
-    electric[ R.nextInt(nElectric) ].play(level);
+    electric[ R.nextInt(nElectric) ].play(Param.SFX_LEVEL * sfxMod);
   }
 
   public void moveOrder() {
-    if (!sfx) return;
-    move[ R.nextInt(nMove) ].play();
+    move[ R.nextInt(nMove) ].play(Param.SFX_LEVEL);
   }
 
   public void selectOrder() {
-    if (!sfx) return;
-    select[ R.nextInt(nSelect) ].play();
+    select[ R.nextInt(nSelect) ].play(Param.SFX_LEVEL);
   }
 
   public void foot() {
-    if (!sfx) return;
-    foot.play(level);
+    foot.play(Param.SFX_LEVEL * sfxMod);
   }
 
   public void pulse() {
-    if (!sfx) return;
-    swoosh.play();
-    pulse.play();
+    swoosh.play(Param.SFX_LEVEL);
+    pulse.play(Param.SFX_LEVEL);
   }
 
 
-  public void reset() {
+  private void reset() {
     track = 0;
     for (int i = 0; i < nMusic; ++i) {
       String path = "IsThatYouorAreYouYou.ogg";
@@ -147,7 +135,7 @@ public class Sounds {
       theme[i].setOnCompletionListener(new Music.OnCompletionListener() {
         @Override
         public void onCompletion(Music music) {
-          doMusic();
+          doMusic(false);
         }
       });
     }

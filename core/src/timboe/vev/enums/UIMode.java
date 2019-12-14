@@ -6,6 +6,7 @@ package timboe.vev.enums;
 
 public enum UIMode {
   kNONE,
+  kSETTINGS,
   kWITH_PARTICLE_SELECTION,
   kWITH_BUILDING_SELECTION,
   kPLACE_BUILDING
