@@ -1,5 +1,6 @@
 package timboe.vev.input;
 
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 
@@ -17,7 +18,7 @@ public class QueueButton extends ChangeListener {
   @Override
   public void changed(ChangeEvent event, Actor actor) {
     GameState.getInstance().queueType = (QueueType)actor.getUserObject();
-    BuildingType bt = UI.getInstance().buildingBeingPlaced;
+    BuildingType bt = GameState.getInstance().buildingBeingPlaced;
     UI.getInstance().buildingWindowQSimple.get(bt).setChecked(GameState.getInstance().queueType == QueueType.kSIMPLE);
     UI.getInstance().buildingWindowQSpiral.get(bt).setChecked(GameState.getInstance().queueType == QueueType.kSPIRAL);
     Sounds.getInstance().click();

@@ -53,11 +53,11 @@ public class TitleScreen implements Screen {
       Tile genTile = World.getInstance().getIntroTile(tileX, tileY);
       for (int i = 0; i < 200; ++i) {
         Sprite s = new Sprite(genTile);
-        s.isIntroSprite = true;
+        s.isIntro = true;
         s.moveBy(Param.TILE_S / 2, Param.TILE_S / 2);
         s.pathTo(s.findPathingLocation(genTile, false, true, true, true), null, null);
         s.setTexture("ball_" + p.getColourFromParticle().getString(), 6, false);
-        s.setUserObject(p);
+        s.setParticle(p);
         s.moveBy(Util.R.nextInt(Param.TILE_S), Util.R.nextInt(Param.TILE_S));
         s.idleTime = s.boredTime; // Start the wanderlust right away
         GameState.getInstance().getIntroSpriteStage().addActor(s);

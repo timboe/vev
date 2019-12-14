@@ -1,10 +1,13 @@
 package timboe.vev.pathfinding;
 
+import com.badlogic.gdx.Gdx;
 import com.google.gwt.thirdparty.json.JSONException;
 import com.google.gwt.thirdparty.json.JSONObject;
 
+import java.awt.font.GlyphJustificationInfo;
 import java.io.Serializable;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 import timboe.vev.entity.Tile;
@@ -18,9 +21,14 @@ public class IVector2 implements Comparable, Serializable, Node {
     JSONObject json = new JSONObject();
     json.put("x", x);
     json.put("y", y);
+    return json;
+  }
+
+  public JSONObject serialiseTile() throws JSONException {
+    JSONObject json = serialise();
+    JSONObject n = new JSONObject();
+    Integer count = 0;
     if (pathFindNeighbours != null) {
-      JSONObject n = new JSONObject();
-      Integer count = 0;
       for (IVector2 v : pathFindNeighbours) {
         JSONObject sub = new JSONObject();
         sub.put("x", v.x);
@@ -28,14 +36,24 @@ public class IVector2 implements Comparable, Serializable, Node {
         n.put(count.toString(), sub);
         ++count;
       }
-      json.put("n", n);
     }
+    json.put("n", n);
     return json;
   }
 
-  public void deserialise(JSONObject json) throws JSONException {
-    x = json.getInt("x");
-    y = json.getInt("y");
+  public IVector2(JSONObject json) throws JSONException {
+   this.x = json.getInt("x");
+   this.y = json.getInt("y");
+   if (json.has("n")) {
+//     Gdx.app.log("Deserial","tile " + x + " " + y + " has n");
+     pathFindNeighbours = new HashSet<IVector2>();
+     JSONObject n = json.getJSONObject("n");
+     Iterator it = n.keys();
+     while (it.hasNext()) {
+       JSONObject sub = n.getJSONObject((String) it.next());
+       pathFindNeighbours.add( new IVector2( sub ) );
+     }
+   }
   }
 
   public IVector2(int x, int y) {
@@ -102,6 +120,9 @@ public class IVector2 implements Comparable, Serializable, Node {
 
   @Override
   public Set getNeighbours() {
+    if (pathFindNeighbours == null) {
+      Gdx.app.error("Null Err","No neighbours!");
+    }
     return pathFindNeighbours;
   }
 }

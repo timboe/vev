@@ -15,9 +15,10 @@ public class Zone extends Entity {
   public final IVector2 lowerLeft = new IVector2();
   public final IVector2 upperRight = new IVector2();
   public final int w;
-  public final int h;
+  private final int h;
 
   public Zone(int x, int y) {
+    super(x,y);
     tileColour = Colour.kRED;
     mask = false;
     level = 1;

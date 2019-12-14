@@ -1,12 +1,16 @@
 package timboe.vev.entity;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector3;
+import com.google.gwt.thirdparty.json.JSONException;
+import com.google.gwt.thirdparty.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -14,69 +18,141 @@ import java.util.Set;
 
 import timboe.vev.Pair;
 import timboe.vev.Param;
+import timboe.vev.Util;
 import timboe.vev.enums.Cardinal;
 import timboe.vev.enums.Colour;
 import timboe.vev.enums.Particle;
 import timboe.vev.enums.TileType;
+import timboe.vev.manager.GameState;
 import timboe.vev.manager.World;
 import timboe.vev.pathfinding.IVector2;
-import timboe.vev.pathfinding.Node;
 
 import static timboe.vev.enums.Colour.kBLACK;
 import static timboe.vev.enums.Colour.kGREEN;
 
 public class Tile extends Entity {
 
-  public TileType type; // Ground, building, foliage, queue, cliff, stairs
-  public Cardinal direction; // If stairs, then my direction (EW or NS)
-
-  public final List<Cardinal> pathFindDebug = new ArrayList<Cardinal>(); // Neighbours - but only used to draw debug gfx
-
-  public final Vector3 centreScaleTile = new Vector3(); // My centre in TILE coordinates
-  public final Vector3 centreScaleSprite = new Vector3(); // My centre in SPRITE coordinated (scaled x2)
-
-  public final Set<Sprite> containedSprites = new HashSet<Sprite>(); // Moving sprites on this tile
-  public final Map<Sprite, Cardinal> parkingSpaces = new HashMap<Sprite, Cardinal>(); // Four sprites allowed to "park" here
-  public Entity mySprite = null; // For buildings and foliage
-
+  public final List<Cardinal> pathFindDebug = new ArrayList<Cardinal>(); // Neighbours - but only used to draw debug gfx. Hence not worth persisting?
   public Map<Cardinal, Tile> n8; // Neighbours, cached for speed
 
+  // Persistent
+  public TileType type; // Ground, building, foliage, queue, cliff, stairs
+  public Cardinal direction; // If stairs, then my direction (EW or NS)
+  public Vector3 centreScaleTile = new Vector3(); // My centre in TILE coordinates
+  public Vector3 centreScaleSprite = new Vector3(); // My centre in SPRITE coordinated (scaled x2)
+  public final Set<Integer> containedSprites = new HashSet<Integer>(); // Moving sprites on this tile
+  public final Map<Integer, Cardinal> parkingSpaces = new HashMap<Integer, Cardinal>(); // Four sprites allowed to "park" here
+  public int mySprite = 0; // For buildings and foliage
   public Cardinal queueExit; // Which sub-space is my last
   public boolean queueClockwise; // If true, clockwise - if false, counterclockwise
   private String queueTex; // Delayed rendering
 
+  public JSONObject serialise() throws JSONException {
+    JSONObject json = super.serialise(true);
+    json.put("type", type.name());
+    json.put("direction", direction.name());
+    json.put("centreScaleTile", Util.serialiseVec3(centreScaleTile));
+    json.put("centreScaleSprite", Util.serialiseVec3(centreScaleSprite));
+    JSONObject jsonContained = new JSONObject();
+    Integer countContained = 0;
+    for (int id : containedSprites) {
+      jsonContained.put(countContained.toString(), id);
+    }
+    json.put("containedSprites", jsonContained);
+    JSONObject jsonParking = new JSONObject();
+    for (Map.Entry<Integer, Cardinal> entry : parkingSpaces.entrySet()) {
+      jsonParking.put(entry.getKey().toString(), entry.getValue().name());
+    }
+    json.put("parkingSpaces", jsonParking);
+    json.put("mySprite",  mySprite);
+    json.put("queueExit", queueExit.name());
+    json.put("queueClockwise", queueClockwise);
+    json.put("queueTex", queueTex);
+    // NOTE: n8 not stored. Needs to be regenerated on load
+//    if (this.getX() == 32 && this.getY() == 32) {
+//      Gdx.app.log("Tile ("+x+","+y+") id "+id+" Serial Debug", json.toString());
+//    }
+    return json;
+  }
+
+  public Tile(JSONObject json) throws JSONException {
+    super(json);
+    this.queueTex = json.getString("queueTex");
+    this.queueClockwise = json.getBoolean("queueClockwise");
+    this.queueExit = Cardinal.valueOf( json.getString("queueExit") );
+    this.mySprite = json.getInt("mySprite");
+    JSONObject jsonParking = json.getJSONObject("parkingSpaces");
+    Iterator it = jsonParking.keys();
+    while (it.hasNext()) {
+      String key = (String) it.next();
+      this.parkingSpaces.put(Integer.parseInt(key), Cardinal.valueOf(jsonParking.getString(key)));
+    }
+    JSONObject jsonContained = json.getJSONObject("containedSprites");
+    it = jsonContained.keys();
+    while (it.hasNext()) {
+      this.containedSprites.add(Integer.parseInt(jsonContained.getString((String) it.next())));
+    }
+    this.centreScaleSprite = Util.deserialiseVec3( json.getJSONObject("centreScaleSprite") );
+    this.centreScaleTile = Util.deserialiseVec3( json.getJSONObject("centreScaleTile") );
+    this.direction = Cardinal.valueOf( json.getString("direction") );
+    this.type = TileType.valueOf( json.getString("type") );
+//    if (this.x == 32 && this.y == 32) {
+//      Gdx.app.log("Tile ("+x+","+y+") id "+id+" DeSerial Debug", json.toString());
+//    }
+  }
+
   public Tile(int x, int y) {
     super(x, y);
     setType(TileType.kGROUND, kBLACK, 0);
-    mask = false;
-    centreScaleTile.set(getX() + getHeight()/2, getY() + getHeight()/2, 0); // Tile scale
-    centreScaleSprite.set(centreScaleTile);
-    centreScaleSprite.scl(Param.SPRITE_SCALE); // Sprite scale
+    this.mask = false;
+    this.centreScaleTile.set(getX() + getHeight()/2, getY() + getHeight()/2, 0); // Tile scale
+    this.centreScaleSprite.set(centreScaleTile);
+    this.centreScaleSprite.scl(Param.SPRITE_SCALE); // Sprite scale
+    this.direction = Cardinal.kNONE;
+    this.queueExit = Cardinal.kNONE;
+    this.queueClockwise = true;
+    this.queueTex = "";
   }
 
   public Set<IVector2> getPathFindNeighbours() {
     return coordinates.pathFindNeighbours;
   }
 
+  public Entity getMySprite() {
+    if (mySprite == 0) {
+      return null;
+    }
+    if (GameState.getInstance().getBuildingMap().containsKey(mySprite)) {
+      return GameState.getInstance().getBuildingMap().get(mySprite);
+    }
+    if (World.getInstance().foliage.containsKey(mySprite)) {
+      return World.getInstance().foliage.get(mySprite);
+    }
+    Gdx.app.error("getMySprite", "Cannot resolve "+String.valueOf(mySprite)+" I am "+coordinates.toString()+" I am intro? " + isIntro);
+    return null;
+  }
+
   private void removeSprite() {
-    if (mySprite == null) return;
-    mySprite.remove(); // Foliage (from sprite batch)
-    mySprite = null;
+    Entity s = getMySprite();
+    if (s == null) return;
+    s.remove(); // Foliage (from sprite batch)
+    World.getInstance().foliage.remove(s.id);
+    mySprite = 0;
   }
 
   public void setBuilding(Building b) {
     type = TileType.kBUILDING;
     removeSprite();
-    mySprite = b;
+    mySprite = b.id;
   }
 
-  public void setQueue(Cardinal from, Cardinal to, Building b, Cardinal queueExit, boolean queueClockwise) {
+  public void setQueue(Cardinal from, Cardinal to, int buildingID, Cardinal queueExit, boolean queueClockwise) {
     type = TileType.kQUEUE;
     removeSprite();
-    queueTex = "queue_"+tileColour.getString()+"_"+from.getString()+"_"+to.getString();
+    this.queueTex = "queue_"+tileColour.getString()+"_"+from.getString()+"_"+to.getString();
     this.queueExit = queueExit;
     this.queueClockwise = queueClockwise;
-    mySprite = b;
+    mySprite = buildingID;
   }
 
   public void setQueueTexture() {
@@ -84,15 +160,17 @@ public class Tile extends Entity {
   }
 
   public boolean buildable() {
-    return tileColour == kGREEN && (type == TileType.kGROUND || type == TileType.kFOILAGE);
+    return tileColour == kGREEN && (type == TileType.kGROUND || type == TileType.kFOLIAGE);
   }
 
   public void setHighlightColour(Color c) {
     setColor(c);
     doTint = true;
-    if (mySprite != null) {
-      mySprite.setColor(c);
-      mySprite.doTint = true;
+//    Gdx.app.log("setHighlightColour","called");
+    Entity e = getMySprite();
+    if (e != null) {
+      e.setColor(c);
+      e.doTint = true;
     }
   }
 
@@ -112,8 +190,10 @@ public class Tile extends Entity {
     Tile t = World.getInstance().getTile(s.myTile);
     t.deRegSprite(s);
 
+//    Gdx.app.log("tryRegSprite", "Try reg "+s.id);
+    Entity e = getMySprite();
     boolean isTruck = (s.getClass() == Truck.class);
-    boolean isStartOfQueue = (mySprite != null && mySprite.getClass() == Building.class);
+    boolean isStartOfQueue = (e != null && e.getClass() == Building.class);
 
     if (isStartOfQueue && !isTruck) {
       // If this is not my final destination - you cannot reg here, but you're just about to move on so OK
@@ -123,10 +203,10 @@ public class Tile extends Entity {
       }
 
       // This *is* my final destination. Can I stay here?
-      Pair<Tile, Cardinal> slot = ((Building) mySprite).getFreeLocationInQueue(s);
+      Pair<Tile, Cardinal> slot = ((Building) e).getFreeLocationInQueue(s);
       if (slot == null) { // Cannot stay here
         // Do we have a standing order for overflow? This is the kBlank particle type
-        List<IVector2> pList = mySprite.getBuildingPathingList(Particle.kBlank);
+        List<IVector2> pList = e.getBuildingPathingList(Particle.kBlank);
         if (pList != null) { // We have an overflow destination configured
           s.pathingList = new LinkedList<IVector2>(pList); // Off you go little one!
           return true;
@@ -156,25 +236,26 @@ public class Tile extends Entity {
 
   public void visitingSprite(Sprite s) {
     s.myTile = coordinates;
-    containedSprites.add(s);
+    containedSprites.add(s.id);
   }
 
   public void parkSprite(Sprite s, Cardinal parking) {
     s.myTile = coordinates;
-    containedSprites.add(s);
-    parkingSpaces.put(s, parking);
+    containedSprites.add(s.id);
+    parkingSpaces.put(s.id, parking);
     s.setNudgeDestination(this, parking);
   }
 
   public void deRegSprite(Sprite s) {
-    containedSprites.remove(s);
-    parkingSpaces.remove(s);
+    containedSprites.remove(s.id);
+    parkingSpaces.remove(s.id);
   }
 
   // Can no longer stay here
   public void moveOnSprites() {
     Set<Sprite> set = new HashSet<Sprite>();
-    for (Sprite s : containedSprites) {
+    for (int id : containedSprites) {
+      Sprite s = GameState.getInstance().getParticleMap().get(id);
       // If I am parked here, or just passing through but my destination is also now invalid
       // Cannot issue pathTo here as it will invalidate the containedSprites container
       if (s.pathingList.isEmpty() || s.getDestination().getPathFindNeighbours().isEmpty()) {

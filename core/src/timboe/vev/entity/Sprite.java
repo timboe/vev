@@ -28,64 +28,84 @@ public class Sprite extends Entity {
   private static final List<Integer> walkSearchReproducible = Arrays.asList(0,1,2,3);
 
   // Persistent
-  private final Vector2 velocity = new Vector2();
-  public final Vector2 nudgeDestination = new Vector2();
+  private final Vector2 velocity;
+  public final Vector2 nudgeDestination;
   public IVector2 myTile;
   public float idleTime;
   public final float boredTime; // Leave at least 10 seconds
+  private Particle myParticle;
 
   public Sprite(Tile t) {
     super(t.coordinates.x, t.coordinates.y, Param.TILE_S * Param.SPRITE_SCALE);
     myTile = t.coordinates;
     idleTime = 0;
     boredTime = 10f + (Param.PARTICLE_BORED_TIME * Util.R.nextFloat()); // Leave at least 10 seconds
+    velocity = new Vector2();
+    nudgeDestination = new Vector2();
   }
 
   public JSONObject serialise() throws JSONException {
-    JSONObject json = super.serialise();
+    JSONObject json = super.serialise(false);
     json.put("velocity", Util.serialiseVec2(velocity));
-    json.put("nudgeDestimation", Util.serialiseVec2(nudgeDestination));
-    json.put("myTime", myTile.serialise());
+    json.put("nudgeDestination", Util.serialiseVec2(nudgeDestination));
+    json.put("myTile", myTile.serialise());
     json.put("idleTime", idleTime);
     json.put("boredTime", boredTime);
+    json.put("myParticle", myParticle == null ? JSONObject.NULL : myParticle.name());
     return json;
   }
 
-  public Particle getParticle() {
-    return (Particle) getUserObject();
+  public Sprite(JSONObject json) throws JSONException {
+    super(json);
+    if (json.get("myParticle") == JSONObject.NULL) {
+      myParticle = null;
+    } else {
+      myParticle = Particle.valueOf( json.getString("myParticle") );
+    }
+    boredTime = (float) json.getDouble("boredTime");
+    idleTime = (float) json.getDouble("idleTime");
+    myTile = new IVector2( json.getJSONObject("myTile") );
+    nudgeDestination = Util.deserialiseVec2( json.getJSONObject("nudgeDestination") );
+    velocity = Util.deserialiseVec2( json.getJSONObject("velocity") );
   }
+
+  public Particle getParticle() {
+    return myParticle;
+  }
+
+  public void setParticle(Particle p) { myParticle = p; }
 
   public void pathTo(Tile target, Set<IVector2> solutionKnownFrom, Set<Sprite> doneSet) {
     if (target == null) return;
     Tile t = getTile();
     if (t.getPathFindNeighbours().isEmpty()) {
-      Tile jumpTo = findPathingLocation(t, true, false, true, isIntroSprite); // Find nearby, reproducible TRUE, require parking FALSE, sameHeight TRUE
+      Tile jumpTo = findPathingLocation(t, true, false, true, isIntro); // Find nearby, reproducible TRUE, require parking FALSE, sameHeight TRUE
       if (jumpTo != null) jumpTo.tryRegSprite(this);
     }
-    if (target.getPathFindNeighbours().isEmpty()) target = findPathingLocation(target, true, false, true, isIntroSprite); // Find nearby, reproducible TRUE, require parking FALSE, sameHeight TRUE
+    if (target.getPathFindNeighbours().isEmpty()) target = findPathingLocation(target, true, false, true, isIntro); // Find nearby, reproducible TRUE, require parking FALSE, sameHeight TRUE
     pathingList = (t != null && target != null ? PathFinding.doAStar(t.coordinates, target.coordinates, solutionKnownFrom, doneSet, GameState.getInstance().pathingCache) : null);
     if (pathingList == null) Gdx.app.error("pathTo", "Warning, pathTo failed for " + this);
-    if (!isIntroSprite) idleTime = 0;
+    if (!isIntro) idleTime = 0;
     Gdx.app.debug("pathTo", "Pathed in " + (pathingList != null ? pathingList.size() : " NULL ") + " steps");
   }
 
   private boolean doMove(float x, float y, float delta) {
     velocity.set(x - (getX() + getWidth()/2), y - (getY() + getWidth()/2));
     boolean atDestination = (velocity.len() < Param.PARTICLE_AT_TARGET);
-    velocity.setLength(Param.PARTICLE_VELOCITY * ((Particle)getUserObject()).getSpeedMod() );
+    velocity.setLength(Param.PARTICLE_VELOCITY * getParticle().getSpeedMod() );
     moveBy(velocity.x * delta, velocity.y * delta);
     return atDestination;
   }
 
   protected void atFinalDestination(Tile next, boolean wasParked) {
     if (!wasParked) { // I cannot stay here! Find me somewhere else
-      Tile newDest = findPathingLocation(next, false, true, true, isIntroSprite); // Wander from "next", random direction, needs parking, requireSameHeight=True
+      Tile newDest = findPathingLocation(next, false, true, true, isIntro); // Wander from "next", random direction, needs parking, requireSameHeight=True
       if (newDest != null) pathTo(newDest, null, null);
     }
   }
 
   public Tile getTile() {
-    return isIntroSprite ? World.getInstance().getIntroTile(myTile) : World.getInstance().getTile(myTile);
+    return isIntro ? World.getInstance().getIntroTile(myTile) : World.getInstance().getTile(myTile);
   }
 
   protected void actMovement(float delta) {
@@ -100,7 +120,7 @@ public class Sprite extends Entity {
     } else if (!nudgeDestination.isZero()) { // Nudge
       boolean atDestination = doMove(nudgeDestination.x, nudgeDestination.y, delta);
       if (atDestination) nudgeDestination.setZero();
-    } else if (getTile().mySprite == null) { // I.e. I am not in a queue, otherwise this would be a building
+    } else if (getTile().mySprite == 0) { // I.e. I am not in a queue, otherwise this would be a building
       idleTime += delta;
     }
   }
@@ -115,15 +135,15 @@ public class Sprite extends Entity {
       int newX = (int) Util.clamp(myTile.x - (Param.PARTICLE_WANDER_R/2) + Util.R.nextInt(Param.PARTICLE_WANDER_R), 1, Param.TILES_X - 2);
       int newY = (int) Util.clamp(myTile.y - (Param.PARTICLE_WANDER_R/2) + Util.R.nextInt(Param.PARTICLE_WANDER_R), 1, Param.TILES_Y - 2);
       Tile idleWander = null;
-      if (Util.inBounds(newX, newY, isIntroSprite)) {
-        if (isIntroSprite) {
+      if (Util.inBounds(newX, newY, isIntro)) {
+        if (isIntro) {
           idleWander = GameState.getInstance().mapPathingDestination(World.getInstance().getIntroTile(newX, newY));
         } else {
           idleWander = GameState.getInstance().mapPathingDestination(World.getInstance().getTile(newX, newY)); // Routes to building entrances if a building is hit
         }
       }
       if (idleWander != null) {
-//        Gdx.app.log("act", "Trying idle wander to " + idleWander + " (isIntroSprite = " + isIntroSprite + ")");
+//        Gdx.app.log("act", "Trying idle wander to " + idleWander + " (isIntro = " + isIntro + ")");
         pathTo(idleWander, null, null);
         idleTime = 0;
       }
@@ -136,13 +156,17 @@ public class Sprite extends Entity {
   public void setNudgeDestination(Tile t, Cardinal D) {
     nudgeDestination.set(t.getX() * Param.SPRITE_SCALE + getWidth()/2, t.getY() * Param.SPRITE_SCALE + getHeight()/2);
     nudgeDestination.add(D == kSE || D == kNE ? Param.TILE_S : 0, D == kNW || D== kNE ? Param.TILE_S : 0);
-    if (!isIntroSprite) idleTime = 0;
+    if (!isIntro) idleTime = 0;
   }
 
   // Check a (nearby) space for its connectedness, suitability for particle and if it has parking space
   private static Tile tryWanderDest(int x, int y, int level, boolean requireSameHeight, boolean requireParking, boolean isIntroSprite) {
     Tile tempTilePtr = (isIntroSprite ? World.getInstance().getIntroTile(x, y) : World.getInstance().getTile(x, y));
-    if (tempTilePtr.mySprite != null) return null; // Building or queue or vegetation
+    if (tempTilePtr.mySprite != 0) return null; // Building or queue or vegetation
+    if (tempTilePtr.getPathFindNeighbours() == null) {
+      Gdx.app.error("tryWanderDest","Tile "+tempTilePtr.coordinates.x+","+tempTilePtr.coordinates.y+" doesn't have p.f. N. Investigate this!");
+      return null;
+    }
     if (tempTilePtr.getPathFindNeighbours().isEmpty()) return null; // Unpathable
     if (requireSameHeight && tempTilePtr.level != level) return null; // Different elevation
     if (requireParking && !tempTilePtr.hasParkingSpace()) return null;

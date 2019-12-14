@@ -47,7 +47,7 @@ public class Gesture implements GestureDetector.GestureListener {
       state.doRightClick();
     } else if (!Param.IS_ANDROID && ui.uiMode == UIMode.kPLACE_BUILDING) {
       state.placeBuilding();
-    } else if (!Param.IS_ANDROID && ui.uiMode == UIMode.kWITH_BUILDING_SELECTION && ui.doingPlacement) {
+    } else if (!Param.IS_ANDROID && ui.uiMode == UIMode.kWITH_BUILDING_SELECTION && GameState.getInstance().doingPlacement) {
       state.doConfirmStandingOrder();
     } else {
       boolean selectedJustNow = state.doParticleSelect(false); // rangeBased = false

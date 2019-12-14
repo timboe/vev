@@ -17,7 +17,7 @@ public class QueueLengthSlider extends ChangeListener {
   @Override
   public void changed(ChangeEvent event, Actor actor) {
     GameState.getInstance().queueSize = (int) ((Slider)actor).getValue();
-    BuildingType bt = UI.getInstance().buildingBeingPlaced;
+    BuildingType bt = GameState.getInstance().buildingBeingPlaced;
     UI.getInstance().buildingWindowQSize.get(bt).setText(""+ GameState.getInstance().queueSize);
     UI.getInstance().buildingWindowQPrice.get(bt).setText( UI.getInstance().formatter.format( bt.getCost() ) );
     Sounds.getInstance().click();

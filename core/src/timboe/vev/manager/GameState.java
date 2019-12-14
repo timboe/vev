@@ -16,6 +16,7 @@ import com.google.gwt.thirdparty.json.JSONObject;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -25,6 +26,8 @@ import timboe.vev.VEVGame;
 import timboe.vev.Param;
 import timboe.vev.Util;
 import timboe.vev.entity.Building;
+import timboe.vev.entity.Entity;
+import timboe.vev.entity.Patch;
 import timboe.vev.entity.Sprite;
 import timboe.vev.entity.Tile;
 import timboe.vev.entity.Warp;
@@ -44,13 +47,14 @@ import static timboe.vev.enums.Cardinal.kSW;
 
 public class GameState {
 
-  // Persistent
+
   public final Vector3 selectStartScreen = new Vector3();
   public Vector3 selectStartWorld = new Vector3();
   public final Vector3 selectEndScreen = new Vector3();
   public Vector3 selectEndWorld = new Vector3();
   private Vector3 cursor = new Vector3();
-  //
+
+  // Persistent
   private IVector2 placeLocation;
   private boolean buildingLocationGood = false;
   //
@@ -69,23 +73,21 @@ public class GameState {
   public int entitiyID;
   private final HashMap<Integer,Sprite> particleMap = new HashMap<Integer,Sprite>(); // All movable sprites
   private final HashMap<Integer,Building> buildingMap = new HashMap<Integer,Building>(); // All buildings
-  //
+  private final HashMap<Integer,Entity> buildingExtrasMap = new HashMap<Integer,Entity>(); // All building's extra sprites
+
+  // Transient
   public final Set<Integer> selectedSet = new HashSet<Integer>(); // Sub-set, selected sprites
-  public Integer selectedBuilding = null;
+  public int selectedBuilding = 0;
+  public Particle selectedBuildingStandingOrderParticle;
+  public BuildingType buildingBeingPlaced = null;
+  public boolean doingPlacement = false;
 
   public JSONObject serialise() throws JSONException {
     JSONObject json = new JSONObject();
-    json.put("selectStartScreen", Util.serialiseVec3(selectStartScreen));
-    json.put("selectStartWorld", Util.serialiseVec3(selectStartWorld));
-    json.put("selectEndScreen", Util.serialiseVec3(selectEndScreen));
-    json.put("selectEndWorld", Util.serialiseVec3(selectEndWorld));
-    json.put("cursor", Util.serialiseVec3(cursor));
-    //
-    json.put("placeLocation", placeLocation == null ? null : placeLocation.serialise());
+    json.put("placeLocation", placeLocation == null ? JSONObject.NULL : placeLocation.serialise());
     json.put("buildingLocationGood", buildingLocationGood);
     json.put("queueSize", queueSize);
     json.put("nMines", nMines);
-    //
     json.put("tickTime", tickTime);
     json.put("playerEnergy", playerEnergy);
     json.put("warpEnergy", warpEnergy);
@@ -99,12 +101,79 @@ public class GameState {
     for (Map.Entry<Integer,Sprite> entry : particleMap.entrySet()) {
       particles.put(entry.getKey().toString(), entry.getValue().serialise());
     }
-    json.put("particles",particles);
+    json.put("particleMap", particles);
+    //
+    JSONObject buildings = new JSONObject();
+    for (Map.Entry<Integer,Building> entry : buildingMap.entrySet()) {
+      buildings.put(entry.getKey().toString(), entry.getValue().serialise());
+    }
+    json.put("buildingMap", buildings);
+    //
+    JSONObject buildingExtras = new JSONObject();
+    for (Map.Entry<Integer,Entity> entry : buildingExtrasMap.entrySet()) {
+      buildingExtras.put(entry.getKey().toString(), entry.getValue().serialise(false));
+    }
+    json.put("buildingExtrasMap", buildingExtras);
     return json;
   }
 
+  public void deserialise(JSONObject json) throws JSONException {
+    if (json.get("placeLocation") == JSONObject.NULL) {
+      placeLocation = null;
+    } else {
+      placeLocation = new IVector2( json.getJSONObject("placeLocation") );
+    }
+    buildingLocationGood = json.getBoolean("buildingLocationGood");
+    queueSize = json.getInt("queueSize");
+    nMines = json.getInt("nMines");
+    tickTime = (float) json.getDouble("tickTime");
+    playerEnergy = (float) json.getDouble("playerEnergy");
+    warpEnergy = (float) json.getDouble("warpEnergy");
+    warpSpawnTime = (float) json.getDouble("warpSpawnTime");
+    newParticlesMean = (float) json.getDouble("newParticlesMean");
+    newParticlesWidth = (float) json.getDouble("newParticlesWidth");
+    debug = json.getInt("debug");
+    entitiyID = json.getInt("entityID");
+    //
+    JSONObject jsonParticles = json.getJSONObject("particleMap");
+    Iterator particlesIt = jsonParticles.keys();
+    while (particlesIt.hasNext()) {
+      String key = (String) particlesIt.next();
+      Sprite s = new Sprite( jsonParticles.getJSONObject( key ) );
+      particleMap.put(s.id, s);
+      getSpriteStage().addActor(s);
+      if (s.id != Integer.valueOf(key)) throw new AssertionError();
+    }
+    //
+    JSONObject jsonBuildings = json.getJSONObject("buildingMap");
+    Iterator buildingsIt = jsonBuildings.keys();
+    while (buildingsIt.hasNext()) {
+      String key = (String) buildingsIt.next();
+      Building b = new Building( jsonBuildings.getJSONObject( key ) );
+      buildingMap.put(b.id, b);
+      getBuildingStage().addActor(b);
+      if (b.id != Integer.valueOf(key)) throw new AssertionError();
+    }
+    //
+    JSONObject jsonBuildingExtras = json.getJSONObject("buildingExtrasMap");
+    Iterator buildingExtrasIt = jsonBuildingExtras.keys();
+    while (buildingExtrasIt.hasNext()) {
+      String key = (String) buildingExtrasIt.next();
+      Entity e = new Entity( jsonBuildingExtras.getJSONObject( key ) );
+      buildingExtrasMap.put(e.id, e);
+      addBuildingExtraEntity(e);
+      if (e.id != Integer.valueOf(key)) throw new AssertionError();
+    }
+    //
+    for (Building b : buildingMap.values()) {
+      if (b.clock != 0) {
+        buildingExtrasMap.get( b.clock ).setVisible( b.clockVisible );
+      }
+    }
+  }
 
-  public PathingCache<Tile> pathingCache = new PathingCache<Tile>();
+
+  public PathingCache<IVector2> pathingCache = new PathingCache<IVector2>();
   private final Random R = new Random();
 
   private Stage introTileStage;
@@ -117,11 +186,12 @@ public class GameState {
   private Stage uiStage;
   private Stage buildingStage;
 
-  private static GameState ourInstance;
+  private static GameState ourInstance = null;
   public static GameState getInstance() {
     return ourInstance;
   }
   public static void create() { ourInstance = new GameState(); }
+  public static boolean constructed() { return ourInstance != null; }
 
   private ParticleEffectPool dustEffectPool, upgradeDustEffectPool;
   public Array<ParticleEffectPool.PooledEffect> dustEffects;
@@ -172,7 +242,7 @@ public class GameState {
     Tile cursorTile = null;
     if (Util.inBounds((int)cursor.x, (int)cursor.y, false)) cursorTile = World.getInstance().getTile(cursor.x, cursor.y);
 
-    if (UI.getInstance().doingPlacement) {
+    if (doingPlacement) {
       if (UI.getInstance().uiMode == UIMode.kPLACE_BUILDING) {
         if (cursorTile != null
             && cursorTile.n8 != null
@@ -182,7 +252,7 @@ public class GameState {
           buildingLocationGood = cursorTile.setBuildableHighlight();
           for (Cardinal D : Cardinal.n8)
             buildingLocationGood &= cursorTile.n8.get(D).setBuildableHighlight();
-          if (UI.getInstance().buildingBeingPlaced != BuildingType.kMINE) {
+          if (buildingBeingPlaced != BuildingType.kMINE) {
             buildingLocationGood &= cursorTile.n8.get(kSW).n8.get(kS).setBuildableHighlight();
             if (buildingLocationGood) OrderlyQueue.hintQueue(cursorTile.n8.get(kSW).n8.get(kS));
             cursorTile.n8.get(kSW).n8.get(kS).setBuildableHighlight(); // Re-apply green tint here
@@ -194,10 +264,10 @@ public class GameState {
           if (t != null) {
             placeLocation = t.coordinates;
             // Don't allow loop
-            if (t.mySprite != null && t.mySprite.id == UI.getInstance().selectedBuilding) placeLocation = null;
+            if (t.mySprite != 0 && t.mySprite == selectedBuilding) placeLocation = null;
             if (placeLocation != null) {
-              Building b = buildingMap.get( UI.getInstance().selectedBuilding );
-              b.updateDemoPathingList(UI.getInstance().selectedBuildingStandingOrderParticle, t);
+              Building b = buildingMap.get( selectedBuilding );
+              b.updateDemoPathingList(selectedBuildingStandingOrderParticle, t);
             }
           }
         }
@@ -218,21 +288,21 @@ public class GameState {
 
   public void tryNewParticles(boolean stressTest) {
     // Add a new sprite
-    List<Map.Entry<Warp,ParticleEffect>> entries = new ArrayList<Map.Entry<Warp,ParticleEffect>>(World.getInstance().warps.entrySet());
-    Map.Entry<Warp,ParticleEffect> rWarp = entries.get( R.nextInt(entries.size()) );
-    Warp warp = rWarp.getKey();
+    List<Map.Entry<Integer,Warp>> entries = new ArrayList<Map.Entry<Integer,Warp>>(World.getInstance().warps.entrySet());
+    Map.Entry<Integer,Warp> rWarp = entries.get( R.nextInt(entries.size()) );
+    Warp warp = rWarp.getValue();
 
     int toPlace = Math.round(
         Util.clamp(newParticlesMean + ((float)R.nextGaussian() * newParticlesWidth), 1, Param.NEW_PARTICLE_MAX)
     );
-    if (stressTest) toPlace = 100000;
-    boolean placed = warp.newParticles(toPlace);
+    if (stressTest) toPlace = 1000000;
+    boolean placed = warp.newParticles(toPlace, stressTest);
     Gdx.app.log("act","Warp: SpawnTime: "+warpSpawnTime + " meanP: "
         + newParticlesMean + " widthP: " + newParticlesWidth
         + " place:" + toPlace + " placed:" + placed);
 
     if (placed) {
-      rWarp.getValue().start(); // Lightning
+      warp.zap.start(); // Lightning
       if (Camera.getInstance().addShake(warp, Param.WARP_SHAKE)) {
         // If did shake, then also do zap
         Sounds.getInstance().zap();
@@ -259,16 +329,38 @@ public class GameState {
     s.remove(); // From its renderer
   }
 
+  public void addSprite(Sprite s) {
+    spriteStage.addActor(s);
+    particleMap.put(s.id, s);
+    dustEffect( s.getTile() );
+    if (Camera.getInstance().onScreen(s)) Sounds.getInstance().boop();
+  }
+
+  public void addBuildingExtraEntity(Entity e) {
+    buildingExtrasMap.put(e.id, e);
+    if (e.texString.equals("clock") || e.texString.equals("board_vertical")) {
+      buildingStage.addActor(e);
+    } else if (e.texString.contains("ball_")) {
+      spriteStage.addActor(e);
+    } else {
+      Gdx.app.log("addBuildingExtraEntity","Do no know about:" + e.texString);
+    }
+  }
+
+  public HashMap<Integer, Entity> getBuildingExtrasMap() {
+    return buildingExtrasMap;
+  }
+
   public boolean isSelecting() {
     if (Param.IS_ANDROID) {
       return  UI.getInstance().selectParticlesButton.isChecked();
     } else {
-      return (!UI.getInstance().doingPlacement && selectStartWorld.dst(selectEndWorld) > 6);
+      return (!doingPlacement && selectStartWorld.dst(selectEndWorld) > 6);
     }
   }
 
   public boolean startSelectingAndroid() {
-    if (UI.getInstance().doingPlacement) {
+    if (doingPlacement) {
       UI.getInstance().selectParticlesButton.setChecked(false);
       return false; // Cannot do selection
     }
@@ -280,11 +372,11 @@ public class GameState {
 
   public void placeBuilding() {
     if (!buildingLocationGood || placeLocation == null) return;
-    Building b = new Building(World.getInstance().getTile(placeLocation), UI.getInstance().buildingBeingPlaced);
+    Building b = new Building(World.getInstance().getTile(placeLocation), buildingBeingPlaced);
     buildingStage.addActor(b);
     buildingMap.put(b.id, b);
-    playerEnergy += UI.getInstance().buildingBeingPlaced.getCost();
-    if (UI.getInstance().buildingBeingPlaced == BuildingType.kMINE) ++nMines;
+    playerEnergy += buildingBeingPlaced.getCost();
+    if (buildingBeingPlaced == BuildingType.kMINE) ++nMines;
     Camera.getInstance().addShake(Param.BUILDING_SHAKE);
     Sounds.getInstance().thud();
     Sounds.getInstance().OK();
@@ -293,7 +385,11 @@ public class GameState {
   }
 
   public void doRightClick() {
-    if (selectedSet.size() > 0 || selectedBuilding != null) {
+    if (!gameOn) { // Canceling settings window
+      UI.getInstance().resetTitle("main");
+      return;
+    }
+    if (selectedSet.size() > 0 || selectedBuilding != 0) {
       clearSelect();
     }
     selectEndWorld.setZero();
@@ -302,11 +398,11 @@ public class GameState {
   }
 
   public void doConfirmStandingOrder() {
-    Building b = buildingMap.get( UI.getInstance().selectedBuilding );
+    Building b = buildingMap.get( selectedBuilding );
     BuildingType bt = b.getType();
     boolean didSave = b.savePathingList(); // Save the pathing list
     if (!didSave) return;
-    UI.getInstance().doingPlacement = false;
+    doingPlacement = false;
     Sounds.getInstance().OK();
     // Set all buttons to false
     for (Particle p : Particle.values()) {
@@ -338,11 +434,11 @@ public class GameState {
       s.selected = false;
     }
     selectedSet.clear();
-    if (selectedBuilding != null) {
+    if (selectedBuilding != 0) {
       Building b = buildingMap.get(selectedBuilding);
       b.selected = false;
     }
-    selectedBuilding = null;
+    selectedBuilding = 0;
   }
 
   public boolean doParticleSelect(boolean rangeBased) {
@@ -395,18 +491,29 @@ public class GameState {
     return false;
   }
 
-  public void repath() {
+  private void repath() {
     pathingCache.clear();
     pathingInternal(null, true);
   }
 
   public Tile mapPathingDestination(Tile target) {
-    if (target.mySprite != null && target.mySprite.getClass() == Building.class) {
-      return ((Building)target.mySprite).getQueuePathingTarget();
+//    Gdx.app.log("mapPathingDestination","For "+target.coordinates.toString());
+    Entity targetSprite = target.getMySprite();
+    if (targetSprite != null && targetSprite.getClass() == Building.class) {
+      return ((Building)targetSprite).getQueuePathingTarget();
     } else if (target.getPathFindNeighbours().isEmpty()) {
       return null; // Cannot path here
     }
     return target;
+  }
+
+  public void retextureSprites() {
+    for (Actor a : spriteStage.getActors()) {
+      ((Entity)a).loadTexture();
+    }
+    for (Actor a : introSpriteStage.getActors()) {
+      ((Entity)a).loadTexture();
+    }
   }
 
   public void doParticleMoveOrder(int x, int y) {
@@ -425,7 +532,7 @@ public class GameState {
     do { // Pathfinding for a group of critters in the same location, caching the path between them.
       ++rounds;
       Set<Sprite> doneSet = new HashSet<Sprite>();
-      Set<Tile> solutionKnownFrom = new HashSet<Tile>();
+      Set<IVector2> solutionKnownFrom = new HashSet<IVector2>();
       anotherRoundNeeded = false;
       Sprite firstSprite = null;
       for (Sprite s : particleMap.values()) {
@@ -493,7 +600,7 @@ public class GameState {
 
   public void setToTitleScreen() {
     pathingCache.clear();
-    UI.getInstance().resetTitle();
+    UI.getInstance().resetTitle("main");
     game.setScreen(theTitleScreen);
     setGameOn(false);
   }

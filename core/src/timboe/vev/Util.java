@@ -37,6 +37,24 @@ public class Util {
     return json;
   }
 
+  public static Vector2 deserialiseVec2(JSONObject json) throws JSONException {
+    if (json == null) {
+      return null;
+    }
+    double x = json.getDouble("x");
+    double y = json.getDouble("y");
+    return new Vector2((float)x,(float)y);
+  }
+
+  public static Vector3 deserialiseVec3(JSONObject json) throws JSONException {
+    if (json == null) {
+      return null;
+    }
+    double x = json.getDouble("x");
+    double y = json.getDouble("y");
+    double z = json.getDouble("z");
+    return new Vector3((float)x,(float)y,(float)z);
+  }
 
   // Why -2? It's to allow for an buffer for odd world sizes
   public static boolean inBounds(int x, int y, boolean checkAgainstIntro) {
@@ -61,7 +79,7 @@ public class Util {
     Gdx.graphics.getGL20().glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT | GL20.GL_STENCIL_BUFFER_BIT);
   }
 
-  public static boolean needsClamp(float val, float min, float max) { return !(val == clamp(val,min,max)); }
+  private static boolean needsClamp(float val, float min, float max) { return !(val == clamp(val,min,max)); }
 
 
 

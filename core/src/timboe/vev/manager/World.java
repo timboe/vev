@@ -1,12 +1,14 @@
 package timboe.vev.manager;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.g2d.ParticleEffect;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.google.gwt.thirdparty.json.JSONException;
+import com.google.gwt.thirdparty.json.JSONObject;
 
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Queue;
@@ -45,18 +47,115 @@ public class World {
   }
 
   private final Random R = new Random();
-  private final Vector<Zone> allZones = new Vector<Zone>();
-  public final Map<Warp, ParticleEffect> warps = new HashMap<Warp, ParticleEffect>();
-  public final Vector<Patch> tiberium = new Vector<Patch>();
-  public final Vector<ParticleEffect> warpClouds = new Vector<ParticleEffect>();
   private boolean generated = false;
-  public boolean launchAfterGen = false;
-  private int stage;
+  private final Vector<Zone> allZones = new Vector<Zone>();
   private Vector<IVector2> worldEdges = new Vector<IVector2>();
-
+  public boolean launchAfterGen = false;
+  public boolean doLoad = false;
+  public JSONObject loadedSave = null;
+  private int stage;
   private Tile[][] introTiles;
-  private Tile[][] tiles;
   private Zone[][] zones;
+
+  // Persistent
+  private Tile[][] tiles;
+  public final Map<Integer, Warp> warps = new HashMap<Integer, Warp>();
+  public final Map<Integer, Patch> tiberiumPatches = new HashMap<Integer, Patch>();
+  private final Map<Integer, Sprite> tiberiumShards = new HashMap<Integer, Sprite>();
+  public final Map<Integer, Sprite> foliage = new HashMap<Integer, Sprite>();
+
+  public JSONObject serialise() throws JSONException {
+    JSONObject json = new JSONObject();
+    JSONObject jsonTiles = new JSONObject();
+    for (Integer x = 0; x < Param.TILES_X; ++x) {
+      for (Integer y = 0; y < Param.TILES_Y; ++y) {
+        jsonTiles.put(x.toString() + "," + y.toString(), tiles[x][y].serialise());
+      }
+    }
+    json.put("tiles", jsonTiles);
+    //
+    JSONObject jsonWarps = new JSONObject();
+    for (Map.Entry<Integer, Warp> entry : warps.entrySet()) {
+      jsonWarps.put(entry.getKey().toString(), entry.getValue().serialise());
+    }
+    json.put("warps", jsonWarps);
+    //
+    JSONObject jsonTiberium = new JSONObject();
+    for (Map.Entry<Integer, Patch> entry : tiberiumPatches.entrySet()) {
+      jsonTiberium.put(entry.getKey().toString(), entry.getValue().serialise());
+    }
+    json.put("tiberiumPatches", jsonTiberium);
+    //
+    JSONObject jsonTiberiumShard = new JSONObject();
+    for (Map.Entry<Integer, Sprite> entry : tiberiumShards.entrySet()) {
+      jsonTiberiumShard.put(entry.getKey().toString(), entry.getValue().serialise());
+    }
+    json.put("tiberiumShards", jsonTiberiumShard);
+    //
+    JSONObject jsonFoliage = new JSONObject();
+    for (Map.Entry<Integer, Sprite> entry : foliage.entrySet()) {
+      jsonFoliage.put(entry.getKey().toString(), entry.getValue().serialise());
+    }
+    json.put("foliage", jsonFoliage);
+    return json;
+  }
+
+  private void deserialise(JSONObject json) throws JSONException {
+    reset(false);
+    //
+    JSONObject jsonTiles = json.getJSONObject("tiles");
+    for (Integer x = 0; x < Param.TILES_X; ++x) {
+      for (Integer y = 0; y < Param.TILES_Y; ++y) {
+        tiles[x][y] = new Tile( jsonTiles.getJSONObject(x.toString() + "," + y.toString() ) );
+        GameState.getInstance().getTileStage().addActor(tiles[x][y]);
+      }
+    }
+    setNeighbours(tiles, Param.TILES_X, Param.TILES_Y);
+    doPathGrid(tiles, Param.TILES_X, Param.TILES_Y); // Needed again? Only really for pathing debug regeneration.
+    //
+    JSONObject jsonWarps = json.getJSONObject("warps");
+    Iterator warpIt = jsonWarps.keys();
+    while (warpIt.hasNext()) {
+      String key = (String) warpIt.next();
+      Warp w = new Warp( jsonWarps.getJSONObject( key ) );
+      warps.put(w.id, w);
+      GameState.getInstance().getBuildingMap().put(w.id, w);
+      GameState.getInstance().getWarpStage().addActor(w);
+      if (w.id != Integer.valueOf(key)) throw new AssertionError();
+    }
+    //
+    JSONObject jsonTiberium = json.getJSONObject("tiberiumPatches");
+    Iterator tiberiumIt = jsonTiberium.keys();
+    while (tiberiumIt.hasNext()) {
+      String key = (String) tiberiumIt.next();
+      Patch p = new Patch( jsonTiberium.getJSONObject( key ) );
+      tiberiumPatches.put(p.id, p);
+      if (p.id != Integer.valueOf(key)) throw new AssertionError();
+    }
+    //
+    JSONObject jsonTiberiumShards = json.getJSONObject("tiberiumShards");
+    Iterator tiberiumShardsIt = jsonTiberiumShards.keys();
+    while (tiberiumShardsIt.hasNext()) {
+      String key = (String) tiberiumShardsIt.next();
+      Sprite t = new Sprite( jsonTiberiumShards.getJSONObject( key ) );
+      tiberiumShards.put(t.id, t);
+      GameState.getInstance().getSpriteStage().addActor(t);
+      if (t.id != Integer.valueOf(key)) throw new AssertionError();
+    }
+    //
+    JSONObject jsonFoliage = json.getJSONObject("foliage");
+    Iterator foliageIt = jsonFoliage.keys();
+    while (foliageIt.hasNext()) {
+      String key = (String) foliageIt.next();
+      Sprite f = new Sprite( jsonFoliage.getJSONObject( key ) );
+      foliage.put(f.id, f);
+      GameState.getInstance().getFoliageStage().addActor(f);
+      if (f.id != Integer.valueOf(key)) throw new AssertionError();
+    }
+    for (Sprite f : foliage.values()) {
+      f.setZIndex((int)f.getY());
+    }
+  }
 
   private World() {
     worldEdges.add(new IVector2(0, 0));
@@ -104,8 +203,7 @@ public class World {
     stage = 0;
     generated = false;
     warps.clear();
-    warpClouds.clear();
-    tiberium.clear();
+    tiberiumPatches.clear();
     tiles = new Tile[Param.TILES_X][Param.TILES_Y];
     for (int x = 0; x < Param.TILES_X; ++x) {
       for (int y = 0; y < Param.TILES_Y; ++y) {
@@ -122,6 +220,7 @@ public class World {
           introTiles[x][y] = new Tile(x, y);
           GameState.getInstance().getIntroTileStage().addActor(introTiles[x][y]);
           introTiles[x][y].level = 1;
+          introTiles[x][y].isIntro = true;
           if (x < 2*Param.TILES_INTRO_X / 5) { // 2/5 or 40%
             introTiles[x][y].tileColour = Colour.kGREEN;
           } else {
@@ -152,7 +251,21 @@ public class World {
   }
 
   public void act(float delta) {
-    if (!generated) generate();
+    if (doLoad) load();
+    else if (!generated) generate();
+  }
+
+  private void load() {
+    try {
+      deserialise( loadedSave.getJSONObject("World") );
+      GameState.getInstance().deserialise( loadedSave.getJSONObject("GameState") );
+    } catch (JSONException e) {
+      e.printStackTrace();
+    }
+    generated = true;
+    doLoad = false;
+    Gdx.app.log("DBG", "WARPS ACTORS SIZE " + GameState.getInstance().getWarpStage().getActors().size);
+    GameState.getInstance().transitionToGameScreen();
   }
 
   public void generate() {
@@ -194,7 +307,7 @@ public class World {
 
   private boolean shouldLink(Tile A, Tile B) {
     if (A.tileColour == Colour.kBLACK || B.tileColour == Colour.kBLACK) return false;
-    if (A.type == TileType.kFOILAGE || B.type == TileType.kFOILAGE) return false;
+    if (A.type == TileType.kFOLIAGE || B.type == TileType.kFOLIAGE) return false;
     if (A.type == TileType.kCLIFF || B.type == TileType.kCLIFF) return false;
     if (A.type == TileType.kBUILDING || B.type == TileType.kBUILDING) return false;
     if (A.type == TileType.kQUEUE || B.type == TileType.kQUEUE) return false;
@@ -203,11 +316,11 @@ public class World {
       return shouldLink(B, A); // Do it from the perspective of the stairs
     if (A.type == TileType.kSTAIRS) {
       if (A.direction == Cardinal.kN || A.direction == Cardinal.kS) { // I'm N-S stairs
-        if (B.y > A.y) return (A.n8.get(Cardinal.kN).type == TileType.kSTAIRS);
-        else if (B.y < A.y) return (A.n8.get(Cardinal.kS).type == TileType.kSTAIRS);
+        if (B.getY() > A.getY()) return (A.n8.get(Cardinal.kN).type == TileType.kSTAIRS);
+        else if (B.getY() < A.getY()) return (A.n8.get(Cardinal.kS).type == TileType.kSTAIRS);
       } else { // E-W stairs
-        if (B.x > A.x) return (A.n8.get(Cardinal.kE).type == TileType.kSTAIRS);
-        else if (B.x < A.x) return (A.n8.get(Cardinal.kW).type == TileType.kSTAIRS);
+        if (B.getX() > A.getX()) return (A.n8.get(Cardinal.kE).type == TileType.kSTAIRS);
+        else if (B.getX() < A.getX()) return (A.n8.get(Cardinal.kW).type == TileType.kSTAIRS);
       }
       return true;
     }
@@ -216,7 +329,6 @@ public class World {
 
   public void updateTilePathfinding(Tile t) {
     t.pathFindDebug.clear();
-    t.coordinates.pathFindNeighbours = new HashSet<IVector2>();
     for (Cardinal D : Cardinal.n8) {
       if (shouldLink(t, t.n8.get(D))) {
         t.pathFindDebug.add(D);
@@ -226,6 +338,11 @@ public class World {
   }
 
   private boolean doPathGrid(Tile[][] tileArray, int xMax, int yMax) {
+    for (int x = 0; x < xMax; ++x) {
+      for (int y = 0; y < yMax; ++y) {
+        tileArray[x][y].coordinates.pathFindNeighbours = new HashSet<IVector2>();
+      }
+    }
     for (int x = 1; x < xMax - 1; ++x) {
       for (int y = 1; y < yMax - 1; ++y) {
         updateTilePathfinding(tileArray[x][y]);
@@ -296,19 +413,7 @@ public class World {
       Warp w = new Warp(tiles[_x][_y]);
       GameState.getInstance().getWarpStage().addActor(w);
       GameState.getInstance().getBuildingMap().put(w.id, w);
-
-      ParticleEffect clouds = new ParticleEffect();
-      clouds.load(Gdx.files.internal("hell_portal_effect.txt"), Textures.getInstance().getAtlas());
-      clouds.setPosition(Param.TILE_S * _x + Param.TILE_S / 2, Param.TILE_S * _y);
-      clouds.start();
-      warpClouds.add(clouds);
-
-      ParticleEffect zap = new ParticleEffect();
-      zap.load(Gdx.files.internal("lightning_effect.txt"), Textures.getInstance().getAtlas());
-      zap.setPosition(Param.TILE_S * _x + Param.TILE_S / 2, Param.TILE_S * _y);
-      zap.allowCompletion();
-
-      warps.put(w, zap);
+      warps.put(w.id, w);
 
     } while (++fTry < Param.N_PATCH_TRIES && fPlaced < Param.MAX_WARP);
     if (fPlaced < Param.MIN_WARP) {
@@ -327,7 +432,7 @@ public class World {
       if (tiles[_x][y].type != TileType.kGROUND || tiles[_x][y].tileColour != tiles[_x][_y].tileColour)
         return false;
     }
-    if (!isForest) { // One tiberium patch per zone
+    if (!isForest) { // One tiberiumPatches patch per zone
       for (Zone z : allZones) {
         if (z.inZone(_x, _y)) {
           if (z.hasTiberium) return false;
@@ -354,8 +459,9 @@ public class World {
     if (distance > Math.abs(R.nextGaussian() * Param.PATCH_DENSITY * maxDistance)) return;
     Sprite s = newSprite(x, y, forestTexture, true, false);
     s.moveBy((-Param.WIGGLE) + Util.R.nextInt(Param.WIGGLE * 2), (-Param.WIGGLE) + Util.R.nextInt(Param.WIGGLE * 2));
-    tiles[x][y].type = TileType.kFOILAGE;
-    tiles[x][y].mySprite = s;
+    foliage.put(s.id, s);
+    tiles[x][y].type = TileType.kFOLIAGE;
+    tiles[x][y].mySprite = s.id;
   }
 
   private void tryTiberium(final double distance, final double maxDistance, final int x, final int y) {
@@ -363,13 +469,14 @@ public class World {
       for (int subY = 0; subY < 2; ++subY) {
         if (distance > Math.abs(R.nextGaussian() * Param.PATCH_DENSITY * maxDistance)) continue;
         Sprite s = newSprite(x, y, "tiberium_" + R.nextInt(Param.N_TIBERIUM), false, false);
+        tiberiumShards.put(s.id, s);
         s.moveBy(subX * Param.TILE_S, subY * Param.TILE_S);
         s.moveBy((-Param.WIGGLE / 2) + Util.R.nextInt(Param.WIGGLE), (-Param.WIGGLE / 2) + Util.R.nextInt(Param.WIGGLE));
       }
     }
   }
 
-  private boolean addPatch(final boolean isForest, final int patchSize, final int min, final int max) { // Otherwise, is tiberium
+  private boolean addPatch(final boolean isForest, final int patchSize, final int min, final int max) { // Otherwise, is tiberiumPatches
     int fTry = 0, fPlaced = 0;
     do {
       final int x = patchSize + R.nextInt(Param.TILES_X - (2 * patchSize));
@@ -378,11 +485,12 @@ public class World {
         continue;
       if (tryPatchOfStuff(x, y, isForest, patchSize)) {
         ++fPlaced;
-        if (!isForest) tiberium.add(new Patch(x, y));
+        Patch patch = new Patch(x, y);
+        if (!isForest) tiberiumPatches.put(patch.id, patch);
       }
     } while (++fTry < Param.N_PATCH_TRIES && fPlaced < max);
     if (fPlaced < min) {
-      Gdx.app.error("addPatch", "Could not add enough. " + (isForest ? "forest" : "tiberium") + ", placed:" + fPlaced);
+      Gdx.app.error("addPatch", "Could not add enough. " + (isForest ? "forest" : "tiberiumPatches") + ", placed:" + fPlaced);
       return false;
     }
     return true;
@@ -395,8 +503,9 @@ public class World {
           continue;
         if (R.nextFloat() < Param.FOLIAGE_PROB) {
           Sprite s = newSprite(x, y, randomFoliage(tileArray[x][y].tileColour), true, isIntro);
-          tileArray[x][y].type = TileType.kFOILAGE;
-          tileArray[x][y].mySprite = s;
+          if (!isIntro) foliage.put(s.id, s);
+          tileArray[x][y].type = TileType.kFOLIAGE;
+          tileArray[x][y].mySprite = s.id;
 //        } else if (tiles[x][y].tileColour == Colour.kGREEN && R.nextFloat() < 0.01) {
 //          Tile s = new Tile(x,y);
 //          GameState.getInstance().getStage().addActor(s);

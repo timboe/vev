@@ -2,11 +2,15 @@ package timboe.vev.entity;
 
 
 import com.badlogic.gdx.graphics.g2d.Batch;
+import com.google.gwt.thirdparty.json.JSONException;
+import com.google.gwt.thirdparty.json.JSONObject;
 
 import timboe.vev.Param;
 import timboe.vev.enums.Cardinal;
 import timboe.vev.enums.Particle;
 import timboe.vev.manager.GameState;
+import timboe.vev.manager.World;
+import timboe.vev.pathfinding.IVector2;
 
 /**
  * Created by Tim on 21/01/2018.
@@ -21,18 +25,35 @@ public class Truck extends Sprite {
     kLOAD;
   }
 
+  // Persistent
   private TruckState truckState = TruckState.kLOAD;
   private float holding = 0f, capacity = Param.TRUCK_INITIAL_CAPACITY, speed = Param.TRUCK_LOAD_SPEED;
-  private Building myBuilding;
+  private int myBuilding;
   private int extraFrames;
+
+  public JSONObject serialise() throws JSONException {
+    JSONObject json = super.serialise();
+    json.put("truckState", truckState);
+    json.put("holding", holding);
+    json.put("capacity", capacity);
+    json.put("speed", speed);
+    json.put("myBuilding", myBuilding);
+    json.put("extraFrames",extraFrames);
+    return  json;
+  }
+
 
   public Truck(Tile t, Building myBuilding) {
     super(t);
     setTexture("pyramid", Param.N_TRUCK, false);
     moveBy(0, Param.TILE_S/2); // Floats
-    this.myBuilding = myBuilding;
+    this.myBuilding = myBuilding.id;
     frame = 0;
     extraFrames = 0;
+  }
+
+  private Building getBuilding() {
+    return GameState.getInstance().getBuildingMap().get(myBuilding);
   }
 
   @Override
@@ -60,12 +81,12 @@ public class Truck extends Sprite {
     switch (truckState) {
       case kLOAD:
         // Have to wait if building is upgrading
-        if (myBuilding.doUpgrade) return;
+        if (getBuilding().doUpgrade) return;
         holding += speed * delta;
         extraFrames = Math.round((holding / capacity) * (Param.N_TRUCK - 1));
         if (holding >= capacity) {
           holding = capacity;
-          pathTo(myBuilding.getBuildingDestination(Particle.kBlank), null, null);
+          pathTo(getBuilding().getBuildingDestination(Particle.kBlank), null, null);
           truckState = TruckState.kGO_TO_PATCH;
         }
         break;
@@ -77,7 +98,8 @@ public class Truck extends Sprite {
         extraFrames = Math.round((holding / capacity) * (Param.N_TRUCK - 1));
         GameState.getInstance().playerEnergy -= toRemove;
         if (holding < 1f) {
-          pathTo(myBuilding.getPathingStartPoint(Particle.kBlank), null, null);
+          Tile t = World.getInstance().getTile( getBuilding().getPathingStartPoint(Particle.kBlank) );
+          pathTo(t, null, null);
           truckState = TruckState.kRETURN_FROM_PATCH;
         }
         break;

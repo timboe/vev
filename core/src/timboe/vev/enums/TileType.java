@@ -17,7 +17,7 @@ public enum TileType {
   kGRASS_EDGE,
   kCLIFF,
   kCLIFF_EDGE,
-  kFOILAGE,
+  kFOLIAGE,
   kBUILDING,
   kQUEUE,
   // Specialisation - used only when assigning texture
@@ -30,6 +30,8 @@ public enum TileType {
   kCLIFF_EDGE_3,
   kCLIFF_EDGE_4,
   kCLIFF_3;
+
+
 
   private static final Random R = new Random();
 

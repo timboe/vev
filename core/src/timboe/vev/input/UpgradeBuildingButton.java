@@ -18,7 +18,7 @@ public class UpgradeBuildingButton  extends ChangeListener {
       b.setChecked(true); // Do not allow user to un-toggle
       return;
     }
-    Building building = GameState.getInstance().getBuildingMap().get( UI.getInstance().selectedBuilding );
+    Building building = GameState.getInstance().getBuildingMap().get( GameState.getInstance().selectedBuilding );
     boolean canUpgrade = building.upgradeBuilding();
     b.setChecked(canUpgrade);
     if (canUpgrade) Sounds.getInstance().OK();

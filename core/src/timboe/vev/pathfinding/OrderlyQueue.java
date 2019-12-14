@@ -1,8 +1,11 @@
 package timboe.vev.pathfinding;
 
 import com.badlogic.gdx.Gdx;
+import com.google.gwt.thirdparty.json.JSONException;
+import com.google.gwt.thirdparty.json.JSONObject;
 
 import java.io.Serializable;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
@@ -23,13 +26,38 @@ import timboe.vev.manager.World;
  * Created by Tim on 28/12/2017.
  */
 
-public class OrderlyQueue implements Serializable {
-  final Tile queueStart;
-  private List<Tile> queue = new LinkedList<Tile>();
-  final Building myBuilding;
+public class OrderlyQueue {
+  final IVector2 queueStart;
+  private List<IVector2> queue = new LinkedList<IVector2>();
+  final int myBuilding;
 
-  public OrderlyQueue(int x, int y, List<Tile> customQueue, Building b) {
-    myBuilding = b;
+  public JSONObject serialise() throws JSONException {
+    JSONObject json = new JSONObject();
+    json.put("queueStart", queueStart.serialise());
+    Integer count = 0;
+    JSONObject q = new JSONObject();
+    for (IVector2 v : queue) {
+      q.put(count.toString(), v.serialise());
+      ++count;
+    }
+    json.put("queue", q);
+    json.put("myBuilding", myBuilding);
+    return json;
+  }
+
+  public OrderlyQueue(JSONObject json) throws JSONException {
+    myBuilding = json.getInt("myBuilding");
+    JSONObject q = json.getJSONObject("queue");
+    Iterator qIt = q.keys();
+    while (qIt.hasNext()) {
+      queue.add( new IVector2( q.getJSONObject((String) qIt.next()) ) );
+    }
+    queueStart = new IVector2( json.getJSONObject("queueStart") );
+  }
+
+
+  public OrderlyQueue(int x, int y, List<IVector2> customQueue, Building b) {
+    myBuilding = b.id;
     if (customQueue == null) doQueue(x, y);
     else queue = customQueue;
     queueStart = queue.get(0);
@@ -37,39 +65,50 @@ public class OrderlyQueue implements Serializable {
   }
 
 
-  public List<Tile> getQueue() {
+  public List<IVector2> getQueue() {
     return queue;
   }
 
 
-  public Tile getQueuePathingTarget() {
+  public IVector2 getQueuePathingTarget() {
     return queue.get( queue.size()-1 );
+  }
+
+  private Tile tileFromCoordinate(IVector2 v) {
+    return World.getInstance().getTile(v);
+  }
+
+  private Building getMyBuilding() {
+    return GameState.getInstance().getBuildingMap().get(myBuilding);
   }
 
   public void moveAlongMoveAlong() {
     // Now try and move everyone along
     for (int i = 0; i < queue.size(); ++i) {
-      final Tile tile = queue.get(i);
+      final Tile tile = tileFromCoordinate( queue.get(i) );
       if (tile == null) Gdx.app.error("WTF?!?!","");
       Sprite toRemove = null;
-      for (Sprite s : tile.containedSprites) {
+      for (int id : tile.containedSprites) {
+        Sprite s = GameState.getInstance().getParticleMap().get(id);
+        Gdx.app.log("moveAlongMoveAlong","tile " + tile.coordinates + " contains "+id+" sprite=" + s + " parked=" + tile.parkingSpaces.get(s));
         // Get parking space
-        final Cardinal parking = tile.parkingSpaces.get(s);
-        if (parking == null) continue; // I'm not partked here, e.g. moving over the entrance tile
+        final Cardinal parking = tile.parkingSpaces.get(s.id);
+        if (parking == null) continue; // I'm not parked here, e.g. moving over the entrance tile
 
         if (parking == tile.queueExit) { // Is this the final space of the tile?
           if (i == 0) { // Is this the final tile?
             // Is the sprite *actually here*
-            if (myBuilding.spriteProcessing == null && s.nudgeDestination.isZero()) { // Arrived
+            Building b = getMyBuilding();
+            Gdx.app.log("moveAlongMoveAlong", "b.spriteProcessing="+b.spriteProcessing+" nudgeDest="+s.nudgeDestination);
+            if (b.spriteProcessing == 0 && s.nudgeDestination.isZero()) { // Arrived
               if (toRemove != null) Gdx.app.error("moveAlongMoveAlong", "should only ever be one toRemove");
               // Goodby - this particle is now DEAD
               toRemove = s; // from its tile
-              GameState.getInstance().killSprite(s); // from the game manager
-              myBuilding.processSprite(s); // Now the last ref to the sprite is held only by the building
+              b.processSprite(s);
             }
           } else { // Not the final tile.
             // Is the entrance of the next tile free?
-            Tile nextTile = queue.get(i - 1);
+            Tile nextTile = tileFromCoordinate( queue.get(i - 1) );
             Cardinal nextTileEntrance = nextTile.queueExit.next90( nextTile.queueClockwise );
             if (!nextTile.parkingSpaces.containsValue(nextTileEntrance)) {
               // Move me to here
@@ -97,10 +136,10 @@ public class OrderlyQueue implements Serializable {
     // Back iterate over the queue
     Tile previousT = null;
     Cardinal previousD = null;
-    ListIterator<Tile> liTile = queue.listIterator( queue.size() );
+    ListIterator<IVector2> liTile = queue.listIterator( queue.size() );
 
     while(liTile.hasPrevious()) {
-      final Tile t = liTile.previous();
+      final Tile t = tileFromCoordinate( liTile.previous() );
       final Cardinal queueStart = t.queueExit.next90( t.queueClockwise );
       Cardinal D = queueStart;
       do {
@@ -117,7 +156,7 @@ public class OrderlyQueue implements Serializable {
     }
 
     // Check final slot
-    Tile queueFinal = queue.get(0);
+    Tile queueFinal = tileFromCoordinate( queue.get(0) );
     if (!queueFinal.parkingSpaces.containsValue(queueFinal.queueExit)) {
       return new Pair<Tile,Cardinal>(queueFinal, queueFinal.queueExit);
     }
@@ -129,16 +168,17 @@ public class OrderlyQueue implements Serializable {
 
     // Moves on any sprites under the queue
   public void moveOn() {
-    for (Tile t : queue) {
-      t.moveOnSprites();
+    for (IVector2 v : queue) {
+      tileFromCoordinate( v ).moveOnSprites();
     }
   }
 
   // Re-do the pathing grid for all tiles in the queue and all touching it
   private void repath() {
-    for (Tile t : queue) {
+    for (IVector2 v : queue) {
+      Tile t = tileFromCoordinate(v);
       for (Cardinal D : Cardinal.n8) {
-        World.getInstance().updateTilePathfinding(t.n8.get(D));
+        World.getInstance().updateTilePathfinding( t.n8.get(D));
       }
     }
   }
@@ -191,7 +231,7 @@ public class OrderlyQueue implements Serializable {
       case kSPIRAL: doSpiralQueue(xStart, yStart); break;
       default: Gdx.app.error("hintQueue","Unknown - " + GameState.getInstance().queueType);
     }
-    queue.get( queue.size()-1 ).type = TileType.kGROUND; // Re-set to ground to make pathable
+    tileFromCoordinate( queue.get( queue.size()-1 )).type = TileType.kGROUND; // Re-set to ground to make pathable
   }
 
   private void doSpiralQueue(int xStart, int yStart) {
@@ -212,7 +252,7 @@ public class OrderlyQueue implements Serializable {
       Cardinal exit = getExitLocation(to);
       boolean isClockwise = getQueueClockwise(from, to);
       t.setQueue(from, to, myBuilding, exit, isClockwise);
-      queue.add(t);
+      queue.add(t.coordinates);
 
       t = t.n8.get(D);
       previousD = D;
@@ -242,7 +282,7 @@ public class OrderlyQueue implements Serializable {
       Tile t = w.getTile(x, y);
       if (!t.buildable()) break;
       t.setQueue(v.get(element).getKey(), v.get(element).getValue(), myBuilding, D, isClockwise);
-      queue.add( w.getTile(x, y) );
+      queue.add( w.getTile(x, y).coordinates );
       if (++element == v.size()) element = 0;
       if (Math.abs(move) > 1) {
         x += 1 * Math.signum(move);

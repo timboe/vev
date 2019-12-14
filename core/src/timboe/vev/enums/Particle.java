@@ -27,6 +27,10 @@ public enum Particle {
   private static final int size = values.size() - 1; // Do not return kBlank
   private static final Random R = new Random();
 
+  public static int size() {
+    return size;
+  }
+
   public static Particle random() {
     return values.get(R.nextInt(size));
   }
@@ -44,16 +48,6 @@ public enum Particle {
     }
   }
 
-  public Particle fromString(String s) {
-    if      (s.equals("H")) return kH;
-    else if (s.equals("W")) return kW;
-    else if (s.equals("Z")) return kZ;
-    else if (s.equals("e")) return kE;
-    else if (s.equals("μ")) return kM;
-    else if (s.equals("q")) return kQ;
-    else return kBlank;
-  }
-
   public static Particle getParticleFromColour(Colour c) {
     switch (c) {
       case kBLACK: return kH;
@@ -68,16 +62,8 @@ public enum Particle {
 
   public Color getHighlightColour() {
     switch (this) {
-      case kH: return Param.PARTICLE_H;
-      case kW: return Param.PARTICLE_W;
-      case kZ: return Param.PARTICLE_Z;
-      case kE: return Param.PARTICLE_E;
-      case kM: return Param.PARTICLE_M;
-      case kQ: return Param.PARTICLE_Q;
       case kBlank: return Param.PARTICLE_Blank;
-      default:
-        Gdx.app.error("getHighlightColour","Unknown particle " + getString());
-        return null;
+      default: return Param.PARTICLE_BASE_COLOUR.get(this);
     }
   }
 

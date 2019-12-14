@@ -16,9 +16,16 @@ import com.esotericsoftware.kryo.serializers.FieldSerializer;
 import com.google.gwt.thirdparty.json.JSONException;
 import com.google.gwt.thirdparty.json.JSONObject;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 import timboe.vev.entity.Entity;
+import timboe.vev.enums.Particle;
 import timboe.vev.manager.Camera;
 import timboe.vev.manager.GameState;
 import timboe.vev.manager.Sounds;
@@ -26,42 +33,141 @@ import timboe.vev.manager.Textures;
 import timboe.vev.manager.UI;
 import timboe.vev.manager.World;
 
+import static timboe.vev.enums.Particle.kBlank;
+import static timboe.vev.enums.Particle.kE;
+import static timboe.vev.enums.Particle.kH;
+import static timboe.vev.enums.Particle.kM;
+import static timboe.vev.enums.Particle.kQ;
+import static timboe.vev.enums.Particle.kW;
+import static timboe.vev.enums.Particle.kZ;
+
 public class VEVGame extends Game {
+
+  private void settingsDefaults() {
+    Param.MUSIC_LEVEL = 1f;
+    Param.SFX_LEVEL = 1f;
+    Param.PARTICLE_HUE.put(kH, 7);
+    Param.PARTICLE_HUE.put(kW, 7);
+    Param.PARTICLE_HUE.put(kZ, 7);
+    Param.PARTICLE_HUE.put(kE, 7);
+    Param.PARTICLE_HUE.put(kM, 7);
+    Param.PARTICLE_HUE.put(kQ, 7);
+    Param.PARTICLE_HUE.put(kBlank, 7);
+  }
+
+  private void tryLoadSetting() {
+    if (!Gdx.files.isLocalStorageAvailable()) {
+      settingsDefaults();
+      return;
+    }
+
+    FileHandle settings = Gdx.files.local(Param.SETTINGS_FILE);
+    if (settings.exists()) {
+      try {
+        JSONObject json = new JSONObject(settings.readString());
+        Param.MUSIC_LEVEL = (float)json.getDouble("music");
+        Param.SFX_LEVEL = (float)json.getDouble("sfx");
+        JSONObject hue = json.getJSONObject("hue");
+        for (Particle p : Particle.values()) {
+          Param.PARTICLE_HUE.put(p, hue.getInt(p.name()));
+        }
+      } catch (JSONException e) {
+        e.printStackTrace();
+        settingsDefaults();
+      }
+    } else {
+      settingsDefaults();
+    }
+  }
+
+  private void tryLoad() {
+    if (!Gdx.files.isLocalStorageAvailable()) {
+      return;
+    }
+
+    FileHandle handle = Gdx.files.local(Param.SAVE_FILE);
+    if (handle.exists()) {
+      ByteArrayInputStream bais = new ByteArrayInputStream(handle.readBytes());
+      GZIPInputStream gzipIn;
+      try {
+        gzipIn = new GZIPInputStream(bais);
+        ObjectInputStream objectIn = new ObjectInputStream(gzipIn);
+        World.getInstance().loadedSave = new JSONObject((String) objectIn.readObject());
+        objectIn.close();
+      } catch (IOException e) {
+        e.printStackTrace();
+      } catch (ClassNotFoundException e) {
+        e.printStackTrace();
+      } catch (JSONException e) {
+        e.printStackTrace();
+      }
+    }
+  }
+
+  private void trySave() {
+    if (!Gdx.files.isLocalStorageAvailable()) return;
+
+    Gdx.app.log("trySave", "SAVE SETTINGS");
+    FileHandle settings = Gdx.files.local(Param.SETTINGS_FILE);
+    JSONObject jsonSettings = new JSONObject();
+    try {
+      jsonSettings.put("music", Param.MUSIC_LEVEL);
+      jsonSettings.put("sfx", Param.SFX_LEVEL);
+      JSONObject hue = new JSONObject();
+      for (Particle p : Particle.values()) {
+        hue.put(p.name(), Param.PARTICLE_HUE.get(p));
+      }
+      jsonSettings.put("hue", hue);
+    } catch (JSONException e) {
+      e.printStackTrace();
+    }
+    settings.writeString(jsonSettings.toString(), false);
+
+    if (GameState.getInstance().isGameOn()) {
+      Gdx.app.log("trySave", "SAVING");
+      FileHandle handle = Gdx.files.local(Param.SAVE_FILE);
+      JSONObject json = new JSONObject();
+      try {
+        json.put("GameState", GameState.getInstance().serialise());
+        json.put("World", World.getInstance().serialise());
+      } catch (JSONException e) {
+        e.printStackTrace();
+      }
+
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      GZIPOutputStream gzipOut = null;
+      try {
+        gzipOut = new GZIPOutputStream(baos);
+        ObjectOutputStream objectOut = new ObjectOutputStream(gzipOut);
+        objectOut.writeObject(json.toString());
+        objectOut.close();
+        baos.writeTo(handle.write(false));
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    }
+  }
 
   @Override
   public void create () {
+
+    tryLoadSetting();
     Camera.create();
     Textures.create();
     GameState.create();
     Sounds.create();
     World.create();
+    tryLoad();
     UI.create();
 
     GameState.getInstance().setGame(this);
     GameState.getInstance().setToTitleScreen();
-    Sounds.getInstance().doMusic();
+    Sounds.getInstance().doMusic(true);
 	}
 	
   @Override
   public void dispose () {
-//    try {
-//      persist();
-//    } catch (IOException ex) {
-//      Gdx.app.error("persist IO exception",ex.getMessage());
-//    } catch (ClassNotFoundException ex) {
-//      Gdx.app.error("persist class exception",ex.getMessage());
-//    }
-    boolean isLocAvailable = Gdx.files.isLocalStorageAvailable();
-    if (isLocAvailable) {
-      FileHandle handle = Gdx.files.local("data/VEV_save.json");
-      try {
-        JSONObject json = new JSONObject();
-        json.put("GameState", GameState.getInstance().serialise());
-        handle.writeString(json.toString(), false);
-      } catch (JSONException e) {
-        e.printStackTrace();
-      }
-    }
+    trySave();
     UI.getInstance().dispose();
     Textures.getInstance().dispose();
     Sounds.getInstance().dispose();
@@ -70,130 +176,4 @@ public class VEVGame extends Game {
     GameState.getInstance().dispose();
   }
 
-  private void persist() throws IOException, ClassNotFoundException {
-//    Kryo kryo = new Kryo();
-//    kryoReg(kryo);
-//
-//    Output output = new Output(new FileOutputStream("VEV_save.bin"));
-//    kryo.writeObject(output, World.getInstance().getTile(0,0));
-//    output.close();
-  }
-
-  private void kryoReg(Kryo kryo) {
-
-    kryo.setReferences(true);
-
-    FieldSerializer<Entity> fsTile = new FieldSerializer<Entity>(kryo, Entity.class);
-    fsTile.setCopyTransient(false);
-    kryo.register(Entity.class, fsTile);
-
-    kryo.register(Array.class, new Serializer<Array>() {
-      {
-        setAcceptsNull(true);
-      }
-
-      private Class genericType;
-
-      public void setGenerics (Kryo kryo, Class[] generics) {
-        if (generics != null && kryo.isFinal(generics[0])) genericType = generics[0];
-        else genericType = null;
-      }
-
-      public void write (Kryo kryo, Output output, Array array) {
-        int length = array.size;
-        output.writeInt(length, true);
-        if (length == 0) {
-          genericType = null;
-          return;
-        }
-        if (genericType != null) {
-          Serializer serializer = kryo.getSerializer(genericType);
-          genericType = null;
-          for (Object element : array)
-            kryo.writeObjectOrNull(output, element, serializer);
-        } else {
-          for (Object element : array)
-            kryo.writeClassAndObject(output, element);
-        }
-      }
-
-      public Array read (Kryo kryo, Input input, Class<Array> type) {
-        Array array = new Array();
-        kryo.reference(array);
-        int length = input.readInt(true);
-        array.ensureCapacity(length);
-        if (genericType != null) {
-          Class elementClass = genericType;
-          Serializer serializer = kryo.getSerializer(genericType);
-          genericType = null;
-          for (int i = 0; i < length; i++)
-            array.add(kryo.readObjectOrNull(input, elementClass, serializer));
-        } else {
-          for (int i = 0; i < length; i++)
-            array.add(kryo.readClassAndObject(input));
-        }
-        return array;
-      }
-    });
-
-    kryo.register(IntArray.class, new Serializer<IntArray>() {
-      {
-        setAcceptsNull(true);
-      }
-
-      public void write (Kryo kryo, Output output, IntArray array) {
-        int length = array.size;
-        output.writeInt(length, true);
-        if (length == 0) return;
-        for (int i = 0, n = array.size; i < n; i++)
-          output.writeInt(array.get(i), true);
-      }
-
-      public IntArray read (Kryo kryo, Input input, Class<IntArray> type) {
-        IntArray array = new IntArray();
-        kryo.reference(array);
-        int length = input.readInt(true);
-        array.ensureCapacity(length);
-        for (int i = 0; i < length; i++)
-          array.add(input.readInt(true));
-        return array;
-      }
-    });
-
-    kryo.register(FloatArray.class, new Serializer<FloatArray>() {
-      {
-        setAcceptsNull(true);
-      }
-
-      public void write (Kryo kryo, Output output, FloatArray array) {
-        int length = array.size;
-        output.writeInt(length, true);
-        if (length == 0) return;
-        for (int i = 0, n = array.size; i < n; i++)
-          output.writeFloat(array.get(i));
-      }
-
-      public FloatArray read (Kryo kryo, Input input, Class<FloatArray> type) {
-        FloatArray array = new FloatArray();
-        kryo.reference(array);
-        int length = input.readInt(true);
-        array.ensureCapacity(length);
-        for (int i = 0; i < length; i++)
-          array.add(input.readFloat());
-        return array;
-      }
-    });
-
-    kryo.register(Color.class, new Serializer<Color>() {
-      public Color read (Kryo kryo, Input input, Class<Color> type) {
-        Color color = new Color();
-        Color.rgba8888ToColor(color, input.readInt());
-        return color;
-      }
-
-      public void write (Kryo kryo, Output output, Color color) {
-        output.writeInt(Color.rgba8888(color));
-      }
-    });
-  }
 }

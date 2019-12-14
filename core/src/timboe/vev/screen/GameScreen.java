@@ -10,11 +10,14 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 
+import java.util.HashMap;
+
 import timboe.vev.Param;
 import timboe.vev.Util;
 import timboe.vev.entity.Building;
 import timboe.vev.entity.Sprite;
 import timboe.vev.entity.Tile;
+import timboe.vev.entity.Warp;
 import timboe.vev.input.Gesture;
 import timboe.vev.input.Handler;
 import timboe.vev.manager.Camera;
@@ -115,11 +118,10 @@ public class GameScreen implements Screen {
     // TODO optimise additive mixed batching
     Batch batch = state.getTileStage().getBatch();
     batch.begin();
-    for (ParticleEffect e : world.warpClouds) {
-      e.draw(batch, delta);
-    }
-    for (ParticleEffect e : world.warps.values()) {
-      if (!e.isComplete()) e.draw(batch, delta);
+    for (Warp w : world.warps.values()) {
+      w.warpCloud.draw(batch, delta);
+      if (!w.zap.isComplete()) w.zap.draw(batch, delta);
+
     }
     for (int i = state.dustEffects.size - 1; i >= 0; i--) {
       ParticleEffectPool.PooledEffect e = state.dustEffects.get(i);
