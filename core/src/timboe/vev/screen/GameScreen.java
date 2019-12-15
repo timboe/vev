@@ -64,6 +64,7 @@ public class GameScreen implements Screen {
     delta = Math.min(delta, Param.FRAME_TIME * 10); // Do not let this get too extreme
     Util.renderClear();
 
+    world.act(delta);
     camera.update(delta);
     state.act(delta);
     ui.act(delta);

@@ -36,6 +36,7 @@ public class Building extends Entity {
   private final BuildingType type;
   private final IVector2 centre;
   private OrderlyQueue myQueue = null;
+  public int myPatch;
   private IVector2 pathingStartPoint;
   public float timeDisassemble;
   private float timeMove;
@@ -59,6 +60,7 @@ public class Building extends Entity {
     json.put("type", type.name());
     json.put("centre", centre.serialise());
     json.put("myQueue", myQueue == null ? JSONObject.NULL : myQueue.serialise());
+    json.put("myPatch", this.myPatch);
     json.put("pathingStartPoint", pathingStartPoint == null ? JSONObject.NULL : pathingStartPoint.serialise());
     json.put("timeDisassemble", timeDisassemble);
     json.put("timeMove", timeMove);
@@ -91,46 +93,47 @@ public class Building extends Entity {
 
   public Building(JSONObject json) throws JSONException {
     super(json);
-    doUpgrade = json.getBoolean("doUpgrade");
-    buildingLevel = json.getInt("buildingLevel");
-    getTimeDisassembleMax = (float) json.getDouble("getTimeDisassembleMax");
-    updateBuildingTexture = json.getBoolean("updateBuildingTexture");
-    built = json.getInt("built");
-    clock = json.getInt("clock");
-    clockVisible = json.getBoolean("clockVisible");
+    this.doUpgrade = json.getBoolean("doUpgrade");
+    this.buildingLevel = json.getInt("buildingLevel");
+    this.getTimeDisassembleMax = (float) json.getDouble("getTimeDisassembleMax");
+    this.updateBuildingTexture = json.getBoolean("updateBuildingTexture");
+    this.built = json.getInt("built");
+    this.clock = json.getInt("clock");
+    this.clockVisible = json.getBoolean("clockVisible");
     //
     JSONObject jsonHolding = json.getJSONObject("holdingPen");
     for (Particle p : Particle.values()) {
       int n = jsonHolding.getInt( p.name() );
-      holdingPen.put(p, n);
+      this.holdingPen.put(p, n);
     }
     //
     JSONObject extra = json.getJSONObject("childElements");
     Iterator extraIt = extra.keys();
     while (extraIt.hasNext()) {
-      childElements.add( extra.getInt((String) extraIt.next()) );
+      this.childElements.add( extra.getInt((String) extraIt.next()) );
     }
     //
-    spriteProcessing = json.getInt("spriteProcessing");
-    timeUpgrade = (float) json.getDouble("timeUpgrade");
-    nextReleaseTime = (float) json.getDouble("nextReleaseTime");
-    timeHoldingPen = (float) json.getDouble("timeHoldingPen");
-    timeBuild = (float) json.getDouble("timeBuild");
-    timeMove = (float) json.getDouble("timeMove");
-    timeDisassemble = (float) json.getDouble("timeDisassemble");
+    this.spriteProcessing = json.getInt("spriteProcessing");
+    this.timeUpgrade = (float) json.getDouble("timeUpgrade");
+    this. nextReleaseTime = (float) json.getDouble("nextReleaseTime");
+    this.timeHoldingPen = (float) json.getDouble("timeHoldingPen");
+    this.timeBuild = (float) json.getDouble("timeBuild");
+    this.timeMove = (float) json.getDouble("timeMove");
+    this.timeDisassemble = (float) json.getDouble("timeDisassemble");
+    this.myPatch = json.getInt("myPatch");
     if (json.get("pathingStartPoint") == JSONObject.NULL) {
-      pathingStartPoint = null;
+      this.pathingStartPoint = null;
     } else {
-      pathingStartPoint = new IVector2(json.getJSONObject("pathingStartPoint"));
+      this.pathingStartPoint = new IVector2(json.getJSONObject("pathingStartPoint"));
     }
     if (json.get("myQueue") == JSONObject.NULL) {
-      myQueue = null;
+      this.myQueue = null;
     } else {
-      myQueue = new OrderlyQueue( json.getJSONObject("myQueue") );
+      this.myQueue = new OrderlyQueue( json.getJSONObject("myQueue") );
     }
-    centre = new IVector2( json.getJSONObject("centre") );
-    type = BuildingType.valueOf( json.getString("type") );
-    if (type != BuildingType.kWARP) doRepath();
+    this.centre = new IVector2( json.getJSONObject("centre") );
+    this.type = BuildingType.valueOf( json.getString("type") );
+    if (this.type != BuildingType.kWARP) doRepath();
     // Warp calls repath after having unpacked its pathing start data
   }
 
@@ -147,6 +150,7 @@ public class Building extends Entity {
     for (Particle p : Particle.values()) holdingPen.put(p, 0);
     this.built = 0;
     this.buildingLevel = 0;
+    this.myPatch = 0;
     if (type == BuildingType.kWARP) return; // Warp does not need anything below
     ////////////////////////////////////////////////////////////////////////////
     setTexture("build_3_3", 1, false);
@@ -158,23 +162,36 @@ public class Building extends Entity {
       this.built = myQueue.getQueue().size();
     } else {
       this.built = 1;
-      Patch myPatch = null;
-      for (Patch p : World.getInstance().tiberiumPatches.values()) {
-        if (myPatch == null || p.coordinates.dst(coordinates) < myPatch.coordinates.dst(coordinates)) {
-          myPatch = p;
-        }
-      }
-      // kBLank pathing is used for the truck
-      Tile tibTile = World.getInstance().getTile(
-          myPatch.coordinates.x + (-Param.WARP_SIZE/2) + Util.R.nextInt( Param.WARP_SIZE ),
-          myPatch.coordinates.y + (-Param.WARP_SIZE/2) + Util.R.nextInt( Param.WARP_SIZE ));
-      Tile tibGoal = Sprite.findPathingLocation(tibTile, true, false, false, false);
       updatePathingStartPoint();
-      updateDemoPathingList(Particle.kBlank, tibGoal);
-      savePathingList();
+
+      updateMyPatch();
     }
     // Move any sprites which are here
     moveOn();
+  }
+
+  public void updateMyPatch() {
+    Patch patch = null;
+    for (Patch p : World.getInstance().tiberiumPatches.values()) {
+      if (p.remaining() == 0) {
+        continue;
+      }
+      if ( patch == null || p.coordinates.dst(coordinates) < patch.coordinates.dst(coordinates)) {
+        patch = p;
+      }
+    }
+    if (patch == null) {
+      this.buildingPathingLists.remove(Particle.kBlank);
+      return;
+    }
+    this.myPatch = patch.id;
+    // kBLank pathing is used for the truck
+    Tile tibTile = World.getInstance().getTile(
+        patch.coordinates.x + (-Param.WARP_SIZE/2) + Util.R.nextInt( Param.WARP_SIZE ),
+        patch.coordinates.y + (-Param.WARP_SIZE/2) + Util.R.nextInt( Param.WARP_SIZE ));
+    Tile tibGoal = Sprite.findPathingLocation(tibTile, true, false, false, false);
+    updateDemoPathingList(Particle.kBlank, tibGoal);
+    savePathingList();
   }
 
   public BuildingType getType() {
@@ -223,7 +240,7 @@ public class Building extends Entity {
       Gdx.app.error("updatePathingStartPoint", "Building could not find a pathing start point!");
       return;
     }
-    pathingStartPoint = pathingStartPointTile.coordinates;
+    this.pathingStartPoint = pathingStartPointTile.coordinates;
   }
 
   // Loop over the "demo" pathing and all stored pathing lists -
@@ -247,11 +264,11 @@ public class Building extends Entity {
   public void updateDemoPathingList(Particle p, Tile t) {
     if (getDestination() != t) {
       Gdx.app.log("DEBUG updateDemoPathingList","Start for "+p+" is "+getPathingStartPoint(p)+" with target t.coordinates " + t.coordinates);
-      pathingList = PathFinding.doAStar(getPathingStartPoint(p), t.coordinates, null, null, GameState.getInstance().pathingCache);
+      this.pathingList = PathFinding.doAStar(getPathingStartPoint(p), t.coordinates, null, null, GameState.getInstance().pathingCache);
       Sounds.getInstance().click();
     }
     // The "pathingList" holds our speculative/demo destination
-    pathingParticle = p;
+    this.pathingParticle = p;
   }
 
   public boolean savePathingList() {
@@ -309,6 +326,7 @@ public class Building extends Entity {
     Truck t = new Truck(tileFromCoordinate(getPathingStartPoint(null)), this);
     t.setParticle( Particle.kBlank ); // This is so that Sprite::doMove does not crash
     GameState.getInstance().getSpriteStage().addActor(t);
+    GameState.getInstance().getTrucksMap().put(t.id, t);
   }
 
   private void build(float delta) {

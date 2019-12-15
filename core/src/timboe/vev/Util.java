@@ -73,6 +73,10 @@ public class Util {
     return Math.max(min, Math.min(max, val));
   }
 
+  public static int clamp(int val, int min, int max) {
+    return Math.max(min, Math.min(max, val));
+  }
+
   public static void renderClear() {
     Gdx.gl.glClearColor(.1529f, .1255f, .1922f, 1);
     Gdx.gl.glLineWidth(3);

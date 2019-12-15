@@ -129,12 +129,12 @@ public class Param {
   public static final int DISPLAY_X = 1920;
   public static final int DISPLAY_Y = Math.round(DISPLAY_X * (9f/16f));
 
-  public static final float PLAYER_STARTING_ENERGY = 0;
-  public static final float WARP_STARTING_ENERGY = 400000;
+  public static final float PLAYER_STARTING_ENERGY = 5000f * 10f;
+  public static final float WARP_STARTING_ENERGY = 400000f;
 
-  public static final float TRUCK_INITIAL_CAPACITY = 1500f;
-  public static final float TRUCK_LOAD_SPEED = 500f;
-  
+  public static final float TRUCK_INITIAL_CAPACITY = 15000f;
+  public static final float TRUCK_LOAD_SPEED = 2500f;
+
   public static final Color PARTICLE_Blank = new Color(128/255f, 128/255f, 128/255f, 1f);
 
   public static final int HSB_BASE_SATURATION = 61;

@@ -69,9 +69,6 @@ public class Tile extends Entity {
     json.put("queueClockwise", queueClockwise);
     json.put("queueTex", queueTex);
     // NOTE: n8 not stored. Needs to be regenerated on load
-//    if (this.getX() == 32 && this.getY() == 32) {
-//      Gdx.app.log("Tile ("+x+","+y+") id "+id+" Serial Debug", json.toString());
-//    }
     return json;
   }
 
@@ -256,6 +253,13 @@ public class Tile extends Entity {
     Set<Sprite> set = new HashSet<Sprite>();
     for (int id : containedSprites) {
       Sprite s = GameState.getInstance().getParticleMap().get(id);
+      if (s == null) {
+        Truck t = GameState.getInstance().getTrucksMap().get(id);
+        if (t == null) {
+          Gdx.app.error("moveOnSprites", "Cannot find hosted sprite "+id);
+        }
+        continue;
+      }
       // If I am parked here, or just passing through but my destination is also now invalid
       // Cannot issue pathTo here as it will invalidate the containedSprites container
       if (s.pathingList.isEmpty() || s.getDestination().getPathFindNeighbours().isEmpty()) {

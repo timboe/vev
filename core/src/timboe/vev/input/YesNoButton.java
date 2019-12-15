@@ -29,7 +29,7 @@ public class YesNoButton extends ChangeListener {
         case kWITH_BUILDING_SELECTION:
           GameState.getInstance().doConfirmStandingOrder();
           break;
-        case kSETTINGS:;
+        case kSETTINGS:
           GameState.getInstance().doRightClick();
           break;
         default:

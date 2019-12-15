@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import timboe.vev.Param;
+import timboe.vev.Util;
 import timboe.vev.enums.Colour;
 import timboe.vev.enums.Particle;
 
@@ -58,8 +59,21 @@ public class Textures {
   }
 
   private Color mod(Particle p, int hueMod, int s, int b) {
-    int hue = Param.PARTICLE_HUE.get(p) + hueMod;
+    int hue = Param.PARTICLE_HUE.get(p);
+    if (hue > 720) { // Final third (bright)
+      hue -= 720;
+      b += 30;
+      s += 30;
+    } else if (hue > 360) { // Middle third (norm)
+      hue -= 360;
+    } else { // Lower third (muted)
+      b -= 30;
+      s -= 30;
+    }
+    hue += hueMod;
     if (hue > 360) hue -= 360;
+    s = Util.clamp(s, 0, 100);
+    b = Util.clamp(b, 0, 100);
     java.awt.Color awtColor = java.awt.Color.getHSBColor(hue / 360f, s / 100f, b / 100f);
     return new Color(awtColor.getRed() / 255f, awtColor.getGreen() / 255f, awtColor.getBlue() / 255f, 1f);
   }
@@ -107,7 +121,10 @@ public class Textures {
         pixmap.drawPixmap(fullMap, 0, 0, r.getRegionX(), r.getRegionY(), r.getRegionWidth(), r.getRegionHeight());
 
         colourReplace(pixmap, redHighlight, mod(p, Param.HSB_HIGHLIGHT_HUE_MOD, Param.HSB_HIGHLIGHT_SATURATION, Param.HSB_HIGHLIGHT_BRIGHTNESS));
-        colourReplace(pixmap, redTexture, Param.PARTICLE_BASE_COLOUR.get(p));
+
+//        colourReplace(pixmap, redTexture, Param.PARTICLE_BASE_COLOUR.get(p));
+        colourReplace(pixmap, redTexture, mod(p, 0, Param.HSB_BASE_SATURATION, Param.HSB_BASE_BRIGHTNESS));
+
         colourReplace(pixmap, redOutline, mod(p, Param.HSB_OUTLINE_HUE_MOD, Param.HSB_OUTLINE_SATURATION, Param.HSB_OUTLINE_BRIGHTNESS));
         colourReplace(pixmap, redDark, mod(p, Param.HSB_SHADOW_HUE_MOD, Param.HSB_SHADOW_SATURATION, Param.HSB_SHADOW_BRIGHTNESS));
 

@@ -61,7 +61,7 @@ public class World {
   private Tile[][] tiles;
   public final Map<Integer, Warp> warps = new HashMap<Integer, Warp>();
   public final Map<Integer, Patch> tiberiumPatches = new HashMap<Integer, Patch>();
-  private final Map<Integer, Sprite> tiberiumShards = new HashMap<Integer, Sprite>();
+  public final Map<Integer, Sprite> tiberiumShards = new HashMap<Integer, Sprite>();
   public final Map<Integer, Sprite> foliage = new HashMap<Integer, Sprite>();
 
   public JSONObject serialise() throws JSONException {
@@ -198,7 +198,11 @@ public class World {
     return introTiles[v.x][v.y];
   }
 
-  private void reset(boolean includingIntro) {
+  public Map<Integer, Patch> getTiberiumPatches() {
+    return tiberiumPatches;
+  }
+
+  public void reset(boolean includingIntro) {
     GameState.getInstance().reset(includingIntro);
     stage = 0;
     generated = false;
@@ -241,6 +245,9 @@ public class World {
         GameState.getInstance().getTileStage().addActor(zones[x][y]);
       }
     }
+
+    Util.R.setSeed(0);
+    R.setSeed(0);
   }
 
   private void generateIntro() {
@@ -251,8 +258,11 @@ public class World {
   }
 
   public void act(float delta) {
-    if (doLoad) load();
-    else if (!generated) generate();
+    if (doLoad) {
+      load();
+    } else if (!generated) {
+      generate();
+    }
   }
 
   private void load() {
@@ -329,6 +339,7 @@ public class World {
 
   public void updateTilePathfinding(Tile t) {
     t.pathFindDebug.clear();
+    t.coordinates.pathFindNeighbours.clear();
     for (Cardinal D : Cardinal.n8) {
       if (shouldLink(t, t.n8.get(D))) {
         t.pathFindDebug.add(D);
@@ -441,6 +452,8 @@ public class World {
         }
       }
     }
+    Patch patch = new Patch(_x, _y);
+    if (!isForest) tiberiumPatches.put(patch.id, patch);
     final String forestTexture = "tree_" + tiles[_x][_y].tileColour.getString() + "_" + R.nextInt(Param.N_TREE);
     final double maxD = Math.sqrt(2 * Math.pow(patchSize, 2));
     for (int x = _x - patchSize; x < _x + patchSize; ++x) {
@@ -448,30 +461,32 @@ public class World {
         if (tiles[x][y].tileColour != tiles[_x][_y].tileColour || tiles[x][y].type != TileType.kGROUND)
           continue;
         final double d = Math.hypot(x - _x, y - _y);
-        if (isForest) tryTree(d, maxD, x, y, forestTexture);
-        else tryTiberium(d, maxD, x, y);
+        if (isForest) tryTree(d, maxD, x, y, forestTexture, patch);
+        else tryTiberium(d, maxD, x, y, patch);
       }
     }
     return true;
   }
 
-  private void tryTree(final double distance, final double maxDistance, final int x, final int y, final String forestTexture) {
+  private void tryTree(final double distance, final double maxDistance, final int x, final int y, final String forestTexture, final Patch p) {
     if (distance > Math.abs(R.nextGaussian() * Param.PATCH_DENSITY * maxDistance)) return;
     Sprite s = newSprite(x, y, forestTexture, true, false);
-    s.moveBy((-Param.WIGGLE) + Util.R.nextInt(Param.WIGGLE * 2), (-Param.WIGGLE) + Util.R.nextInt(Param.WIGGLE * 2));
+    s.moveBy((-Param.WIGGLE) + R.nextInt(Param.WIGGLE * 2), (-Param.WIGGLE) + R.nextInt(Param.WIGGLE * 2));
     foliage.put(s.id, s);
+    p.addContained(s);
     tiles[x][y].type = TileType.kFOLIAGE;
     tiles[x][y].mySprite = s.id;
   }
 
-  private void tryTiberium(final double distance, final double maxDistance, final int x, final int y) {
+  private void tryTiberium(final double distance, final double maxDistance, final int x, final int y, final Patch p) {
     for (int subX = 0; subX < 2; ++subX) {
       for (int subY = 0; subY < 2; ++subY) {
         if (distance > Math.abs(R.nextGaussian() * Param.PATCH_DENSITY * maxDistance)) continue;
         Sprite s = newSprite(x, y, "tiberium_" + R.nextInt(Param.N_TIBERIUM), false, false);
         tiberiumShards.put(s.id, s);
+        p.addContained(s);
         s.moveBy(subX * Param.TILE_S, subY * Param.TILE_S);
-        s.moveBy((-Param.WIGGLE / 2) + Util.R.nextInt(Param.WIGGLE), (-Param.WIGGLE / 2) + Util.R.nextInt(Param.WIGGLE));
+        s.moveBy((-Param.WIGGLE / 2) + R.nextInt(Param.WIGGLE), (-Param.WIGGLE / 2) + R.nextInt(Param.WIGGLE));
       }
     }
   }
@@ -485,8 +500,6 @@ public class World {
         continue;
       if (tryPatchOfStuff(x, y, isForest, patchSize)) {
         ++fPlaced;
-        Patch patch = new Patch(x, y);
-        if (!isForest) tiberiumPatches.put(patch.id, patch);
       }
     } while (++fTry < Param.N_PATCH_TRIES && fPlaced < max);
     if (fPlaced < min) {

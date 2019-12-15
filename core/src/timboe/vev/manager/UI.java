@@ -29,6 +29,7 @@ import timboe.vev.Pair;
 import timboe.vev.Param;
 import timboe.vev.entity.Building;
 import timboe.vev.entity.Sprite;
+import timboe.vev.entity.Warp;
 import timboe.vev.enums.BuildingType;
 import timboe.vev.enums.Particle;
 import timboe.vev.enums.QueueType;
@@ -86,6 +87,9 @@ public class UI {
   public Button selectParticlesButton;
   public Button showPathsButton;
 
+  private EnumMap<BuildingType, Button> buildBuildingButtons = null;
+  private EnumMap<BuildingType, TextTooltipDF> buildBuildingTooltips = null;
+
   private EnumMap<BuildingType, Table> buildingWindow;
   public EnumMap<BuildingType, Button> buildingWindowQSimple;
   public EnumMap<BuildingType, Button> buildingWindowQSpiral;
@@ -109,6 +113,12 @@ public class UI {
   private Button selectCross;
 
   private Set<Image> ballImages = new HashSet<Image>();
+
+  // Settings cache
+  float cacheMusic, cacheSfx;
+  EnumMap<Particle, Integer> cacheHue = new EnumMap<Particle, Integer>(Particle.class);
+
+  float perSec = 0;
 
   private UI() {
     ShaderProgram.pedantic = false;
@@ -258,7 +268,30 @@ public class UI {
   }
 
   public void cancelSettingsChanges() {
+    Gdx.app.log("cancelSettingsChanges","Cancelling");
+    for (Particle p : Particle.values()) {
+      if (p == Particle.kBlank) continue;
+      Param.PARTICLE_HUE.put(p, cacheHue.get(p));
+    }
+    Textures.getInstance().updateParticleHues();
+    Param.MUSIC_LEVEL = cacheMusic;
+    Param.SFX_LEVEL = cacheSfx;
+  }
 
+  public void updateButtonPriceStatus() {
+    if (buildBuildingButtons == null) {
+      return;
+    }
+    for (BuildingType bt : BuildingType.values()) {
+      if (bt == BuildingType.kWARP) continue;
+      final int price = GameState.getInstance().buildingPrices.get(bt);
+      buildBuildingTooltips.get(bt).getActor().setText("Price:"+formatter.format( GameState.getInstance().buildingPrices.get(bt) ));
+      final boolean disabled = price > GameState.getInstance().playerEnergy;
+      buildBuildingButtons.get(bt).setDisabled(disabled);
+      for (Actor a : buildBuildingButtons.get(bt).getChildren()) {
+        a.setVisible(!disabled);
+      }
+    }
   }
 
   protected void resetTitle(String toShow) {
@@ -382,7 +415,7 @@ public class UI {
         Image i = getImage("ball_" + p.getColourFromParticle().getString());
         ballImages.add(i);
         addToWin(titleWindow, i, SIZE_M);
-        Slider pSlider = new Slider(0, 360, 1, false, skin, "default-horizontal");
+        Slider pSlider = new Slider(0, 360*3, 1, false, skin, "default-horizontal");
         pSlider.setValue( Param.PARTICLE_HUE.get(p) );
         pSlider.setUserObject(p);
         pSlider.addListener(new ChangeListener() {
@@ -394,7 +427,11 @@ public class UI {
         });
         addToWin(titleWindow, pSlider, SIZE_M+SIZE_L, SIZE_M, 1);
         titleWindow.row();
+        cacheHue.put(p, Param.PARTICLE_HUE.get(p));
       }
+
+      cacheMusic = Param.MUSIC_LEVEL;
+      cacheSfx = Param.SFX_LEVEL;
 
       separator(titleWindow, 2);
 
@@ -451,6 +488,8 @@ public class UI {
 
 
     // Main window
+    buildBuildingButtons = new EnumMap<BuildingType, Button>(BuildingType.class);
+    buildBuildingTooltips = new EnumMap<BuildingType, TextTooltipDF>(BuildingType.class);
     addToWin(mainWindow, getImage("zap"), SIZE_S, SIZE_S, 1);
     displayPlayerEnergyLabel = getLabel("");
     addToWin(mainWindow, displayPlayerEnergyLabel, SIZE_L, SIZE_S, 1);
@@ -483,7 +522,11 @@ public class UI {
 
       b.setUserObject(bt);
       b.addListener(buildingButtonHandler);
-      b.addListener(new TextTooltipDF("L", skin) );
+      TextTooltipDF ttt = new TextTooltipDF("L", skin);
+      ttt.setInstant(true);
+      b.addListener( ttt );
+      buildBuildingButtons.put(bt, b);
+      buildBuildingTooltips.put(bt, ttt);
       addToWin(mainWindow, b, SIZE_L+SIZE_M, SIZE_L, 2);
       mainWindow.row();
     }
@@ -532,11 +575,16 @@ public class UI {
     for (final BuildingType bt : BuildingType.values()) {
       Table bw = getWindow();
       buildingWindow.put(bt, bw);
+      addToWin(bw, getImage("zap"), SIZE_S, SIZE_S, bt != BuildingType.kMINE ? 3 : 1); // Player Energy
+      addToWin(bw, displayPlayerEnergyLabel, SIZE_L, SIZE_S,  bt != BuildingType.kMINE ? 3 : 1); // Player energy
+      bw.row(); // Player energy
+      separator(bw,  bt != BuildingType.kMINE ? 6 : 2); // Player energy
       addBuildingBlurb(bw, bt);
       int colspan = 2;
       /////////////////////
       if (bt != BuildingType.kMINE) {
-        separator(bw, 6);
+        colspan = 6;
+        separator(bw, colspan);
         Button qSimple = getImageButton("queue_simple", "toggle", 0);
         buildingWindowQSimple.put(bt, qSimple);
         qSimple.setUserObject(QueueType.kSIMPLE);
@@ -558,10 +606,9 @@ public class UI {
         buildingWindowQSize.put(bt, sliderLabel);
         addToWin(bw, sliderLabel, SIZE_S);
         bw.row();
-        colspan = 6;
       }
       addToWin(bw, getImage("zap"), SIZE_S, SIZE_S, 1);
-      LabelDF buildingCost = getLabel( formatter.format(bt.getCost()) );
+      LabelDF buildingCost = getLabel( formatter.format(GameState.getInstance().buildingPrices.get(bt)) );
       buildingWindowQPrice.put(bt, buildingCost);
       addToWin(bw, buildingCost, SIZE_L, SIZE_S, colspan-1);
       bw.row();
@@ -582,6 +629,11 @@ public class UI {
       buildingSelectStandingOrder.put(bt, new EnumMap<Particle, Button>(Particle.class));
       Table bw = getWindow();
       buildingSelectWindow.put(bt, bw);
+      //////////////////////
+      addToWin(bw, getImage("zap"), SIZE_S, SIZE_S, 3); // Player Energy
+      addToWin(bw, displayPlayerEnergyLabel, SIZE_L, SIZE_S, 3); // Player energy
+      bw.row(); // Player energy
+      separator(bw, 6); // Player energy
       //////////////////////
       if (bt == BuildingType.kWARP) {
         addToWin(bw, getImage("zap"), SIZE_S, SIZE_S, 1);
@@ -639,12 +691,20 @@ public class UI {
       addToWin(bw, getImageButton("cross"), SIZE_L, SIZE_L, 3);
     }
 
+    updateButtonPriceStatus();
     showMain();
 
   }
 
   public void act(float delta) {
     time += delta;
+
+    perSec += delta;
+    if (perSec > 1) {
+      perSec -= 1f;
+      updateButtonPriceStatus();
+    }
+
     if (time < Param.FRAME_TIME) return;
     time -= Param.FRAME_TIME;
     // Check for existance of main UI component
@@ -669,7 +729,7 @@ public class UI {
       buildingWindowQSlider.get(bt).setValue(GameState.getInstance().queueSize);
     }
     if (bt != BuildingType.kWARP) {
-      buildingWindowQPrice.get(bt).setText( formatter.format( bt.getCost() ) );
+      buildingWindowQPrice.get(bt).setText( formatter.format( GameState.getInstance().buildingPrices.get(bt) ) );
     }
     if (bt != BuildingType.kMINE && bt != BuildingType.kWARP) {
       buildingWindowTimeLabelA.get(bt).setText("");
@@ -722,13 +782,19 @@ public class UI {
       ++counter[s.getParticle().ordinal()];
     }
     selectWindow.clear();
+    /////////////////////
+    addToWin(selectWindow, getImage("zap"), SIZE_S, SIZE_S, 1); // Player Energy
+    addToWin(selectWindow, displayPlayerEnergyLabel, SIZE_L, SIZE_S, 1); // Player energy
+    selectWindow.row(); // Player energy
+    separator(selectWindow, 2); // Player energy
+    /////////////////////
     for (Particle p : selectedParticles) {
       selectLabel.get(p).setText(p.getString() + " (" + counter[p.ordinal()] + ")");
       selectButton.get(p).setChecked(false);
-      addToWin(selectWindow, selectButton.get(p), SIZE_L+SIZE_M, SIZE_L, 1);
+      addToWin(selectWindow, selectButton.get(p), SIZE_L+SIZE_M, SIZE_L, 2);
       selectWindow.row();
     }
-    addToWin(selectWindow, selectCross, SIZE_L+SIZE_M, SIZE_L, 1);
+    addToWin(selectWindow, selectCross, SIZE_L+SIZE_M, SIZE_L, 2);
     table.clear();
     table.add(selectWindow);
     if (GameState.getInstance().debug > 0) table.debugAll();

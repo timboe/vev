@@ -14,6 +14,8 @@ import com.google.gwt.thirdparty.json.JSONException;
 import com.google.gwt.thirdparty.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -30,6 +32,7 @@ import timboe.vev.entity.Entity;
 import timboe.vev.entity.Patch;
 import timboe.vev.entity.Sprite;
 import timboe.vev.entity.Tile;
+import timboe.vev.entity.Truck;
 import timboe.vev.entity.Warp;
 import timboe.vev.enums.BuildingType;
 import timboe.vev.enums.Cardinal;
@@ -59,7 +62,6 @@ public class GameState {
   private boolean buildingLocationGood = false;
   //
   public int queueSize;
-  public int nMines;
   public QueueType queueType;
   //
   private float tickTime = 0;
@@ -71,9 +73,10 @@ public class GameState {
   //
   public int debug;
   public int entitiyID;
-  private final HashMap<Integer,Sprite> particleMap = new HashMap<Integer,Sprite>(); // All movable sprites
+  private final HashMap<Integer,Sprite> particleMap = new HashMap<Integer,Sprite>(); // All movable sprites (exc. trucks)
   private final HashMap<Integer,Building> buildingMap = new HashMap<Integer,Building>(); // All buildings
   private final HashMap<Integer,Entity> buildingExtrasMap = new HashMap<Integer,Entity>(); // All building's extra sprites
+  private final HashMap<Integer,Truck> trucksMap = new HashMap<Integer,Truck>(); // All Trucks
 
   // Transient
   public final Set<Integer> selectedSet = new HashSet<Integer>(); // Sub-set, selected sprites
@@ -81,13 +84,13 @@ public class GameState {
   public Particle selectedBuildingStandingOrderParticle;
   public BuildingType buildingBeingPlaced = null;
   public boolean doingPlacement = false;
+  public EnumMap<BuildingType, Integer> buildingPrices = new EnumMap<BuildingType, Integer>(BuildingType.class);
 
   public JSONObject serialise() throws JSONException {
     JSONObject json = new JSONObject();
     json.put("placeLocation", placeLocation == null ? JSONObject.NULL : placeLocation.serialise());
     json.put("buildingLocationGood", buildingLocationGood);
     json.put("queueSize", queueSize);
-    json.put("nMines", nMines);
     json.put("tickTime", tickTime);
     json.put("playerEnergy", playerEnergy);
     json.put("warpEnergy", warpEnergy);
@@ -114,6 +117,12 @@ public class GameState {
       buildingExtras.put(entry.getKey().toString(), entry.getValue().serialise(false));
     }
     json.put("buildingExtrasMap", buildingExtras);
+    //
+    JSONObject trucks = new JSONObject();
+    for (Map.Entry<Integer,Truck> entry : trucksMap.entrySet()) {
+      trucks.put(entry.getKey().toString(), entry.getValue().serialise());
+    }
+    json.put("trucksMap", trucks);
     return json;
   }
 
@@ -125,7 +134,7 @@ public class GameState {
     }
     buildingLocationGood = json.getBoolean("buildingLocationGood");
     queueSize = json.getInt("queueSize");
-    nMines = json.getInt("nMines");
+//    nMines = json.getInt("nMines");
     tickTime = (float) json.getDouble("tickTime");
     playerEnergy = (float) json.getDouble("playerEnergy");
     warpEnergy = (float) json.getDouble("warpEnergy");
@@ -169,6 +178,16 @@ public class GameState {
       if (b.clock != 0) {
         buildingExtrasMap.get( b.clock ).setVisible( b.clockVisible );
       }
+    }
+    //
+    JSONObject jsonTrucks = json.getJSONObject("trucksMap");
+    Iterator trucksIt = jsonTrucks.keys();
+    while (trucksIt.hasNext()) {
+      String key = (String) trucksIt.next();
+      Truck t = new Truck( jsonTrucks.getJSONObject( key ) );
+      trucksMap.put(t.id, t);
+      getSpriteStage().addActor(t);
+      if (t.id != Integer.valueOf(key)) throw new AssertionError();
     }
   }
 
@@ -220,6 +239,8 @@ public class GameState {
 
   public void act(float delta) {
 
+    if (!World.getInstance().getGenerated()) return;
+
     uiStage.act(delta);
 
     if (!isGameOn()) {
@@ -231,6 +252,7 @@ public class GameState {
     spriteStage.act(delta);
     warpStage.act(delta);
     buildingStage.act(delta);
+
 
     if (Param.IS_ANDROID) {
       cursor.set(Gdx.graphics.getWidth()/2f, Gdx.graphics.getHeight()/2f, 0);
@@ -289,6 +311,7 @@ public class GameState {
   public void tryNewParticles(boolean stressTest) {
     // Add a new sprite
     List<Map.Entry<Integer,Warp>> entries = new ArrayList<Map.Entry<Integer,Warp>>(World.getInstance().warps.entrySet());
+    if (entries.size() == 0) return;
     Map.Entry<Integer,Warp> rWarp = entries.get( R.nextInt(entries.size()) );
     Warp warp = rWarp.getValue();
 
@@ -351,6 +374,10 @@ public class GameState {
     return buildingExtrasMap;
   }
 
+  public HashMap<Integer, Truck> getTrucksMap() {
+    return trucksMap;
+  }
+
   public boolean isSelecting() {
     if (Param.IS_ANDROID) {
       return  UI.getInstance().selectParticlesButton.isChecked();
@@ -375,12 +402,12 @@ public class GameState {
     Building b = new Building(World.getInstance().getTile(placeLocation), buildingBeingPlaced);
     buildingStage.addActor(b);
     buildingMap.put(b.id, b);
-    playerEnergy += buildingBeingPlaced.getCost();
-    if (buildingBeingPlaced == BuildingType.kMINE) ++nMines;
+    playerEnergy -= buildingPrices.get(buildingBeingPlaced);
     Camera.getInstance().addShake(Param.BUILDING_SHAKE);
     Sounds.getInstance().thud();
     Sounds.getInstance().OK();
     repath();
+    updateBuildingPrices();
     UI.getInstance().showMain();
   }
 
@@ -689,9 +716,24 @@ public class GameState {
     newParticlesMean = Param.NEW_PARTICLE_MEAN;
     newParticlesWidth = Param.NEW_PARTICLE_WIDTH;
     pathingCache.clear();
-    nMines = 0;
     entitiyID = 0;
     gameOn = false;
+    R.setSeed(0);
+    updateBuildingPrices();
+  }
+
+  private void updateBuildingPrices() {
+    for (BuildingType bt : BuildingType.values()) {
+      int number = 0;
+      for (Building b : buildingMap.values()) {
+        if (b.getType() == bt) ++number;
+      }
+      final int initial = bt.getBaseCost();
+      buildingPrices.put(bt, (int)Math.round(initial * Math.pow(bt.getCostIncrease(), number)));
+    }
+    if (UI.constructed()) {
+      UI.getInstance().updateButtonPriceStatus();
+    }
   }
 
   public void setGameOn(boolean gameOn) {

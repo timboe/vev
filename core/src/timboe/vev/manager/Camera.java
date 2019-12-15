@@ -172,7 +172,7 @@ public class Camera {
 
     currentPos.set(desiredPos);
     currentPos.add(shake * (float)Math.cos(shakeAngle), shake * (float)Math.sin(shakeAngle));
-    currentZoom = desiredZoom;
+    currentZoom += (desiredZoom - currentZoom) * 0.1f;
 
     tileCamera.position.set(currentPos, 0);
     tileCamera.zoom = currentZoom;

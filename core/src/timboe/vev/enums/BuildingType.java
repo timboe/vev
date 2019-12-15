@@ -53,31 +53,38 @@ public enum BuildingType {
     }
   }
 
-  public float getCost() {
-    return Math.round(getBaseCost() + (getQueueCost() * GameState.getInstance().queueSize));
-  }
-
-  public float getBaseCost() {
+  public int getBaseCost() {
     switch (this) {
-      case kHZE: return 5000;
-      case kHWM: return 5000;
-      case kWEQ: return 2500;
-      case kZMQ: return 2500;
-      case kMINE: return (10000 + (5000 * GameState.getInstance().nMines));
+      case kHZE: return 10000;
+      case kHWM: return 10000;
+      case kWEQ: return 10000;
+      case kZMQ: return 10000;
+      case kMINE: return 2000;
       default: return 10000;
     }
   }
 
-  public float getQueueCost() {
+  public float getCostIncrease() {
     switch (this) {
-      case kHZE: return 100;
-      case kHWM: return 100;
-      case kWEQ: return 150;
-      case kZMQ: return 150;
-      case kMINE: return 0;
-      default: return 100;
+      case kHZE: return 1.3f;
+      case kHWM: return 1.3f;
+      case kWEQ: return 1.3f;
+      case kZMQ: return 1.3f;
+      case kMINE: return 1.3f;
+      default: return 1.3f;
     }
   }
+
+//  public float getQueueCost() {
+//    switch (this) {
+//      case kHZE: return 100;
+//      case kHWM: return 100;
+//      case kWEQ: return 150;
+//      case kZMQ: return 150;
+//      case kMINE: return 0;
+//      default: return 100;
+//    }
+//  }
 
   public float getUpgradeBaseCost() {
     switch (this) {

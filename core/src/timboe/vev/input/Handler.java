@@ -35,7 +35,8 @@ public class Handler extends InputAdapter {
       if (++GameState.getInstance().debug == 4) GameState.getInstance().debug = 0;
       GameState.getInstance().getTileStage().setDebugAll( GameState.getInstance().debug > 1 );
     } else if (keycode == Input.Keys.N) {
-      World.getInstance().generate();
+      World.getInstance().reset(false);
+      GameState.getInstance().setGameOn(true);
     } else if (keycode == Input.Keys.G) {
       GameState.getInstance().tryNewParticles(true);
     } else if (keycode == Input.Keys.ENTER) {
