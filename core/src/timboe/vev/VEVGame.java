@@ -28,6 +28,7 @@ import timboe.vev.entity.Entity;
 import timboe.vev.enums.Particle;
 import timboe.vev.manager.Camera;
 import timboe.vev.manager.GameState;
+import timboe.vev.manager.IntroUI;
 import timboe.vev.manager.Sounds;
 import timboe.vev.manager.Textures;
 import timboe.vev.manager.UI;
@@ -43,6 +44,8 @@ import static timboe.vev.enums.Particle.kZ;
 
 public class VEVGame extends Game {
 
+  private JSONObject mainSaveJson = null;
+
   private void settingsDefaults() {
     Param.MUSIC_LEVEL = 1f;
     Param.SFX_LEVEL = 1f;
@@ -53,6 +56,10 @@ public class VEVGame extends Game {
     Param.PARTICLE_HUE.put(kM, 7);
     Param.PARTICLE_HUE.put(kQ, 7);
     Param.PARTICLE_HUE.put(kBlank, 7);
+    Param.BEST_TIME.add(0);
+    Param.BEST_TIME.add(0);
+    Param.BEST_TIME.add(0);
+    Param.BEST_TIME.add(0);
   }
 
   private void tryLoadSetting() {
@@ -125,26 +132,32 @@ public class VEVGame extends Game {
 
     if (GameState.getInstance().isGameOn()) {
       Gdx.app.log("trySave", "SAVING");
-      FileHandle handle = Gdx.files.local(Param.SAVE_FILE);
-      JSONObject json = new JSONObject();
+      mainSaveJson = new JSONObject();
       try {
-        json.put("GameState", GameState.getInstance().serialise());
-        json.put("World", World.getInstance().serialise());
+        mainSaveJson.put("GameState", GameState.getInstance().serialise());
+        mainSaveJson.put("World", World.getInstance().serialise());
       } catch (JSONException e) {
         e.printStackTrace();
       }
+    }
+  }
 
-      ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      GZIPOutputStream gzipOut = null;
-      try {
-        gzipOut = new GZIPOutputStream(baos);
-        ObjectOutputStream objectOut = new ObjectOutputStream(gzipOut);
-        objectOut.writeObject(json.toString());
-        objectOut.close();
-        baos.writeTo(handle.write(false));
-      } catch (IOException e) {
-        e.printStackTrace();
-      }
+  private void flushSave() {
+    if (!Gdx.files.isLocalStorageAvailable()) return;
+    if (mainSaveJson == null) return;
+    Gdx.app.log("flushSave", "FLUSHING TO DISK");
+
+    FileHandle handle = Gdx.files.local(Param.SAVE_FILE);
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    GZIPOutputStream gzipOut;
+    try {
+      gzipOut = new GZIPOutputStream(baos);
+      ObjectOutputStream objectOut = new ObjectOutputStream(gzipOut);
+      objectOut.writeObject(mainSaveJson.toString());
+      objectOut.close();
+      baos.writeTo(handle.write(false));
+    } catch (IOException e) {
+      e.printStackTrace();
     }
   }
 
@@ -152,12 +165,14 @@ public class VEVGame extends Game {
   public void create () {
 
     tryLoadSetting();
+    Lang.create();
     Camera.create();
     Textures.create();
     GameState.create();
     Sounds.create();
     World.create();
     tryLoad();
+    IntroUI.create();
     UI.create();
 
     GameState.getInstance().setGame(this);
@@ -168,12 +183,14 @@ public class VEVGame extends Game {
   @Override
   public void dispose () {
     trySave();
+    IntroUI.getInstance().dispose();
     UI.getInstance().dispose();
     Textures.getInstance().dispose();
     Sounds.getInstance().dispose();
     World.getInstance().dispose();
     Camera.getInstance().dispose();
     GameState.getInstance().dispose();
+    flushSave();
   }
 
 }

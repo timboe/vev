@@ -14,7 +14,6 @@ import com.google.gwt.thirdparty.json.JSONException;
 import com.google.gwt.thirdparty.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -29,7 +28,6 @@ import timboe.vev.Param;
 import timboe.vev.Util;
 import timboe.vev.entity.Building;
 import timboe.vev.entity.Entity;
-import timboe.vev.entity.Patch;
 import timboe.vev.entity.Sprite;
 import timboe.vev.entity.Tile;
 import timboe.vev.entity.Truck;
@@ -65,14 +63,17 @@ public class GameState {
   public QueueType queueType;
   //
   private float tickTime = 0;
-  public float playerEnergy;
-  public float warpEnergy;
+  public float gameTime;
+  public int difficulty;
+  public int playerEnergy;
+  public int inWorldParticles;
+  public int warpParticles;
   private float warpSpawnTime;
   private float newParticlesMean;
   private float newParticlesWidth;
   //
   public int debug;
-  public int entitiyID;
+  public int entityID;
   private final HashMap<Integer,Sprite> particleMap = new HashMap<Integer,Sprite>(); // All movable sprites (exc. trucks)
   private final HashMap<Integer,Building> buildingMap = new HashMap<Integer,Building>(); // All buildings
   private final HashMap<Integer,Entity> buildingExtrasMap = new HashMap<Integer,Entity>(); // All building's extra sprites
@@ -84,7 +85,8 @@ public class GameState {
   public Particle selectedBuildingStandingOrderParticle;
   public BuildingType buildingBeingPlaced = null;
   public boolean doingPlacement = false;
-  public EnumMap<BuildingType, Integer> buildingPrices = new EnumMap<BuildingType, Integer>(BuildingType.class);
+  private EnumMap<BuildingType, Integer> buildingPrices = new EnumMap<BuildingType, Integer>(BuildingType.class);
+  private EnumMap<BuildingType, Integer> buildingQueuePrices = new EnumMap<BuildingType, Integer>(BuildingType.class);
 
   public JSONObject serialise() throws JSONException {
     JSONObject json = new JSONObject();
@@ -93,12 +95,15 @@ public class GameState {
     json.put("queueSize", queueSize);
     json.put("tickTime", tickTime);
     json.put("playerEnergy", playerEnergy);
-    json.put("warpEnergy", warpEnergy);
+    json.put("inWorldParticles", inWorldParticles);
+    json.put("warpParticles", warpParticles);
     json.put("warpSpawnTime", warpSpawnTime);
     json.put("newParticlesMean", newParticlesMean);
     json.put("newParticlesWidth", newParticlesWidth);
     json.put("debug", debug);
-    json.put("entityID", entitiyID);
+    json.put("entityID", entityID);
+    json.put("difficulty", difficulty);
+    json.put("gameTime", gameTime);
     //
     JSONObject particles = new JSONObject();
     for (Map.Entry<Integer,Sprite> entry : particleMap.entrySet()) {
@@ -134,15 +139,17 @@ public class GameState {
     }
     buildingLocationGood = json.getBoolean("buildingLocationGood");
     queueSize = json.getInt("queueSize");
-//    nMines = json.getInt("nMines");
     tickTime = (float) json.getDouble("tickTime");
-    playerEnergy = (float) json.getDouble("playerEnergy");
-    warpEnergy = (float) json.getDouble("warpEnergy");
+    inWorldParticles = json.getInt("inWorldParticles");
+    playerEnergy = json.getInt("playerEnergy");
+    warpParticles = json.getInt("warpParticles");
     warpSpawnTime = (float) json.getDouble("warpSpawnTime");
     newParticlesMean = (float) json.getDouble("newParticlesMean");
     newParticlesWidth = (float) json.getDouble("newParticlesWidth");
     debug = json.getInt("debug");
-    entitiyID = json.getInt("entityID");
+    entityID = json.getInt("entityID");
+    difficulty = json.getInt("difficulty");
+    gameTime = (float)json.getDouble("gameTime");
     //
     JSONObject jsonParticles = json.getJSONObject("particleMap");
     Iterator particlesIt = jsonParticles.keys();
@@ -212,7 +219,7 @@ public class GameState {
   public static void create() { ourInstance = new GameState(); }
   public static boolean constructed() { return ourInstance != null; }
 
-  private ParticleEffectPool dustEffectPool, upgradeDustEffectPool;
+  private ParticleEffectPool dustEffectPool, upgradeDustEffectPool, boomParticleEffectPool;
   public Array<ParticleEffectPool.PooledEffect> dustEffects;
 
   TitleScreen theTitleScreen;
@@ -247,6 +254,12 @@ public class GameState {
       introSpriteStage.act(delta);
       return;
     }
+
+    if (UI.getInstance().uiMode == UIMode.kSETTINGS) {
+      return;
+    }
+
+    gameTime += delta;
 
     // Tile stage, foliage stage are static - does not need to be acted
     spriteStage.act(delta);
@@ -297,7 +310,8 @@ public class GameState {
     }
 
     tickTime += delta;
-    if (tickTime < warpSpawnTime) return;
+    boolean tooFew = (inWorldParticles < 10 && warpParticles > 0);
+    if (!tooFew && tickTime < warpSpawnTime) return;
     tickTime -= warpSpawnTime;
     if (warpSpawnTime > Param.WARP_SPAWN_TIME_MIN) {
       warpSpawnTime -= Param.WARP_SPAWN_TIME_REDUCTION;
@@ -305,32 +319,40 @@ public class GameState {
       newParticlesWidth += Param.WARP_SPAWN_WIDTH_INCREASE;
     }
 
-    tryNewParticles(false);
+    tryNewParticles(false, null, 1);
   }
 
-  public void tryNewParticles(boolean stressTest) {
+  public void tryNewParticles(boolean stressTest, Warp from, int floor) {
     // Add a new sprite
-    List<Map.Entry<Integer,Warp>> entries = new ArrayList<Map.Entry<Integer,Warp>>(World.getInstance().warps.entrySet());
-    if (entries.size() == 0) return;
-    Map.Entry<Integer,Warp> rWarp = entries.get( R.nextInt(entries.size()) );
-    Warp warp = rWarp.getValue();
+    if (from == null) {
+      List<Map.Entry<Integer, Warp>> entries = new ArrayList<Map.Entry<Integer, Warp>>(World.getInstance().warps.entrySet());
+      if (entries.size() == 0) return;
+      Map.Entry<Integer, Warp> rWarp = entries.get(R.nextInt(entries.size()));
+      from = rWarp.getValue();
+    }
 
-    int toPlace = Math.round(
+    int toPlace = floor + Math.round(
         Util.clamp(newParticlesMean + ((float)R.nextGaussian() * newParticlesWidth), 1, Param.NEW_PARTICLE_MAX)
     );
     if (stressTest) toPlace = 1000000;
-    boolean placed = warp.newParticles(toPlace, stressTest);
+    boolean placed = from.newParticles(toPlace, stressTest);
     Gdx.app.log("act","Warp: SpawnTime: "+warpSpawnTime + " meanP: "
         + newParticlesMean + " widthP: " + newParticlesWidth
         + " place:" + toPlace + " placed:" + placed);
 
     if (placed) {
-      warp.zap.start(); // Lightning
-      if (Camera.getInstance().addShake(warp, Param.WARP_SHAKE)) {
+      from.zap.start(); // Lightning
+      if (Camera.getInstance().addShake(from, Param.WARP_SHAKE)) {
         // If did shake, then also do zap
         Sounds.getInstance().zap();
       }
     }
+  }
+
+  public void boomDustEffect(Tile t) {
+    ParticleEffectPool.PooledEffect e = boomParticleEffectPool.obtain();
+    e.setPosition(t.centreScaleTile.x, t.centreScaleTile.y);
+    dustEffects.add(e);
   }
 
   public void upgradeDustEffect(Tile t) {
@@ -348,8 +370,63 @@ public class GameState {
   public void killSprite(Sprite s) {
     particleMap.remove(s.id);
     selectedSet.remove(s.id);
-    dustEffect(s.getTile());
+    inWorldParticles -= 1;
     s.remove(); // From its renderer
+  }
+
+  public void killSelectedBuilding() {
+    Building selected = getBuildingMap().remove( selectedBuilding );
+    selectedBuilding = 0;
+    if (selected == null) {
+      Gdx.app.error("killSelectedBuilding", "Trying to kill NULL selected building?!");
+      return;
+    }
+    // Remove upgrade clock
+    if (selected.clock != 0) {
+      Entity clock = buildingExtrasMap.remove(selected.clock);
+      clock.remove(); // From stage
+    }
+    // Remove extras
+    for (Integer extraID : selected.childElements) {
+      Entity extraEntity = buildingExtrasMap.remove( extraID );
+      extraEntity.remove(); // From stage
+    }
+    // Do animation
+    Tile t = selected.getCentreTile();
+    for (Cardinal D : Cardinal.n8) {
+      boomDustEffect(t.n8.get(D));
+    }
+    if (selected.myQueue != null) {
+      for (IVector2 v : selected.myQueue.getQueue()) {
+        boomDustEffect( World.getInstance().getTile(v) );
+      }
+    }
+    // Run deconstructor
+    selected.deconstruct();
+    // Refund
+    playerEnergy += selected.refund;
+    // Remove building from stage
+    selected.remove();
+    // If it was a mine, try and re-allocate miners
+    if (selected.getType() == BuildingType.kMINE) {
+      reallocateTrucks();
+    }
+    // Return to main menu
+    doRightClick();
+  }
+
+  private void reallocateTrucks() {
+    for (Building b : buildingMap.values()) {
+      if (b.getType() != BuildingType.kMINE || b.myPatch == 0) {
+        continue;
+      }
+      for (Truck t : trucksMap.values()) {
+        if (t.myBuilding == 0) {
+          t.myBuilding = b.id;
+        }
+      }
+      break;
+    }
   }
 
   public void addSprite(Sprite s) {
@@ -380,7 +457,7 @@ public class GameState {
 
   public boolean isSelecting() {
     if (Param.IS_ANDROID) {
-      return  UI.getInstance().selectParticlesButton.isChecked();
+      return  false; //UI.getInstance().selectParticlesButton.isChecked();
     } else {
       return (!doingPlacement && selectStartWorld.dst(selectEndWorld) > 6);
     }
@@ -388,13 +465,22 @@ public class GameState {
 
   public boolean startSelectingAndroid() {
     if (doingPlacement) {
-      UI.getInstance().selectParticlesButton.setChecked(false);
+//      UI.getInstance().selectParticlesButton.setChecked(false);
       return false; // Cannot do selection
     }
-    UI.getInstance().selectParticlesButton.setChecked(true);
+//    UI.getInstance().selectParticlesButton.setChecked(true);
     selectEndWorld.setZero();
     selectStartWorld.setZero();
     return true;
+  }
+
+  public int getBuildingPrice(boolean base, BuildingType type) {
+    int price =  buildingPrices.get(type);
+    if (base) return price;
+    if (queueSize > 9) {
+      price += buildingQueuePrices.get(type) * (queueSize - 9);
+    }
+    return price;
   }
 
   public void placeBuilding() {
@@ -402,18 +488,26 @@ public class GameState {
     Building b = new Building(World.getInstance().getTile(placeLocation), buildingBeingPlaced);
     buildingStage.addActor(b);
     buildingMap.put(b.id, b);
-    playerEnergy -= buildingPrices.get(buildingBeingPlaced);
+    final int price = getBuildingPrice(false, buildingBeingPlaced);
+    playerEnergy -= price;
+    b.addCost(price);
     Camera.getInstance().addShake(Param.BUILDING_SHAKE);
     Sounds.getInstance().thud();
     Sounds.getInstance().OK();
     repath();
     updateBuildingPrices();
+    if (b.getType() == BuildingType.kMINE) {
+      reallocateTrucks(); // In case we had any orphaned
+    }
     UI.getInstance().showMain();
   }
 
   public void doRightClick() {
-    if (!gameOn) { // Canceling settings window
-      UI.getInstance().resetTitle("main");
+    if (!gameOn && theTitleScreen.fadeTimer == 0) { // Canceling settings window
+      IntroUI.getInstance().resetTitle("main");
+      return;
+    }
+    if (!gameOn) {
       return;
     }
     if (selectedSet.size() > 0 || selectedBuilding != 0) {
@@ -482,11 +576,11 @@ public class GameState {
         if (s.selected) selectedSet.add(s.id);
       }
       UI.getInstance().uiMode = UIMode.kNONE; // Remove "selecting"
-      UI.getInstance().selectParticlesButton.setChecked( false );
+//      UI.getInstance().selectParticlesButton.setChecked( false );
       if (!selectedSet.isEmpty()) UI.getInstance().doSelectParticle(selectedSet);
       selectStartWorld.setZero();
       selectEndWorld.setZero();
-      UI.getInstance().selectParticlesButton.setChecked(false);
+//      UI.getInstance().selectParticlesButton.setChecked(false);
       return !selectedSet.isEmpty();
 
     } else if (selectedSet.isEmpty()) {
@@ -627,7 +721,7 @@ public class GameState {
 
   public void setToTitleScreen() {
     pathingCache.clear();
-    UI.getInstance().resetTitle("main");
+    IntroUI.getInstance().resetTitle("main");
     game.setScreen(theTitleScreen);
     setGameOn(false);
   }
@@ -637,11 +731,18 @@ public class GameState {
     UI.getInstance().resetGame();
     theGameScreen.setMultiplexerInputs();
     theGameScreen.fadeIn = 100f;
-    Actor toFocusOn = warpStage.getActors().first();
+    Iterator it = World.getInstance().warps.values().iterator();
+    Warp toFocusOn = (Warp)it.next();
     Camera.getInstance().setCurrentPos(
         toFocusOn.getX() + (Param.WARP_SIZE/2 * Param.TILE_S),
         toFocusOn.getY() + (Param.WARP_SIZE/2 * Param.TILE_S));
     game.setScreen(theGameScreen);
+  }
+
+  public void initialZap() {
+    Iterator it = World.getInstance().warps.values().iterator();
+    Warp toFocusOn = (Warp)it.next();
+    tryNewParticles(false, toFocusOn, 20);
     setGameOn(true);
   }
 
@@ -705,10 +806,14 @@ public class GameState {
     dustEffect.load(Gdx.files.internal("dust_effect.txt"), Textures.getInstance().getAtlas());
     ParticleEffect upgradeDustEffect = new ParticleEffect();
     upgradeDustEffect.load(Gdx.files.internal("upgrade_dust_effect.txt"), Textures.getInstance().getAtlas());
+    ParticleEffect boomParticleEffect = new ParticleEffect();
+    boomParticleEffect.load(Gdx.files.internal("boom_dust_effect.txt"), Textures.getInstance().getAtlas());
     dustEffectPool = new ParticleEffectPool(dustEffect, 10, 100);
     upgradeDustEffectPool = new ParticleEffectPool(upgradeDustEffect, 10, 150);
+    boomParticleEffectPool = new ParticleEffectPool(boomParticleEffect, 10, 150);
     playerEnergy = Param.PLAYER_STARTING_ENERGY;
-    warpEnergy = Param.WARP_STARTING_ENERGY;
+    inWorldParticles = 0;
+    warpParticles = Param.PARTICLES_SMALL;
     debug = Param.DEBUG_INTIAL;
     queueType = Param.QUEUE_INITIAL_TYPE;
     queueSize = Param.QUEUE_INITIAL_SIZE;
@@ -716,9 +821,13 @@ public class GameState {
     newParticlesMean = Param.NEW_PARTICLE_MEAN;
     newParticlesWidth = Param.NEW_PARTICLE_WIDTH;
     pathingCache.clear();
-    entitiyID = 0;
+    entityID = 0;
     gameOn = false;
-    R.setSeed(0);
+    gameTime = 0;
+    difficulty = 0;
+    if (Param.WORLD_SEED > 0) {
+      R.setSeed(Param.WORLD_SEED);
+    }
     updateBuildingPrices();
   }
 
@@ -728,8 +837,11 @@ public class GameState {
       for (Building b : buildingMap.values()) {
         if (b.getType() == bt) ++number;
       }
-      final int initial = bt.getBaseCost();
-      buildingPrices.put(bt, (int)Math.round(initial * Math.pow(bt.getCostIncrease(), number)));
+      if (bt == BuildingType.kMINE) {
+        number += trucksMap.size();
+      }
+      buildingPrices.put(bt, (int)Math.round(bt.getBaseCost() * Math.pow(bt.getCostIncrease(), number)));
+      buildingQueuePrices.put(bt, (int)Math.round(bt.getQueueBaseCost() * Math.pow(bt.getCostIncrease(), number)));
     }
     if (UI.constructed()) {
       UI.getInstance().updateButtonPriceStatus();

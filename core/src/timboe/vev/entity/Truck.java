@@ -6,7 +6,7 @@ import com.google.gwt.thirdparty.json.JSONException;
 import com.google.gwt.thirdparty.json.JSONObject;
 
 import timboe.vev.Param;
-import timboe.vev.enums.Cardinal;
+import timboe.vev.Util;
 import timboe.vev.enums.Particle;
 import timboe.vev.manager.GameState;
 import timboe.vev.manager.World;
@@ -28,8 +28,8 @@ public class Truck extends Sprite {
 
   // Persistent
   private TruckState truckState;
-  private float holding = 0f, capacity = Param.TRUCK_INITIAL_CAPACITY, speed = Param.TRUCK_LOAD_SPEED;
-  private int myBuilding;
+  private int holding = 0, capacity = Param.TRUCK_INITIAL_CAPACITY, speed = Param.TRUCK_LOAD_SPEED;
+  public int myBuilding;
   private int extraFrames;
 
   public JSONObject serialise() throws JSONException {
@@ -46,9 +46,9 @@ public class Truck extends Sprite {
   public Truck(JSONObject json) throws JSONException {
     super(json);
     truckState = TruckState.valueOf( json.getString("truckState") );
-    holding = (float) json.getDouble("holding");
-    capacity = (float) json.getDouble("capacity");
-    speed = (float) json.getDouble("speed");
+    holding = json.getInt("holding");
+    capacity = json.getInt("capacity");
+    speed = json.getInt("speed");
     myBuilding = json.getInt("myBuilding");
     extraFrames = json.getInt("extraFrames");
   }
@@ -56,7 +56,7 @@ public class Truck extends Sprite {
 
   public Truck(Tile t, Building myBuilding) {
     super(t);
-    setTexture("pyramid", Param.N_TRUCK, false);
+    setTexture("pyramid", Param.N_TRUCK_SPRITES, false);
     moveBy(0, Param.TILE_S/2); // Floats
     this.myBuilding = myBuilding.id;
     this.frame = 0;
@@ -64,12 +64,14 @@ public class Truck extends Sprite {
     this.truckState = TruckState.kOFFLOAD;
   }
 
-  private Building getBuilding() {
-    return GameState.getInstance().getBuildingMap().get(myBuilding);
+  public void orphan() {
+    myBuilding = 0;
+    truckState = TruckState.kDORMANT;
   }
 
-  private Patch getPatch() {
-    return World.getInstance().getTiberiumPatches().get(getBuilding().myPatch);
+  private Building getBuilding() {
+    if (myBuilding == 0) return null;
+    return GameState.getInstance().getBuildingMap().get(myBuilding);
   }
 
   @Override
@@ -77,6 +79,7 @@ public class Truck extends Sprite {
     switch (truckState) {
       case kGO_TO_PATCH: this.truckState = TruckState.kLOAD; return;
       case kRETURN_FROM_PATCH: this.truckState = TruckState.kOFFLOAD; return;
+      case kDORMANT: return;
     }
   }
 
@@ -92,17 +95,27 @@ public class Truck extends Sprite {
   public void act(float delta) {
     time += delta;
     actMovement(delta);
-    moveBy(.2f * (float)Math.sin(time), .2f * (float)Math.cos(time));
+    moveBy(0f, .2f * (float)Math.cos(time));
+    Building myB = getBuilding();
+    Patch myPatch = myB != null ? World.getInstance().getTiberiumPatches().get(myB.myPatch) : null;
 
     switch (truckState) {
       case kOFFLOAD:
-        Building myB = getBuilding();
+        // Was deconstructed?
+        if (myB == null) {
+          truckState = TruckState.kDORMANT;
+          return;
+        }
         // Have to wait if building is upgrading
         if (myB.doUpgrade) return;
         float toRemove = this.speed * delta;
         if (toRemove > this.holding) toRemove = this.holding;
         this.holding -= toRemove;
-        this.extraFrames = Math.round((this.holding / this.capacity) * (Param.N_TRUCK - 1));
+        if (Util.R.nextFloat() > 0.8f) {
+          IVector2 v = myB.coordinates;
+          GameState.getInstance().upgradeDustEffect( World.getInstance().getTile( v.x + 1, v.y + 2) );
+        }
+        this.extraFrames = Math.round((this.holding / (float)this.capacity) * (Param.N_TRUCK_SPRITES - 1));
         GameState.getInstance().playerEnergy += toRemove;
         if (holding < 1f) {
           Tile destination = myB.getBuildingDestination(Particle.kBlank);
@@ -117,21 +130,31 @@ public class Truck extends Sprite {
       case kLOAD:
         this.holding += this.speed * delta;
         int curFrame = this.extraFrames;
-        this.extraFrames = Math.round((holding / capacity) * (Param.N_TRUCK - 1));
-        Patch myPatch = getPatch();
+        this.extraFrames = Math.round((this.holding / (float)this.capacity) * (Param.N_TRUCK_SPRITES - 1));
+        if (myB == null || myPatch == null) {
+          truckState = TruckState.kDORMANT;
+          return;
+        }
         if (curFrame != this.extraFrames) {
           myPatch.removeRandom();
         }
         if (holding >= capacity || myPatch.remaining() == 0) {
           holding = capacity;
-          Tile t = World.getInstance().getTile( getBuilding().getPathingStartPoint(Particle.kBlank) );
+          Tile t = World.getInstance().getTile( myB.getPathingStartPoint(Particle.kBlank) );
           pathTo(t, null, null);
           truckState = TruckState.kRETURN_FROM_PATCH;
         }
         if (myPatch.remaining() == 0) {
-          getBuilding().updateMyPatch();
+          myB.updateMyPatch();
         }
         break;
+      case kDORMANT:
+        if (myB == null || myPatch == null || myPatch.remaining() == 0) {
+          return;
+        }
+        Tile t = World.getInstance().getTile( myB.getPathingStartPoint(Particle.kBlank) );
+        pathTo(t, null, null);
+        truckState = TruckState.kRETURN_FROM_PATCH;
       default:
         break;
     }

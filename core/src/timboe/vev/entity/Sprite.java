@@ -6,6 +6,8 @@ import com.google.gwt.thirdparty.json.JSONException;
 import com.google.gwt.thirdparty.json.JSONObject;
 
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -34,6 +36,7 @@ public class Sprite extends Entity {
   public float idleTime;
   public final float boredTime; // Leave at least 10 seconds
   private Particle myParticle;
+  public HashSet<Integer> bouncedBuildings = new HashSet<Integer>();
 
   public Sprite(Tile t) {
     super(t.coordinates.x, t.coordinates.y, Param.TILE_S * Param.SPRITE_SCALE);
@@ -52,11 +55,25 @@ public class Sprite extends Entity {
     json.put("idleTime", idleTime);
     json.put("boredTime", boredTime);
     json.put("myParticle", myParticle == null ? JSONObject.NULL : myParticle.name());
+    Integer count = 0;
+    JSONObject jsonBB = new JSONObject();
+    for (Integer i : bouncedBuildings) {
+      jsonBB.put(count.toString(), i.toString());
+      count += 1;
+    }
+    json.put("bouncedBuildings", jsonBB);
     return json;
   }
 
   public Sprite(JSONObject json) throws JSONException {
     super(json);
+    JSONObject jsonBB = json.getJSONObject("bouncedBuildings");
+    bouncedBuildings.clear();
+    Iterator bbIt = jsonBB.keys();
+    while (bbIt.hasNext()) {
+      String key = (String) bbIt.next();
+      bouncedBuildings.add( jsonBB.getInt(key) );
+    }
     if (json.get("myParticle") == JSONObject.NULL) {
       myParticle = null;
     } else {
@@ -132,6 +149,7 @@ public class Sprite extends Entity {
     if (frames == 1 || time < Param.ANIM_TIME) return;
     time -= Param.ANIM_TIME;
     if (idleTime > boredTime && Util.R.nextFloat() < Param.PARTICLE_WANDER_CHANCE) {
+      bouncedBuildings.clear(); // Another safe place to reset the buildings that I have visited
       int newX = (int) Util.clamp(myTile.x - (Param.PARTICLE_WANDER_R/2) + Util.R.nextInt(Param.PARTICLE_WANDER_R), 1, Param.TILES_X - 2);
       int newY = (int) Util.clamp(myTile.y - (Param.PARTICLE_WANDER_R/2) + Util.R.nextInt(Param.PARTICLE_WANDER_R), 1, Param.TILES_Y - 2);
       Tile idleWander = null;

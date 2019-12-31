@@ -16,6 +16,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 
 public class LabelDF extends Label {
   private ShaderProgram shader;
+  boolean isDisabled = false;
 
   public LabelDF(CharSequence text, Skin skin, ShaderProgram shader) {
     super(text, skin);

@@ -1,7 +1,7 @@
 package timboe.vev.entity;
 
-import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Music;
 import com.google.gwt.thirdparty.json.JSONException;
 import com.google.gwt.thirdparty.json.JSONObject;
 
@@ -35,7 +35,7 @@ public class Building extends Entity {
   // Persistent properties
   private final BuildingType type;
   private final IVector2 centre;
-  private OrderlyQueue myQueue = null;
+  public OrderlyQueue myQueue = null;
   public int myPatch;
   private IVector2 pathingStartPoint;
   public float timeDisassemble;
@@ -45,7 +45,7 @@ public class Building extends Entity {
   private float nextReleaseTime;
   public float timeUpgrade;
   public int spriteProcessing;
-  private Vector<Integer> childElements = new Vector<Integer>();
+  public Vector<Integer> childElements = new Vector<Integer>();
   public int clock;
   public boolean clockVisible;
   private EnumMap<Particle, Integer> holdingPen = new EnumMap<Particle, Integer>(Particle.class);
@@ -54,6 +54,7 @@ public class Building extends Entity {
   public float getTimeDisassembleMax; // Used to get % complete
   private int buildingLevel;
   public boolean doUpgrade;
+  public int refund;
 
   public JSONObject serialise() throws JSONException {
     JSONObject json = super.serialise(false);
@@ -88,11 +89,14 @@ public class Building extends Entity {
     json.put("getTimeDisassembleMax", getTimeDisassembleMax);
     json.put("buildingLevel", buildingLevel);
     json.put("doUpgrade", doUpgrade);
+    json.put("refund", refund);
+
     return json;
   }
 
   public Building(JSONObject json) throws JSONException {
     super(json);
+    this.refund = json.getInt("refund");
     this.doUpgrade = json.getBoolean("doUpgrade");
     this.buildingLevel = json.getInt("buildingLevel");
     this.getTimeDisassembleMax = (float) json.getDouble("getTimeDisassembleMax");
@@ -141,6 +145,7 @@ public class Building extends Entity {
     super(t.coordinates.x - (type == BuildingType.kWARP ? (Param.WARP_SIZE/2) - 2 : 1),
           t.coordinates.y - (type == BuildingType.kWARP ? (Param.WARP_SIZE/2) - 2 : 1));
     buildingPathingLists = new EnumMap<Particle, List<IVector2>>(Particle.class);
+    this.refund = 0;
     this.type = type;
     this.doUpgrade = false;
     this.spriteProcessing = 0;
@@ -163,11 +168,36 @@ public class Building extends Entity {
     } else {
       this.built = 1;
       updatePathingStartPoint();
-
       updateMyPatch();
     }
     // Move any sprites which are here
     moveOn();
+  }
+
+  public void deconstruct() {
+    Sounds.getInstance().demolish();
+    finishProcessingParticle();
+    Tile t = World.getInstance().getTile( coordinates.x + 1, coordinates.y + 1 ); // Assuming 3x3
+    t.removeBuilding();
+    for (Cardinal D : Cardinal.n8) {
+      t.n8.get(D).removeBuilding();
+    }
+    if (myQueue != null) {
+      myQueue.deconstruct();
+      myQueue = null;
+    }
+    updatePathingGrid();
+    if (type == BuildingType.kMINE) {
+      for (Truck truck : GameState.getInstance().getTrucksMap().values()) {
+        if (truck.myBuilding == this.id) {
+          truck.orphan();
+        }
+      }
+    }
+  }
+
+  public void addCost(int cost) {
+    this.refund += Math.round( Param.BUILDING_REFUND_AMOUND * cost );
   }
 
   public void updateMyPatch() {
@@ -182,6 +212,7 @@ public class Building extends Entity {
     }
     if (patch == null) {
       this.buildingPathingLists.remove(Particle.kBlank);
+      this.myPatch = 0;
       return;
     }
     this.myPatch = patch.id;
@@ -204,7 +235,9 @@ public class Building extends Entity {
     }
     Particle p = s.getParticle();
     spriteProcessing = s.id;
+    GameState.getInstance().dustEffect(s.getTile());
     if (Camera.getInstance().onScreen(this)) Sounds.getInstance().poof();
+    s.setVisible(false);
     timeDisassemble = getDisassembleTime(p);
     getTimeDisassembleMax = timeDisassemble;
   }
@@ -230,6 +263,12 @@ public class Building extends Entity {
   public float getUpgradeFactor() {
     return (float)Math.pow(Param.BUILDING_DISASSEMBLE_BONUS, buildingLevel);
   }
+
+  public float getNextUpgradeFactor() {
+    return (float)Math.pow(Param.BUILDING_DISASSEMBLE_BONUS, buildingLevel + 1);
+  }
+
+
 
   public void updatePathingStartPoint() {
 //    Gdx.app.log("updatePathingStartPoint", "CALLED myQueue:" + myQueue)
@@ -292,9 +331,14 @@ public class Building extends Entity {
     pathingList = null;
   }
 
+  public boolean canJoinQueue(Sprite s) {
+    // Note: built==0 is built
+    return (type.accepts(s) && built == 0);
+  }
+
   public Pair<Tile, Cardinal> getFreeLocationInQueue(Sprite s) {
     Gdx.app.log("TIMM","Sprite "+s+" is accepted " + type.accepts(s));
-    if (!type.accepts(s) || built > 0) return null;
+    // NOTE: Now expect canJoinQueue to be called independently of this, first
     return myQueue.getFreeLocationInQueue();
   }
 
@@ -307,7 +351,7 @@ public class Building extends Entity {
     return World.getInstance().getTile(v);
   }
 
-  private Tile getCentreTile() {
+  public Tile getCentreTile() {
     return World.getInstance().getTile(centre);
   }
 
@@ -361,6 +405,8 @@ public class Building extends Entity {
         Entity p = new Entity(Param.SPRITE_SCALE*(coordinates.x), Param.SPRITE_SCALE*(coordinates.y + 1));
         p.moveBy(73, -5 + (20 * i)); // Fine tune-position of
         Particle input = type.getInput(i);
+        assert input != null;
+        assert input.getColourFromParticle() != null;
         p.setTexture("ball_" + input.getColourFromParticle().getString(), 1, false);
         childElements.add(p.id);
         GameState.getInstance().addBuildingExtraEntity(p);
@@ -409,7 +455,7 @@ public class Building extends Entity {
         }
       }
       // Need to update multiple UI elements, so best to...
-      if (isSelected()) UI.getInstance().refreshBuildingLabels(this);
+      if (isSelected()) UI.getInstance().refreshBuildingLabels();
     }
 
     timeMove += delta;
@@ -437,13 +483,15 @@ public class Building extends Entity {
         for (int i = 0; i < N; ++i) {
           Sprite s = new Sprite( tileFromCoordinate( getPathingStartPoint(p) ) );
           List<IVector2> pList = getBuildingPathingList(p); // Do I have a standing order?
-          if (pList == null) s.pathTo( s.findPathingLocation(tileFromCoordinate( getPathingStartPoint(p) ), true, true, true, false), null, null);  // random direction=True, needs parking=True, requireSameHeight=True
+          if (pList == null) s.pathTo( Sprite.findPathingLocation(tileFromCoordinate( getPathingStartPoint(p) ), true, true, true, false), null, null);  // random direction=True, needs parking=True, requireSameHeight=True
           else s.pathingList = new LinkedList<IVector2>(pList); // Clone
+          assert p.getColourFromParticle() != null;
           s.setTexture("ball_" + p.getColourFromParticle().getString(), 6, false);
           s.setParticle(p);
           s.moveBy(Param.TILE_S / 2, Param.TILE_S / 2);
           s.moveBy( Util.R.nextInt(Param.TILE_S ), Util.R.nextInt(Param.TILE_S )  );
           GameState.getInstance().addSprite(s);
+          GameState.getInstance().inWorldParticles += 1;
         }
       }
     }
@@ -452,8 +500,14 @@ public class Building extends Entity {
     timeDisassemble -= delta;
     if (isSelected()) UI.getInstance().buildingSelectProgress.get(type).setValue(timeDisassemble / getTimeDisassembleMax);
     if (timeDisassemble > 0) return;
+    finishProcessingParticle();
+  }
+
+  private void finishProcessingParticle() {
+    if (spriteProcessing == 0) return;
     Sprite s = GameState.getInstance().getParticleMap().get(spriteProcessing);
     Pair<Particle,Particle> myDecay = type.getOutputs( s.getParticle() );
+    assert myDecay != null;
     placeParticle( myDecay.getKey()   ); // Output #1
     placeParticle( myDecay.getValue() ); // Output #2
     GameState.getInstance().playerEnergy += type.getOutputEnergy( s.getParticle() );
@@ -461,7 +515,7 @@ public class Building extends Entity {
     spriteProcessing = 0;
   }
 
-  protected void placeParticle(Particle p) {
+  void placeParticle(Particle p) {
     if (p == null) return;
     Integer current = holdingPen.get(p);
     holdingPen.put(p, current + 1);
@@ -489,11 +543,15 @@ public class Building extends Entity {
 
   public boolean upgradeBuilding() {
     if (built > 0) return false; // Not built yet
+    final int cost = getUpgradeCost();
+    if (GameState.getInstance().playerEnergy < cost) return false; // Cannot afford
     doUpgrade = true;
     timeUpgrade = getUpgradeTime();
-    GameState.getInstance().playerEnergy += getUpgradeCost();
+    GameState.getInstance().playerEnergy -= cost;
+    addCost(cost);
     clockVisible = true;
     GameState.getInstance().getBuildingExtrasMap().get( clock ).setVisible(true);
+    Sounds.getInstance().OK();
     return true;
   }
 }

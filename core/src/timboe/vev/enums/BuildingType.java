@@ -1,6 +1,7 @@
 package timboe.vev.enums;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 
 import timboe.vev.Pair;
 import timboe.vev.entity.Sprite;
@@ -31,23 +32,25 @@ public enum BuildingType {
     return false;
   }
 
-  public BuildingType fromString(String s) {
-    if      (s.equals("H/Z/e")) return kHZE;
-    else if (s.equals("H/W/μ")) return kHWM;
-    else if (s.equals("W/e/q")) return kWEQ;
-    else if (s.equals("Z/μ/q")) return kZMQ;
-    else if (s.equals("Mine")) return kMINE;
-    else if (s.equals("Warp")) return kWARP;
-    else return kWARP;
+  public int getShortcut() {
+    switch (this) {
+      case kHZE: return Input.Keys.NUM_1;
+      case kHWM: return Input.Keys.NUM_2;
+      case kWEQ: return Input.Keys.NUM_4;
+      case kZMQ: return Input.Keys.NUM_5;
+      case kMINE: return Input.Keys.NUM_6;
+      case kWARP: return Input.Keys.NUM_7;
+      default: return Input.Keys.NUM_0;
+    }
   }
 
   public String getString() {
     switch (this) {
-      case kHZE: return "H/Z/e";
-      case kHWM: return "H/W/μ";
-      case kWEQ: return "W/e/q";
-      case kZMQ: return "Z/μ/q";
-      case kMINE: return "Mine";
+      case kHZE: return "Disassembler Alpha";
+      case kHWM: return "Disassembler Beta";
+      case kWEQ: return "Disassembler Gamma";
+      case kZMQ: return "Disassembler Omega";
+      case kMINE: return "Refinery";
       case kWARP: return "Warp";
       default: return "?";
     }
@@ -64,6 +67,17 @@ public enum BuildingType {
     }
   }
 
+  public int getQueueBaseCost() {
+    switch (this) {
+      case kHZE: return 100;
+      case kHWM: return 100;
+      case kWEQ: return 100;
+      case kZMQ: return 100;
+      case kMINE: return 0;
+      default: return 0;
+    }
+  }
+
   public float getCostIncrease() {
     switch (this) {
       case kHZE: return 1.3f;
@@ -75,16 +89,6 @@ public enum BuildingType {
     }
   }
 
-//  public float getQueueCost() {
-//    switch (this) {
-//      case kHZE: return 100;
-//      case kHWM: return 100;
-//      case kWEQ: return 150;
-//      case kZMQ: return 150;
-//      case kMINE: return 0;
-//      default: return 100;
-//    }
-//  }
 
   public float getUpgradeBaseCost() {
     switch (this) {
@@ -102,7 +106,7 @@ public enum BuildingType {
   }
 
   public Particle getInput(int mode) {
-    if (mode >= N_MODES) Gdx.app.error("getInput", "Invalid mode:"+mode);
+    if (mode >= N_MODES || this == kMINE) Gdx.app.error("getInput", "Invalid mode:"+mode+" or getInput called on a kMINE");
     switch (this) {
       case kHZE:
         if (mode == 0) return Particle.kH;
@@ -120,7 +124,7 @@ public enum BuildingType {
         if (mode == 0) return Particle.kZ;
         if (mode == 1) return Particle.kM;
         if (mode == 2) return Particle.kQ;
-      case kMINE: default: return null;
+      case kMINE: default: return Particle.kBlank;
     }
   }
 

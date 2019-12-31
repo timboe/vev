@@ -5,6 +5,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 
 import java.util.EnumMap;
+import java.util.Vector;
 
 import timboe.vev.enums.Particle;
 import timboe.vev.enums.QueueType;
@@ -15,6 +16,7 @@ public class Param {
   public static float MUSIC_LEVEL = 0.f;
   public static float SFX_LEVEL = 1.f;
   public static EnumMap<Particle,Integer> PARTICLE_HUE = new EnumMap<Particle,Integer>(Particle.class);
+  public static Vector<Integer> BEST_TIME = new Vector<Integer>();
 
   // Transient
   public static EnumMap<Particle,Color> PARTICLE_BASE_COLOUR = new EnumMap<Particle,Color>(Particle.class);
@@ -33,6 +35,8 @@ public class Param {
   public static final int TILES_MAX = Math.max(TILES_X, TILES_Y);
 
   public static final int TILE_S = 16;
+
+  public static final int WORLD_SEED = 0; // 0 to disable
 
   public static final int SPRITE_SCALE = 2;
   public static final float PARTICLE_VELOCITY = 32f*2f;
@@ -86,13 +90,15 @@ public class Param {
   public static final float BUILDING_QUEUE_MOVE_TIME = .2f; // Time in seconds between particles moving through queue
   public static final float BUILDING_SHAKE = 2.5f;
   public static final float BUILDING_DISASSEMBLE_BONUS = 0.9f; //^(building level)
+  public static final float BUILDING_REFUND_AMOUND = 0.8f; //Recoup % of all building costs
+
 
   public static final float LONG_PRESS_TIME = 0.15f;
 
-  public static final int N_TIBERIUM = 4; // Number of sprites
-  public static final int N_BALLS = 6; // number of sprites
-  public static final int N_TRUCK = 8;
-  public static final int MAX_FRAMES = Math.max(N_TIBERIUM, Math.max(N_BALLS, N_TRUCK));
+  public static final int N_TIBERIUM_SPRITES = 4; // Number of sprites
+  public static final int N_BALL_SPRITES = 6; // number of sprites
+  public static final int N_TRUCK_SPRITES = 8;
+  public static final int MAX_FRAMES = Math.max(N_TIBERIUM_SPRITES, Math.max(N_BALL_SPRITES, N_TRUCK_SPRITES));
 
   public static final float HILL_IN_HILL_PROB = .2f;
   public static final float STAIRS_PROB = .8f;
@@ -120,6 +126,12 @@ public class Param {
   public static final float FRAME_TIME = (1f/DESIRED_FPS);
   public static int FRAME = 0;
 
+  public static final int PARTICLES_SMALL = 1000;
+  public static final int PARTICLES_MED = 5000;
+  public static final int PARTICLES_LARGE = 20000;
+  public static final int PARTICLES_XL = 5000;
+
+
   public static final float ANIM_TIME = 1/20f; // I.e. 12 frames per second
 
   public static final Color HIGHLIGHT_GREEN = new Color(0f, 1f, 0f, 1f);
@@ -128,12 +140,12 @@ public class Param {
 
   public static final int DISPLAY_X = 1920;
   public static final int DISPLAY_Y = Math.round(DISPLAY_X * (9f/16f));
+  public static final int UI_WIDTH_INTRO = 450;
 
-  public static final float PLAYER_STARTING_ENERGY = 5000f * 10f;
-  public static final float WARP_STARTING_ENERGY = 400000f;
+  public static final int PLAYER_STARTING_ENERGY = 5000 * 10;
 
-  public static final float TRUCK_INITIAL_CAPACITY = 15000f;
-  public static final float TRUCK_LOAD_SPEED = 2500f;
+  public static final int TRUCK_INITIAL_CAPACITY = 15000;
+  public static final int TRUCK_LOAD_SPEED = 1250;
 
   public static final Color PARTICLE_Blank = new Color(128/255f, 128/255f, 128/255f, 1f);
 

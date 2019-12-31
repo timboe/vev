@@ -64,6 +64,14 @@ public class OrderlyQueue {
     repath();
   }
 
+  public void deconstruct() {
+    for (IVector2 v : queue) {
+      Tile t = tileFromCoordinate( v );
+      t.removeBuilding();
+    }
+    repath();
+    queue.clear();
+  }
 
   public List<IVector2> getQueue() {
     return queue;
@@ -86,11 +94,11 @@ public class OrderlyQueue {
     // Now try and move everyone along
     for (int i = 0; i < queue.size(); ++i) {
       final Tile tile = tileFromCoordinate( queue.get(i) );
-      if (tile == null) Gdx.app.error("WTF?!?!","");
       Sprite toRemove = null;
+      assert tile != null;
       for (int id : tile.containedSprites) {
         Sprite s = GameState.getInstance().getParticleMap().get(id);
-        Gdx.app.log("moveAlongMoveAlong","tile " + tile.coordinates + " contains "+id+" sprite=" + s + " parked=" + tile.parkingSpaces.get(s));
+//        Gdx.app.log("moveAlongMoveAlong","tile " + tile.coordinates + " contains "+id+" sprite=" + s + " parked=" + tile.parkingSpaces.get(s.id));
         // Get parking space
         final Cardinal parking = tile.parkingSpaces.get(s.id);
         if (parking == null) continue; // I'm not parked here, e.g. moving over the entrance tile
@@ -99,7 +107,7 @@ public class OrderlyQueue {
           if (i == 0) { // Is this the final tile?
             // Is the sprite *actually here*
             Building b = getMyBuilding();
-            Gdx.app.log("moveAlongMoveAlong", "b.spriteProcessing="+b.spriteProcessing+" nudgeDest="+s.nudgeDestination);
+//            Gdx.app.log("moveAlongMoveAlong", "b.spriteProcessing="+b.spriteProcessing+" nudgeDest="+s.nudgeDestination);
             if (b.spriteProcessing == 0 && s.nudgeDestination.isZero()) { // Arrived
               if (toRemove != null) Gdx.app.error("moveAlongMoveAlong", "should only ever be one toRemove");
               // Goodby - this particle is now DEAD
@@ -225,13 +233,13 @@ public class OrderlyQueue {
     }
   }
 
-  public void doQueue(int xStart, int yStart) {
+  private void doQueue(int xStart, int yStart) {
     switch (GameState.getInstance().queueType) {
       case kSIMPLE: doSimpleQueue(xStart, yStart); break;
       case kSPIRAL: doSpiralQueue(xStart, yStart); break;
       default: Gdx.app.error("hintQueue","Unknown - " + GameState.getInstance().queueType);
     }
-    tileFromCoordinate( queue.get( queue.size()-1 )).type = TileType.kGROUND; // Re-set to ground to make pathable
+    tileFromCoordinate( queue.get( queue.size()-1 )).type = TileType.kGROUND; // Re-set to ground to make path-able
   }
 
   private void doSpiralQueue(int xStart, int yStart) {

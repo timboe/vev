@@ -8,7 +8,6 @@ import com.badlogic.gdx.graphics.TextureData;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
-import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -112,9 +111,9 @@ public class Textures {
     Pixmap fullMap = data.consumePixmap();
     for (Particle p : Particle.values()) {
       if (p == Particle.kBlank) continue;
-      for (int i = 0; i <= Param.N_BALLS; ++i) {
+      for (int i = 0; i <= Param.N_BALL_SPRITES; ++i) {
         TextureRegion r;
-        if (i == Param.N_BALLS) r = new TextureRegion(atlas.findRegion("ball_r"));
+        if (i == Param.N_BALL_SPRITES) r = new TextureRegion(atlas.findRegion("ball_r"));
         else r = new TextureRegion(atlas.findRegion("ball_r_" + i));
 
         Pixmap pixmap = new Pixmap(r.getRegionWidth(), r.getRegionHeight(), Pixmap.Format.RGBA8888);
@@ -132,18 +131,30 @@ public class Textures {
         TextureRegion newTexRegion = new TextureRegion(newTex);
         pixmap.dispose();
         Colour c = p.getColourFromParticle();
-        if (i == Param.N_BALLS) retexturedMap.put("ball_" + c.getString(), newTexRegion);
+        if (i == Param.N_BALL_SPRITES) retexturedMap.put("ball_" + c.getString(), newTexRegion);
         else retexturedMap.put("ball_" + c.getString() + "_" + i, newTexRegion);
       }
     }
+
+    TextureRegion r = new TextureRegion(atlas.findRegion("ball_r"));
+    Pixmap pixmap = new Pixmap(r.getRegionWidth(), r.getRegionHeight(), Pixmap.Format.RGBA8888);
+    pixmap.drawPixmap(fullMap, 0, 0, r.getRegionX(), r.getRegionY(), r.getRegionWidth(), r.getRegionHeight());
+    colourReplace(pixmap, redHighlight, new Color(192/255f, 192/255f, 192/255f, 1f));
+    colourReplace(pixmap, redTexture, new Color(128/255f, 128/255f, 128/255f, 1f));
+    colourReplace(pixmap, redOutline, new Color(64/255f, 64/255f, 64/255f, 1f));
+    Texture newTex = new Texture(pixmap);
+    TextureRegion newTexRegion = new TextureRegion(newTex);
+    retexturedMap.put("ball_grey", newTexRegion);
+    pixmap.dispose();
+
     fullMap.dispose();
     data.disposePixmap();
 
     if (GameState.constructed()) {
       GameState.getInstance().retextureSprites();
     }
-    if (UI.constructed()) {
-      UI.getInstance().retextureSprites();
+    if (IntroUI.constructed()) {
+      IntroUI.getInstance().retextureSprites();
     }
   }
 

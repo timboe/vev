@@ -55,7 +55,7 @@ public class Entity extends Actor implements Serializable {
     JSONObject json = new JSONObject();
     json.put("id", this.id);
     json.put("mask", this.mask);
-    json.put("tileColour", this.tileColour == null ? JSONObject.NULL : tileColour.getString());
+    json.put("tileColour", this.tileColour == null ? JSONObject.NULL : tileColour.name());
     json.put("level", this.level);
     json.put("scale", this.scale);
     json.put("x", getX());
@@ -153,10 +153,10 @@ public class Entity extends Actor implements Serializable {
     setY( (float) json.getDouble("y") );
     setX( (float) json.getDouble("x") );
     this.level = json.getInt("level");
-    if (json.getString("tileColour") == JSONObject.NULL) {
+    if (json.getString("tileColour") == JSONObject.NULL || json.getString("tileColour").equals("null")) { // Why this 2nd check?
       this.tileColour = null;
     } else {
-      this.tileColour = Colour.fromString( json.getString("tileColour") );
+      this.tileColour = Colour.valueOf( json.getString("tileColour") );
     }
     this.mask = json.getBoolean("mask");
     this.id = json.getInt("id");
@@ -183,7 +183,7 @@ public class Entity extends Actor implements Serializable {
   }
 
   private void construct(int x, int y, int scale) {
-    this.id = GameState.getInstance().entitiyID++;
+    this.id = GameState.getInstance().entityID++;
     this.scale = scale;
     this.frames = 1;
     this.frame = -1;
@@ -287,7 +287,7 @@ public class Entity extends Actor implements Serializable {
   }
 
   public void drawPath(ShapeRenderer sr) {
-    if (!selected && !UI.getInstance().showPathsButton.isChecked()) return;
+    if (!selected && !UI.getInstance().showPaths) return;
     if (pathingList != null) { // in-progress
       sr.setColor(pathingParticle.getHighlightColour());
       drawList(pathingList, sr, pathingParticle.getStandingOrderOffset());

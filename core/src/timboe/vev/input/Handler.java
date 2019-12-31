@@ -38,7 +38,7 @@ public class Handler extends InputAdapter {
       World.getInstance().reset(false);
       GameState.getInstance().setGameOn(true);
     } else if (keycode == Input.Keys.G) {
-      GameState.getInstance().tryNewParticles(true);
+      GameState.getInstance().tryNewParticles(true, null, 1);
     } else if (keycode == Input.Keys.ENTER) {
       if (Gdx.input.isKeyPressed(Input.Keys.ALT_LEFT) || Gdx.input.isKeyPressed(Input.Keys.ALT_RIGHT)) {
         if (!Gdx.graphics.isFullscreen()) Gdx.graphics.setFullscreenMode(Gdx.graphics.getDisplayMode());

@@ -1,6 +1,7 @@
 package timboe.vev.manager;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Graphics;
 import com.badlogic.gdx.graphics.g2d.NinePatch;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -14,7 +15,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.Slider;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.NinePatchDrawable;
-import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 
 import java.text.DecimalFormat;
@@ -25,16 +25,17 @@ import java.util.Set;
 import timboe.vev.DistanceField.LabelDF;
 import timboe.vev.DistanceField.TextButtonDF;
 import timboe.vev.DistanceField.TextTooltipDF;
+import timboe.vev.Lang;
 import timboe.vev.Pair;
 import timboe.vev.Param;
 import timboe.vev.entity.Building;
 import timboe.vev.entity.Sprite;
-import timboe.vev.entity.Warp;
 import timboe.vev.enums.BuildingType;
 import timboe.vev.enums.Particle;
 import timboe.vev.enums.QueueType;
 import timboe.vev.enums.UIMode;
 import timboe.vev.input.BuildingButton;
+import timboe.vev.input.DemolishButton;
 import timboe.vev.input.ParticleSelectButton;
 import timboe.vev.input.QueueButton;
 import timboe.vev.input.QueueLengthSlider;
@@ -56,69 +57,73 @@ public class UI {
 
   public UIMode uiMode = UIMode.kNONE;
 
-  private final int SIZE_S = 32;
-  private final int SIZE_M = 2*SIZE_S;
-  private final int SIZE_L = 2*SIZE_M;
+  public final int SIZE_S = 32;
+  public final int SIZE_M = 2*SIZE_S;
+  public final int SIZE_L = 2*SIZE_M;
 
-  private final int PAD = 4;
+  public final int PAD = 4;
 
-  private Table tableIntro;
   private Table table;
-  private Skin skin;
+  public Skin skin;
   public ShaderProgram dfShader;
   public ShaderProgram dfShader_medium;
-  private ShaderProgram dfShader_large;
+  public ShaderProgram dfShader_large;
 
   private Table mainWindow;
+  private Table settingsWindow;
   private Table selectWindow;
-  private Table titleWindow;
 
-  private float displayPlayerEnergy;
-  private float displayWarpEnergy;
+  private float displayPlayerEnergy = Param.PLAYER_STARTING_ENERGY;
+  private float displayInWorldParticles = 0;
+  private float displayWarpParticles = Param.PARTICLES_SMALL;
   private float time;
   public final DecimalFormat formatter = new DecimalFormat("###,###");
-  LabelDF displayPlayerEnergyLabel;
-  LabelDF displayWarpEnergyLabel;
+  private LabelDF displayPlayerEnergyLabel;
+  private LabelDF displayPLayerParticleLabel;
+  private Set<LabelDF> displayPlayerEnergyLabelSet = new HashSet<LabelDF>();
+  private Set<LabelDF> displayPlayerParticleLabelSet = new HashSet<LabelDF>();
+  private LabelDF displayWarpParticlesLabel;
 
   private final YesNoButton yesNoButton = new YesNoButton();
   private final StandingOrderButton standingOrderButton = new StandingOrderButton();
   private final UpgradeBuildingButton upgradeBuildingButton = new UpgradeBuildingButton();
+  private final DemolishButton demolishButton = new DemolishButton();
 
-  public Button selectParticlesButton;
-  public Button showPathsButton;
+//  public Button selectParticlesButton;
+  public boolean showPaths = false;
 
-  private EnumMap<BuildingType, Button> buildBuildingButtons = null;
+  private EnumMap<BuildingType, Button> buildBuildingButtonsEnabled = null;
+  private EnumMap<BuildingType, Button> buildBuildingButtonsDisabled = null;
   private EnumMap<BuildingType, TextTooltipDF> buildBuildingTooltips = null;
+  private Table buildingBuildTable = null;
 
   private EnumMap<BuildingType, Table> buildingWindow;
   public EnumMap<BuildingType, Button> buildingWindowQSimple;
   public EnumMap<BuildingType, Button> buildingWindowQSpiral;
   public EnumMap<BuildingType, LabelDF> buildingWindowQSize;
   public EnumMap<BuildingType, LabelDF> buildingWindowQPrice;
-  public EnumMap<BuildingType, Slider> buildingWindowQSlider;
-  public EnumMap<BuildingType, LabelDF> buildingWindowTimeLabelA;
-  public EnumMap<BuildingType, LabelDF> buildingWindowTimeLabelB;
-  public EnumMap<BuildingType, LabelDF> buildingWindowTimeLabelC;
-  public EnumMap<BuildingType, Button> buildingWindowUpgradeButton;
+  private EnumMap<BuildingType, Slider> buildingWindowQSlider;
+  private EnumMap<BuildingType, LabelDF> buildingWindowTimeLabelA;
+  private EnumMap<BuildingType, LabelDF> buildingWindowTimeLabelB;
+  private EnumMap<BuildingType, LabelDF> buildingWindowTimeLabelC;
+  private EnumMap<BuildingType, Button> buildingWindowUpgradeButton;
 
-  private EnumMap<BuildingType, Table> buildingSelectWindow;
-  public EnumMap<BuildingType, ProgressBar> buildingSelectProgress;
-  public EnumMap<BuildingType, EnumMap<Particle, Button>> buildingSelectStandingOrder;
-  public EnumMap<BuildingType, LabelDF> buildingUpgradeLabelCost;
-  public EnumMap<BuildingType, LabelDF> buildingUpgradeLabelTime;
-  public EnumMap<BuildingType, LabelDF> buildingUpgradeLabelBonus;
+  private EnumMap<BuildingType, Table> buildingSelectWindow = null;
+  public EnumMap<BuildingType, ProgressBar> buildingSelectProgress = null;
+  public EnumMap<BuildingType, EnumMap<Particle, Button>> buildingSelectStandingOrder = null;
+  private EnumMap<BuildingType, LabelDF> buildingUpgradeLabelCost = null;
+  private EnumMap<BuildingType, LabelDF> buildingUpgradeLabelTime = null;
+  private EnumMap<BuildingType, LabelDF> buildingUpgradeLabelBonus = null;
+  private EnumMap<BuildingType, TextTooltipDF> buildingUpgradeToolTip = null;
 
-  public EnumMap<Particle, Button> selectButton;
+  private EnumMap<Particle, Button> selectButton;
   private EnumMap<Particle, Label> selectLabel;
   private Button selectCross;
 
-  private Set<Image> ballImages = new HashSet<Image>();
 
-  // Settings cache
-  float cacheMusic, cacheSfx;
-  EnumMap<Particle, Integer> cacheHue = new EnumMap<Particle, Integer>(Particle.class);
 
-  float perSec = 0;
+
+  private float perSec = 0; // Do once per second
 
   private UI() {
     ShaderProgram.pedantic = false;
@@ -141,46 +146,59 @@ public class UI {
     w.row();
   }
 
-  private LabelDF getLabel(String label) {
+  public void separator(Table w, int colspan, int width) {
+    w.add(new Image( Textures.getInstance().getTexture("separator", false) )).fillX().height(4).pad(6,2,6,2).colspan(colspan).width(width);
+    w.row();
+  }
+
+  private void TT(Actor a, String tt) {
+    if (tt.equals("")) return;
+    TextTooltipDF ttDF = new TextTooltipDF(Lang.get(tt), skin);
+    ttDF.setInstant(true);
+    ttDF.getActor().setAlignment(Align.center);
+    a.addListener(ttDF);
+  }
+
+  public LabelDF getLabel(String label, String tt) {
     LabelDF l = new LabelDF(label, skin, "default", dfShader);
     l.setAlignment(Align.center);
     l.setWidth(SIZE_S);
     l.setHeight(SIZE_S);
+    TT(l,tt);
     return l;
   }
 
-  private Button getTextButton(String label) {
+  public Button getTextButton(String label, String tt) {
     TextButtonDF b = new TextButtonDF(label, skin, "default");
     b.getLabelCell().pad(10,30,10,30);
+    TT(b,tt);
     return b;
   }
 
-  private Image getImage(String image) {
+  public Image getImage(String image, String tt) {
     Image i = new Image( Textures.getInstance().getTexture(image, false) );
     i.setUserObject(image);
     i.setAlign(Align.center);
+    TT(i,tt);
     return i;
   }
 
-  public void retextureSprites() {
-    for (Image i : ballImages) {
-      String tex = (String)i.getUserObject();
-      i.setDrawable( new TextureRegionDrawable( Textures.getInstance().getTexture(tex, false) ) );
-    }
-  }
-
-  private Table getWindow() {
+  public Table getWindow() {
     Table t = new Table();
     t.setBackground(new NinePatchDrawable(new NinePatch(skin.getRegion("window"), 10, 10, 10, 10)));
     return t;
   }
 
-  private Button getImageButton(String image, String style, int resize) {
+  public Button getImageButton(String image, String style, int resize, String tt) {
     Button ib = new Button(skin, style);
     if (image.equals("tick") || image.equals("cross")) {
       ib.setUserObject( image.equals("cross") ? 0 : 1);
       ib.addListener(yesNoButton);
       resize = SIZE_L;
+    }
+
+    if (image.equals("wrecking")) {
+      ib.addListener(demolishButton);
     }
 
     Image im = new Image( Textures.getInstance().getTexture(image, false) );
@@ -191,34 +209,37 @@ public class UI {
     ib.setProgrammaticChangeEvents(false);
     ib.add(cont);
     ib.align(Align.center);
+    TT(ib,tt);
     return ib;
   }
 
-  private Button getImageButton(String image) {
-    return getImageButton(image, "default", 0);
+  public Button getImageButton(String image, String tt) {
+    return getImageButton(image, "default", 0, tt);
   }
 
-  private void addToWin(Table w, Actor a, int size) {
+  public void addToWin(Table w, Actor a, int size) {
     w.add(a).width(size).height(size).pad(PAD);
   }
 
-  private void addToWin(Table w, Actor a, int sizeX, int sizeY, int colspan) {
+  public void addToWin(Table w, Actor a, int sizeX, int sizeY, int colspan) {
     w.add(a).colspan(colspan).width(sizeX).height(sizeY).pad(PAD);
   }
 
   private Button getAndAddStandingOrderButton(BuildingType bt, Particle p) {
+    assert p.getColourFromParticle() != null;
     String path = (p == Particle.kBlank ? "queue_full" : "ball_" + p.getColourFromParticle().getString());
-    Button b = getImageButton(path, "toggle", SIZE_M);
+    String pName = p.getString();
+    Button b = getImageButton(path, "toggle", SIZE_M, (p == Particle.kBlank ? "standingBlank" : "standingOrder#"+pName));
     b.setUserObject(new Pair<BuildingType, Particle>(bt, p));
     b.addListener(standingOrderButton);
     buildingSelectStandingOrder.get(bt).put(p, b);
-    Image arrow = getImage("arrow");
+    Image arrow = getImage("arrow","");
     Container<Actor> ac = new Container<Actor>(arrow);
     ac.width(SIZE_M).height(SIZE_M);
     b.add(ac).padLeft(PAD*2);
     if (p != Particle.kBlank) {
       b.row();
-      b.add(getLabel(p.getString())).colspan(2);
+      b.add(getLabel(p.getString(), "")).colspan(2);
     }
     return b;
   }
@@ -228,20 +249,24 @@ public class UI {
     for (int mode = 0; mode < BuildingType.N_MODES; ++mode) {
       Particle from = bt.getInput(mode);
       Pair<Particle, Particle> to = bt.getOutputs(mode);
-      addToWin(bw, getImage("ball_" + from.getColourFromParticle().getString()), SIZE_S);
-      addToWin(bw, getImage("arrow"), SIZE_S);
-      addToWin(bw, getImage("zap"), SIZE_S);
+      assert from != null;
+      assert from.getColourFromParticle() != null;
+      addToWin(bw, getImage("ball_" + from.getColourFromParticle().getString(),""), SIZE_S);
+      addToWin(bw, getImage("arrow",""), SIZE_S);
+      addToWin(bw, getImage("zap","UI_ENERGY"), SIZE_S);
       if (to.getKey() != null) {
-        addToWin(bw, getImage("ball_" + to.getKey().getColourFromParticle().getString()), SIZE_S);
+        assert to.getKey().getColourFromParticle() != null;
+        addToWin(bw, getImage("ball_" + to.getKey().getColourFromParticle().getString(),""), SIZE_S);
       } else {
         addToWin(bw, new Container<Actor>(), SIZE_S);
       }
       if (to.getValue() != null) {
-        addToWin(bw, getImage("ball_" + to.getValue().getColourFromParticle().getString()), SIZE_S);
+        assert to.getValue().getColourFromParticle() != null;
+        addToWin(bw, getImage("ball_" + to.getValue().getColourFromParticle().getString(),""), SIZE_S);
       } else {
         addToWin(bw, new Container<Actor>(), SIZE_S);
       }
-      LabelDF disassembleTimeLabel = getLabel("");
+      LabelDF disassembleTimeLabel = getLabel("", "disassembleTime");
       addToWin(bw, disassembleTimeLabel, SIZE_S);
       switch(mode) {
         case 0: buildingWindowTimeLabelA.put(bt, disassembleTimeLabel); break;
@@ -249,16 +274,16 @@ public class UI {
         case 2: buildingWindowTimeLabelC.put(bt, disassembleTimeLabel); break;
       }
       bw.row();
-      addToWin(bw, getLabel(from.getString()), SIZE_S);
+      addToWin(bw, getLabel(from.getString(), ""), SIZE_S);
       addToWin(bw, new Container<Actor>(), SIZE_S);
-      addToWin(bw, getLabel(formatter.format(bt.getOutputEnergy(mode))), SIZE_S);
+      addToWin(bw, getLabel(formatter.format(bt.getOutputEnergy(mode)),"disassembleEnergy"), SIZE_S);
       if (to.getKey() != null) {
-        addToWin(bw, getLabel(to.getKey().getString()), SIZE_S);
+        addToWin(bw, getLabel(to.getKey().getString(), ""), SIZE_S);
       } else {
         addToWin(bw, new Container<Actor>(), SIZE_S);
       }
       if (to.getValue() != null) {
-        addToWin(bw, getLabel(to.getValue().getString()), SIZE_S);
+        addToWin(bw, getLabel(to.getValue().getString(), ""), SIZE_S);
       } else {
         addToWin(bw, new Container<Actor>(), SIZE_S);
       }
@@ -267,203 +292,31 @@ public class UI {
     }
   }
 
-  public void cancelSettingsChanges() {
-    Gdx.app.log("cancelSettingsChanges","Cancelling");
-    for (Particle p : Particle.values()) {
-      if (p == Particle.kBlank) continue;
-      Param.PARTICLE_HUE.put(p, cacheHue.get(p));
-    }
-    Textures.getInstance().updateParticleHues();
-    Param.MUSIC_LEVEL = cacheMusic;
-    Param.SFX_LEVEL = cacheSfx;
-  }
-
   public void updateButtonPriceStatus() {
-    if (buildBuildingButtons == null) {
+    if (buildBuildingButtonsEnabled == null) {
       return;
     }
+    buildingBuildTable.clear();
     for (BuildingType bt : BuildingType.values()) {
       if (bt == BuildingType.kWARP) continue;
-      final int price = GameState.getInstance().buildingPrices.get(bt);
-      buildBuildingTooltips.get(bt).getActor().setText("Price:"+formatter.format( GameState.getInstance().buildingPrices.get(bt) ));
-      final boolean disabled = price > GameState.getInstance().playerEnergy;
-      buildBuildingButtons.get(bt).setDisabled(disabled);
-      for (Actor a : buildBuildingButtons.get(bt).getChildren()) {
-        a.setVisible(!disabled);
+       final int price = GameState.getInstance().getBuildingPrice(true, bt);
+      String s = Lang.get("buildBuilding_A") + bt.getString();
+      if (bt != BuildingType.kMINE) {
+        s += Lang.get("buildBuilding_B") + bt.getInput(0).getString() + ", "
+            + bt.getInput(1).getString() + ", "
+            + bt.getInput(2).getString();
+      } else {
+        s += Lang.get("buildBuilding_B_Mine");
       }
+      s += Lang.get("buildBuilding_C") + formatter.format( price ) + " " + Lang.get("UI_ENERGY");
+      buildBuildingTooltips.get(bt).getActor().setText(s);
+      final boolean disabled = (price > GameState.getInstance().playerEnergy);
+      Button b = (disabled ? buildBuildingButtonsDisabled.get(bt) : buildBuildingButtonsEnabled.get(bt));
+      addToWin(buildingBuildTable, b, SIZE_L+SIZE_M, SIZE_L, 1);
+      buildingBuildTable.row();
     }
   }
 
-  protected void resetTitle(String toShow) {
-    tableIntro = new Table();
-    tableIntro.setFillParent(true);
-    tableIntro.debugAll();
-    tableIntro.left();
-    tableIntro.row().fillX();
-    tableIntro.pad(Param.TILE_S * 2);
-
-    GameState.getInstance().getUIStage().clear();
-    GameState.getInstance().getUIStage().addActor(tableIntro);
-
-
-    LabelDF vev = new LabelDF("VEV", skin, "title", dfShader_large);
-    vev.setFontScale(25f);
-    tableIntro.add(vev).padLeft(45);
-
-    tableIntro.add(new Actor()).expand();
-
-    titleWindow = getWindow();
-
-    if (toShow.equals("main")) {
-
-      uiMode = UIMode.kNONE;
-
-      Button newGame = getTextButton("NEW GAME");
-      newGame.addListener(new ChangeListener() {
-        @Override
-        public void changed(ChangeEvent event, Actor actor) {
-          if (!World.getInstance().getGenerated()) World.getInstance().launchAfterGen = true;
-          else if (GameState.getInstance().theTitleScreen.fadeTimer == 0)
-            GameState.getInstance().transitionToGameScreen();
-        }
-      });
-      newGame.addListener(new TextTooltipDF("You can press this", skin));
-      titleWindow.add(newGame).pad(SIZE_S).colspan(2).fillX();
-
-      titleWindow.row();
-      separator(titleWindow, 2);
-      Button loadGame = getTextButton("LOAD GAME");
-      loadGame.addListener(new ChangeListener() {
-        @Override
-        public void changed(ChangeEvent event, Actor actor) {
-          World.getInstance().doLoad = true;
-        }
-      });
-      if (World.getInstance().loadedSave == null) {
-        loadGame.setDisabled(true);
-      }
-      titleWindow.add(loadGame).pad(SIZE_S).colspan(2).fillX();
-
-      titleWindow.row();
-      separator(titleWindow, 2);
-      Button settingsButton = getTextButton("SETTINGS");
-      settingsButton.addListener(new ChangeListener() {
-        @Override
-        public void changed(ChangeEvent event, Actor actor) {
-          resetTitle("settings");
-        }
-      });
-      titleWindow.add(settingsButton).pad(SIZE_S).colspan(2).fillX();
-
-      titleWindow.row();
-      separator(titleWindow, 2);
-      Button howToPlayButton = getTextButton("HOW TO PLAY");
-      howToPlayButton.addListener(new ChangeListener() {
-        @Override
-        public void changed(ChangeEvent event, Actor actor) {
-        }
-      });
-      titleWindow.add(howToPlayButton).pad(SIZE_S).colspan(2).fillX();;
-
-      titleWindow.row();
-      separator(titleWindow, 2);
-      Button exitGame = getTextButton("EXIT");
-      exitGame.addListener(new ChangeListener() {
-        @Override
-        public void changed(ChangeEvent event, Actor actor) {
-          Gdx.app.exit();
-        }
-      });
-      titleWindow.add(exitGame).pad(SIZE_S).colspan(2).fillX();
-
-    } else if (toShow.equals("settings")) {
-
-      uiMode = UIMode.kSETTINGS;
-
-      LabelDF musicL = getLabel("M");
-      titleWindow.add(musicL).pad(SIZE_S).fillX();
-      Slider musicSlider = new Slider(0, 1, .01f, false, skin, "default-horizontal");
-      musicSlider.setValue(Param.MUSIC_LEVEL);
-      musicSlider.addListener(new ChangeListener() {
-        @Override
-        public void changed(ChangeEvent event, Actor actor) {
-          Param.MUSIC_LEVEL = ((Slider)actor).getValue();
-          Sounds.getInstance().musicVolume();
-        }
-      });
-      titleWindow.add(musicSlider).pad(SIZE_S).width(SIZE_S+SIZE_M+SIZE_L).fillX();
-
-      titleWindow.row();
-      LabelDF sfxL = getLabel("S");
-      titleWindow.add(sfxL).pad(SIZE_S).fillX();
-      Slider sfxSlider = new Slider(0, 1, .01f, false, skin, "default-horizontal");
-      sfxSlider.setValue(Param.SFX_LEVEL);
-      sfxSlider.addListener(new ChangeListener() {
-        @Override
-        public void changed(ChangeEvent event, Actor actor) {
-          Param.SFX_LEVEL = ((Slider)actor).getValue();
-        }
-      });
-      addToWin(titleWindow, sfxSlider, SIZE_S+SIZE_M+SIZE_L, SIZE_S, 1);
-
-      titleWindow.row();
-      separator(titleWindow, 2);
-
-      ballImages.clear();
-      for (Particle p : Particle.values()) {
-        if (p == Particle.kBlank) continue;
-        Image i = getImage("ball_" + p.getColourFromParticle().getString());
-        ballImages.add(i);
-        addToWin(titleWindow, i, SIZE_M);
-        Slider pSlider = new Slider(0, 360*3, 1, false, skin, "default-horizontal");
-        pSlider.setValue( Param.PARTICLE_HUE.get(p) );
-        pSlider.setUserObject(p);
-        pSlider.addListener(new ChangeListener() {
-          @Override
-          public void changed(ChangeEvent event, Actor actor) {
-            Param.PARTICLE_HUE.put( (Particle)actor.getUserObject(), (int) ((Slider)actor).getValue() );
-            Textures.getInstance().updateParticleHues();
-          }
-        });
-        addToWin(titleWindow, pSlider, SIZE_M+SIZE_L, SIZE_M, 1);
-        titleWindow.row();
-        cacheHue.put(p, Param.PARTICLE_HUE.get(p));
-      }
-
-      cacheMusic = Param.MUSIC_LEVEL;
-      cacheSfx = Param.SFX_LEVEL;
-
-      separator(titleWindow, 2);
-
-      addToWin(titleWindow, getImageButton("tick"), SIZE_L, SIZE_L, 1);
-      addToWin(titleWindow, getImageButton("cross"), SIZE_L, SIZE_L, 1);
-
-
-    } else {
-      Gdx.app.error("Intro UI","Unknown mode "+toShow);
-      Gdx.app.exit();
-    }
-
-
-    tableIntro.add(titleWindow).right().top();
-
-    LabelDF cred = getLabel("A game by Tim Martin");
-    LabelDF music1 = getLabel("Music by Chris Zabriskie (CC v4)");
-    LabelDF music2 = getLabel("    Is That You Or Are You You? / Divider / CGI Snake");
-    LabelDF art = getLabel("Open Game Art by Buch");
-
-    tableIntro.row();
-    tableIntro.bottom().left();
-    tableIntro.add(cred).left().colspan(3);
-    tableIntro.row();
-    tableIntro.add(music1).left().colspan(3);
-    tableIntro.row();
-    tableIntro.add(music2).left().colspan(3);
-    tableIntro.row();
-    tableIntro.add(art).left().colspan(3);
-
-    Gdx.app.log("resetTitle", "made intro UI");
-  }
 
   protected void resetGame() {
     Gdx.app.log("resetGame", "made game UI");
@@ -486,75 +339,112 @@ public class UI {
     mainWindow = getWindow();
     selectWindow = getWindow();
 
+    displayPlayerEnergyLabelSet.clear();
+    displayPlayerParticleLabelSet.clear();
+
+    displayPLayerParticleLabel = getLabel("", "particles");
+    displayPlayerParticleLabelSet.add(displayPLayerParticleLabel);
+
+    displayPlayerEnergyLabel = getLabel("", "energy");
+    displayPlayerEnergyLabelSet.add(displayPlayerEnergyLabel);
 
     // Main window
-    buildBuildingButtons = new EnumMap<BuildingType, Button>(BuildingType.class);
+    addPlayerEnergy(mainWindow, 2);
+    /////////////////////
+    buildBuildingButtonsEnabled = new EnumMap<BuildingType, Button>(BuildingType.class);
+    buildBuildingButtonsDisabled = new EnumMap<BuildingType, Button>(BuildingType.class);
     buildBuildingTooltips = new EnumMap<BuildingType, TextTooltipDF>(BuildingType.class);
-    addToWin(mainWindow, getImage("zap"), SIZE_S, SIZE_S, 1);
-    displayPlayerEnergyLabel = getLabel("");
-    addToWin(mainWindow, displayPlayerEnergyLabel, SIZE_L, SIZE_S, 1);
-    mainWindow.row();
-    separator(mainWindow, 2);
+    buildingBuildTable = new Table();
     for (BuildingType bt : BuildingType.values()) {
       if (bt == BuildingType.kWARP) continue;
-//      if (bt == BuildingType.kMINE) separator(mainWindow, 2);
 
-      Image ib = new Image( Textures.getInstance().getTexture("building_" + bt.ordinal(), false) );
-      Container<Actor> cont = new Container<Actor>();
-      cont.setActor(ib);
-      cont.width( ib.getWidth() * 2 ).height( ib.getHeight() * 2 );
+      Image ibEnabled = new Image( Textures.getInstance().getTexture("building_" + bt.ordinal(), false) );
+      Container<Actor> contEnabled = new Container<Actor>();
+      contEnabled.setActor(ibEnabled);
+      contEnabled.width( ibEnabled.getWidth() * 2 ).height( ibEnabled.getHeight() * 2 );
 
-      Button b = new Button(skin, "default");
-      b.add(cont);
+      Button bEnabled = new Button(skin, "default");
+      bEnabled.add(contEnabled);
+
+      Image ibDisabled = new Image( Textures.getInstance().getTexture("building_" + bt.ordinal() + "_gs", false) );
+      Container<Actor> contDisabled = new Container<Actor>();
+      contDisabled.setActor(ibDisabled);
+      contDisabled.width( ibDisabled.getWidth() * 2 ).height( ibDisabled.getHeight() * 2 );
+
+      Button bDisabled = new Button(skin, "default");
+      bDisabled.add(contDisabled);
 
       if (bt != BuildingType.kMINE) {
-        Table vert = new Table();
+        Table vertEnabled = new Table();
+        Table vertDisabled = new Table();
         for (int mode = 0; mode < BuildingType.N_MODES; ++mode) {
-          Image ip = new Image(Textures.getInstance().getTexture("ball_" + bt.getInput(mode).getColourFromParticle().getString(), false));
-          Container<Actor> contIp = new Container<Actor>();
-          contIp.setActor(ip);
-          contIp.width(ip.getWidth() * 2).height(ip.getHeight() * 2);
-          vert.add(contIp);
-          vert.row();
+          Image ipEnabled = new Image(Textures.getInstance().getTexture("ball_" + bt.getInput(mode).getColourFromParticle().getString(), false));
+          Container<Actor> contIpEnabled = new Container<Actor>();
+          contIpEnabled.setActor(ipEnabled);
+          contIpEnabled.width(ipEnabled.getWidth() * 2).height(ipEnabled.getHeight() * 2);
+          vertEnabled.add(contIpEnabled);
+          vertEnabled.row();
+
+          Image ipDisabled = new Image(Textures.getInstance().getTexture("ball_grey", false));
+          Container<Actor> contIpDisabled = new Container<Actor>();
+          contIpDisabled.setActor(ipDisabled);
+          contIpDisabled.width(ipDisabled.getWidth() * 2).height(ipDisabled.getHeight() * 2);
+          vertDisabled.add(contIpDisabled);
+          vertDisabled.row();
         }
-        b.add(vert).padLeft(SIZE_S / 2);
+        bEnabled.add(vertEnabled).padLeft(SIZE_S / 2);
+        bDisabled.add(vertDisabled).padLeft(SIZE_S / 2);
       }
 
-      b.setUserObject(bt);
-      b.addListener(buildingButtonHandler);
+      bEnabled.setUserObject(bt);
+      bEnabled.addListener(buildingButtonHandler);
       TextTooltipDF ttt = new TextTooltipDF("L", skin);
+      ttt.getActor().setAlignment(Align.center);
       ttt.setInstant(true);
-      b.addListener( ttt );
-      buildBuildingButtons.put(bt, b);
+      bEnabled.addListener( ttt );
+      buildBuildingButtonsEnabled.put(bt, bEnabled);
       buildBuildingTooltips.put(bt, ttt);
-      addToWin(mainWindow, b, SIZE_L+SIZE_M, SIZE_L, 2);
-      mainWindow.row();
+
+      bDisabled.addListener( ttt );
+      bDisabled.setDisabled(true);
+      buildBuildingButtonsDisabled.put(bt, bDisabled);
     }
+    mainWindow.add(buildingBuildTable).colspan(2);
+    mainWindow.row();
     separator(mainWindow, 2);
-    selectParticlesButton = getImageButton("select", "toggle", SIZE_M);
-    selectParticlesButton.addListener(new ChangeListener() {
+    // TODO android
+//    selectParticlesButton = getImageButton("select", "toggle", SIZE_M,"select");
+//    selectParticlesButton.addListener(new ChangeListener() {
+//      @Override
+//      public void changed(ChangeEvent event, Actor actor) {
+//        if (((Button)actor).isChecked()) GameState.getInstance().startSelectingAndroid();
+//      }
+//    });
+//    addToWin(mainWindow, selectParticlesButton, SIZE_L, SIZE_L, 1);
+//    showPathsButton = getImageButton("show_arrows", "toggle", SIZE_M, "showPaths");
+//    addToWin(mainWindow, showPathsButton, SIZE_L, SIZE_L, 1);
+    mainWindow.row();
+    Button settings = getImageButton("settings", "default", SIZE_L, "pause");
+    settings.addListener(new ChangeListener() {
       @Override
       public void changed(ChangeEvent event, Actor actor) {
-        if (((Button)actor).isChecked()) GameState.getInstance().startSelectingAndroid();
+        UI.getInstance().showSettings();
       }
     });
-    addToWin(mainWindow, selectParticlesButton, SIZE_L, SIZE_L, 1);
-    showPathsButton = getImageButton("show_arrows", "toggle", SIZE_M);
-    addToWin(mainWindow, showPathsButton, SIZE_L, SIZE_L, 1);
-    mainWindow.row();
-    Button settings = getImageButton("settings", "default", SIZE_M);
-    addToWin(mainWindow, settings, SIZE_L, SIZE_L, 2);
+    addToWin(mainWindow, settings, SIZE_L + SIZE_M, SIZE_L, 2);
 
     // Selected window
     selectButton = new EnumMap<Particle, Button>(Particle.class);
     selectLabel = new EnumMap<Particle, Label>(Particle.class);
-    selectCross = getImageButton("cross");
+    selectCross = getImageButton("cross", "");
     for (Particle p : Particle.values()) {
       if (p == Particle.kBlank) continue;
-      Button b = getImageButton("ball_" + p.getColourFromParticle().getString(), "default", SIZE_M);
+      assert p.getColourFromParticle() != null;
+      String pColString = p.getColourFromParticle().getString();
+      Button b = getImageButton("ball_" + pColString, "default", SIZE_M, "particleSelect#"+ p.getString());
       b.setUserObject(p);
       b.addListener(particleSelectButton);
-      Label lab = getLabel("");
+      Label lab = getLabel("", "");
       b.row();
       b.add(lab);
       selectButton.put(p, b); // Added to window dynamically
@@ -575,21 +465,19 @@ public class UI {
     for (final BuildingType bt : BuildingType.values()) {
       Table bw = getWindow();
       buildingWindow.put(bt, bw);
-      addToWin(bw, getImage("zap"), SIZE_S, SIZE_S, bt != BuildingType.kMINE ? 3 : 1); // Player Energy
-      addToWin(bw, displayPlayerEnergyLabel, SIZE_L, SIZE_S,  bt != BuildingType.kMINE ? 3 : 1); // Player energy
-      bw.row(); // Player energy
-      separator(bw,  bt != BuildingType.kMINE ? 6 : 2); // Player energy
+      addPlayerEnergy(bw, bt != BuildingType.kMINE ? 6 : 2);
+      /////////////////////
       addBuildingBlurb(bw, bt);
       int colspan = 2;
       /////////////////////
       if (bt != BuildingType.kMINE) {
         colspan = 6;
         separator(bw, colspan);
-        Button qSimple = getImageButton("queue_simple", "toggle", 0);
+        Button qSimple = getImageButton("queue_simple", "toggle", 0, "qSimple");
         buildingWindowQSimple.put(bt, qSimple);
         qSimple.setUserObject(QueueType.kSIMPLE);
         addToWin(bw, qSimple, SIZE_L, SIZE_L, 3);
-        Button qSpiral = getImageButton("queue_spiral", "toggle", 0);
+        Button qSpiral = getImageButton("queue_spiral", "toggle", 0, "qSpiral");
         buildingWindowQSpiral.put(bt, qSpiral);
         qSpiral.setUserObject(QueueType.kSPIRAL);
         addToWin(bw, qSpiral, SIZE_L, SIZE_L, 3);
@@ -600,22 +488,23 @@ public class UI {
         Slider slider = new Slider(1, 99, 1, false, skin, "default-horizontal");
         slider.addListener(queueLengthSlider);
         buildingWindowQSlider.put(bt, slider);
-        addToWin(bw, getImage("queue_g_E_N"), SIZE_S, SIZE_S, 1);
+        addToWin(bw, getImage("queue_g_E_N",""), SIZE_S, SIZE_S, 1);
         bw.add(slider).height(SIZE_M).width(SIZE_L + SIZE_M + SIZE_S).colspan(4);
-        LabelDF sliderLabel = getLabel("");
+        LabelDF sliderLabel = getLabel("", "qSize");
         buildingWindowQSize.put(bt, sliderLabel);
         addToWin(bw, sliderLabel, SIZE_S);
         bw.row();
       }
-      addToWin(bw, getImage("zap"), SIZE_S, SIZE_S, 1);
-      LabelDF buildingCost = getLabel( formatter.format(GameState.getInstance().buildingPrices.get(bt)) );
+      addToWin(bw, getImage("zap","UI_ENERGY"), SIZE_S, SIZE_S, 1);
+      LabelDF buildingCost = getLabel( "", "buildingPrice" );
       buildingWindowQPrice.put(bt, buildingCost);
       addToWin(bw, buildingCost, SIZE_L, SIZE_S, colspan-1);
       bw.row();
-      separator(bw, colspan);
       ///////////////////////
-      addToWin(bw, getImageButton("tick"), SIZE_L, SIZE_L, colspan/2);
-      addToWin(bw, getImageButton("cross"), SIZE_L, SIZE_L, colspan/2);
+      // TODO android mode
+//      separator(bw, colspan);
+//      addToWin(bw, getImageButton("tick", ""), SIZE_L, SIZE_L, colspan/2);
+//      addToWin(bw, getImageButton("cross", ""), SIZE_L, SIZE_L, colspan/2);
     }
 
     // Building info windows
@@ -625,20 +514,17 @@ public class UI {
     buildingUpgradeLabelCost = new EnumMap<BuildingType, LabelDF>(BuildingType.class);
     buildingUpgradeLabelTime = new EnumMap<BuildingType, LabelDF>(BuildingType.class);
     buildingUpgradeLabelBonus = new EnumMap<BuildingType, LabelDF>(BuildingType.class);
+    buildingUpgradeToolTip = new EnumMap<BuildingType, TextTooltipDF>(BuildingType.class);
     for (final BuildingType bt : BuildingType.values()) {
       buildingSelectStandingOrder.put(bt, new EnumMap<Particle, Button>(Particle.class));
       Table bw = getWindow();
       buildingSelectWindow.put(bt, bw);
-      //////////////////////
-      addToWin(bw, getImage("zap"), SIZE_S, SIZE_S, 3); // Player Energy
-      addToWin(bw, displayPlayerEnergyLabel, SIZE_L, SIZE_S, 3); // Player energy
-      bw.row(); // Player energy
-      separator(bw, 6); // Player energy
+      addPlayerEnergy(bw, 6);
       //////////////////////
       if (bt == BuildingType.kWARP) {
-        addToWin(bw, getImage("zap"), SIZE_S, SIZE_S, 1);
-        displayWarpEnergyLabel = getLabel("");
-        addToWin(bw, displayWarpEnergyLabel, SIZE_L+SIZE_M-SIZE_S, SIZE_S, 5);
+        addToWin(bw, getImage("ball_grey", "UI_PARTICLES"), SIZE_S, SIZE_S, 3);
+        displayWarpParticlesLabel = getLabel("", "wParticles");
+        addToWin(bw, displayWarpParticlesLabel, SIZE_L+SIZE_M-SIZE_S, SIZE_S, 3);
         bw.row();
         for (Particle p : Particle.values()) {
           if (p == Particle.kBlank) continue;
@@ -660,40 +546,159 @@ public class UI {
           Button bBlank = getAndAddStandingOrderButton(bt, Particle.kBlank);
           addToWin(bw, bBlank, SIZE_L + SIZE_M, SIZE_M + SIZE_S, 6);
           bw.row();
-          separator(bw, 6);
+//          separator(bw, 6);
         }
         //////////////////////
         ProgressBar progressBar = new ProgressBar(0, 1, 0.01f, false, skin, "default-horizontal");
         addToWin(bw, progressBar, SIZE_L+SIZE_L, SIZE_M, 6);
         buildingSelectProgress.put(bt, progressBar);
         bw.row();
-        separator(bw, 6);
+//        separator(bw, 6);
         //////////////////////////////
-        Button ib = getImageButton("clock", "toggle", SIZE_M);
+        TextTooltipDF ttt = new TextTooltipDF("", skin);
+        ttt.setInstant(true);
+        ttt.getActor().setAlignment(Align.center);
+        buildingUpgradeToolTip.put(bt, ttt);
+        Button ib = getImageButton("clock", "toggle", SIZE_M, "");
+        ib.addListener( ttt );
         ib.addListener(upgradeBuildingButton);
-        addToWin(ib, getImage("zap"), SIZE_S, SIZE_S, 1);
-        LabelDF cost = getLabel("10000");
+        addToWin(ib, getImage("zap", ""), SIZE_S, SIZE_S, 1);
+        LabelDF cost = getLabel("10000", "");
         buildingUpgradeLabelCost.put(bt, cost);
         ib.add( cost );
         ib.row();
-        LabelDF bonus = getLabel("x1.00");
+        LabelDF bonus = getLabel("x1.00", "");
         buildingUpgradeLabelBonus.put(bt, bonus);
         ib.add( bonus );
-        LabelDF time = getLabel("10 s");
+        LabelDF time = getLabel("10 s", "");
         buildingUpgradeLabelTime.put(bt, time);
         ib.add( time ).colspan(2);
         addToWin(bw, ib, 2*SIZE_L, SIZE_L, 6);
         buildingWindowUpgradeButton.put(bt, ib);
       }
       bw.row();
-//      separator(bw, 6);
-      addToWin(bw, getImageButton("tick"), SIZE_L, SIZE_L, 3);
-      addToWin(bw, getImageButton("cross"), SIZE_L, SIZE_L, 3);
+      //TODO android
+//      separator(bw, 6, Param.UI_WIDTH_GAME);
+//      addToWin(bw, getImageButton("tick", ""), SIZE_L, SIZE_L, 3);
+//      addToWin(bw, getImageButton("cross", ""), SIZE_L, SIZE_L, 3);
+      if (bt != BuildingType.kWARP) {
+        String percent = Float.toString(Param.BUILDING_REFUND_AMOUND * 100f);
+        addToWin(bw, getImageButton("wrecking", "default", SIZE_M, "wrecking#" + percent), SIZE_L + SIZE_M, SIZE_M + SIZE_S, 6);
+      }
+    }
+
+
+    // Settings window
+    settingsWindow = getWindow();
+    addPlayerEnergy(settingsWindow, 4);
+    //
+    final LabelDF musicVL = getLabel(formatter.format(Param.MUSIC_LEVEL*100),"");
+    final LabelDF sfxcVL = getLabel(formatter.format(Param.SFX_LEVEL*100),"");
+    addToWin(settingsWindow, getLabel("M", "musicVolume"), SIZE_S, SIZE_S, 1);
+    Slider musicSlider = new Slider(0, 1, .01f, false, skin, "default-horizontal");
+    musicSlider.setValue(Param.MUSIC_LEVEL);
+    musicSlider.addListener(new ChangeListener() {
+      @Override
+      public void changed(ChangeEvent event, Actor actor) {
+        Param.MUSIC_LEVEL = ((Slider)actor).getValue();
+        musicVL.setText(formatter.format(Param.MUSIC_LEVEL*100));
+        Sounds.getInstance().musicVolume();
+      }
+    });
+    addToWin(settingsWindow, musicSlider, SIZE_L+SIZE_M, SIZE_S, 2);
+    addToWin(settingsWindow, musicVL, SIZE_S, SIZE_S, 1);
+    //
+    settingsWindow.row();
+    addToWin(settingsWindow, getLabel("S", "sfxVolume"), SIZE_S, SIZE_S, 1);
+    Slider sfxSlider = new Slider(0, 1, .01f, false, skin, "default-horizontal");
+    sfxSlider.setValue(Param.SFX_LEVEL);
+    sfxSlider.addListener(new ChangeListener() {
+      @Override
+      public void changed(ChangeEvent event, Actor actor) {
+        Param.SFX_LEVEL = ((Slider)actor).getValue();
+        sfxcVL.setText(formatter.format(Param.SFX_LEVEL*100));
+      }
+    });
+    addToWin(settingsWindow, sfxSlider, SIZE_L+SIZE_M, SIZE_S, 2);
+    addToWin(settingsWindow, sfxcVL, SIZE_S, SIZE_S, 1);
+    settingsWindow.row();
+    separator(settingsWindow, 4);
+    //
+    Button showPathsBut = getTextButton(Lang.get("UI_SHOW_PATHS")+" "+(showPaths?"ON":"OFF"),"showPaths");
+    showPathsBut.addListener(new ChangeListener() {
+      @Override
+      public void changed(ChangeEvent event, Actor actor) {
+        showPaths = !showPaths;
+        ((TextButtonDF)actor).setText(Lang.get("UI_SHOW_PATHS")+" "+(showPaths?"ON":"OFF"));
+      }
+    });
+    addToWin(settingsWindow, showPathsBut, SIZE_L*5, SIZE_L, 4);
+    settingsWindow.row();
+    separator(settingsWindow, 4);
+    //
+    Button fullscreen = getTextButton(Lang.get("UI_FULLSCREEN")+" "+(Gdx.graphics.isFullscreen()?"ON":"OFF"),"fullscreen");
+    fullscreen.addListener(new ChangeListener() {
+      @Override
+      public void changed(ChangeEvent event, Actor actor) {
+        Graphics.DisplayMode currentMode = Gdx.graphics.getDisplayMode();
+        if (Gdx.graphics.isFullscreen()) {
+          Gdx.graphics.setWindowedMode(currentMode.width, currentMode.height);
+        } else {
+          Gdx.graphics.setFullscreenMode(currentMode);
+        }
+        ((TextButtonDF)actor).setText(Lang.get("UI_FULLSCREEN")+" "+(Gdx.graphics.isFullscreen()?"ON":"OFF"));
+      }
+    });
+    addToWin(settingsWindow, fullscreen, SIZE_L*5, SIZE_L, 4);
+    settingsWindow.row();
+    separator(settingsWindow, 4);
+    //
+    Button saveAndQuit = getTextButton(Lang.get("UI_SAVE_AND_QUIT"),"saveAndQuit");
+    saveAndQuit.addListener(new ChangeListener() {
+      @Override
+      public void changed(ChangeEvent event, Actor actor) {
+        Gdx.app.exit();
+      }
+    });
+    addToWin(settingsWindow, saveAndQuit, SIZE_L*5, SIZE_L, 4);
+    settingsWindow.row();
+    separator(settingsWindow, 4);
+    //
+    Button resume = getTextButton(Lang.get("UI_RESUME"),"resume");
+    resume.addListener(new ChangeListener() {
+      @Override
+      public void changed(ChangeEvent event, Actor actor) {
+        showMain();
+      }
+    });
+    addToWin(settingsWindow, resume, SIZE_L*5, SIZE_L, 4);
+    settingsWindow.row();
+    //
+
+    for (LabelDF l : displayPlayerEnergyLabelSet) {
+      l.setText(formatter.format(Math.round(displayPlayerEnergy)));
+    }
+    for (LabelDF l : displayPlayerParticleLabelSet) {
+      l.setText(formatter.format(Math.round(displayInWorldParticles)));
     }
 
     updateButtonPriceStatus();
     showMain();
 
+  }
+
+  private void addPlayerEnergy(Table w, int colspan) {
+    addToWin(w, getImage("zap", "UI_ENERGY"), SIZE_S, SIZE_S, colspan/2); // Player Energy
+    LabelDF energy = getLabel("", "energy"); // Player Energy
+    displayPlayerEnergyLabelSet.add(energy); // Player Energy
+    addToWin(w, energy, SIZE_L, SIZE_S, colspan/2); // Player energy
+    w.row(); // Player energy
+    LabelDF particles = getLabel("", "particles"); // Player Energy
+    displayPlayerParticleLabelSet.add(particles);
+    addToWin(w, getImage("ball_grey", "UI_PARTICLES"), SIZE_S, SIZE_S, colspan/2); // Player Energy
+    addToWin(w, particles, SIZE_L, SIZE_S, colspan/2); // PLayer Energy
+    w.row(); // Player Energy
+    separator(w, colspan); // Player energy
   }
 
   public void act(float delta) {
@@ -702,20 +707,29 @@ public class UI {
     perSec += delta;
     if (perSec > 1) {
       perSec -= 1f;
-      updateButtonPriceStatus();
+      updateButtonPriceStatus(); // Re-enables purchase buttons if have enough money
+      refreshBuildingLabels(); // Re-enabled upgrade button if have enough money
     }
 
     if (time < Param.FRAME_TIME) return;
     time -= Param.FRAME_TIME;
     // Check for existance of main UI component
-    if (displayPlayerEnergyLabel != null) {
-      if (Math.abs(displayPlayerEnergy - GameState.getInstance().playerEnergy) > .5f) {
-        displayPlayerEnergy += (GameState.getInstance().playerEnergy - displayPlayerEnergy) * 0.05f;
-        displayPlayerEnergyLabel.setText(formatter.format(Math.round(displayPlayerEnergy)));
+    if (Math.abs(displayPlayerEnergy - GameState.getInstance().playerEnergy) > .5f) {
+      displayPlayerEnergy += (GameState.getInstance().playerEnergy - displayPlayerEnergy) * 0.05f;
+      for (LabelDF l : displayPlayerEnergyLabelSet) {
+        l.setText(formatter.format(Math.round(displayPlayerEnergy)));
       }
-      if (Math.abs(displayWarpEnergy - GameState.getInstance().warpEnergy) > .5f) {
-        displayWarpEnergy += (GameState.getInstance().warpEnergy - displayWarpEnergy) * 0.05f;
-        displayWarpEnergyLabel.setText(formatter.format(Math.round(displayWarpEnergy)));
+    }
+    if (Math.abs(displayInWorldParticles - GameState.getInstance().inWorldParticles) > .5f) {
+      displayInWorldParticles += (GameState.getInstance().inWorldParticles - displayInWorldParticles) * 0.05f;
+      for (LabelDF l : displayPlayerParticleLabelSet) {
+        l.setText(formatter.format(Math.round(displayInWorldParticles)));
+      }
+    }
+    if (displayWarpParticlesLabel != null) {
+      if (Math.abs(displayWarpParticles - GameState.getInstance().warpParticles) > .5f) {
+        displayWarpParticles += (GameState.getInstance().warpParticles - displayWarpParticles) * 0.05f;
+        displayWarpParticlesLabel.setText(formatter.format(Math.round(displayWarpParticles)));
       }
     }
   }
@@ -729,7 +743,10 @@ public class UI {
       buildingWindowQSlider.get(bt).setValue(GameState.getInstance().queueSize);
     }
     if (bt != BuildingType.kWARP) {
-      buildingWindowQPrice.get(bt).setText( formatter.format( GameState.getInstance().buildingPrices.get(bt) ) );
+      while (GameState.getInstance().getBuildingPrice(false, bt) > GameState.getInstance().playerEnergy) {
+        GameState.getInstance().queueSize -= 1;
+      }
+      buildingWindowQPrice.get(bt).setText( formatter.format( GameState.getInstance().getBuildingPrice(false, bt) ) );
     }
     if (bt != BuildingType.kMINE && bt != BuildingType.kWARP) {
       buildingWindowTimeLabelA.get(bt).setText("");
@@ -752,24 +769,60 @@ public class UI {
     }
     if (GameState.getInstance().debug > 0) table.debugAll();
     uiMode = UIMode.kWITH_BUILDING_SELECTION;
-    refreshBuildingLabels(b);
+    refreshBuildingLabels();
   }
 
-  public void refreshBuildingLabels(Building b) {
+  public void showSettings() {
+    table.clear();
+    table.add(settingsWindow);
+    uiMode = UIMode.kSETTINGS;
+  }
+
+  public void refreshBuildingLabels() {
+    final int bSel = GameState.getInstance().selectedBuilding;
+    if (bSel == 0) return;
+    Building b = GameState.getInstance().getBuildingMap().get( bSel );
     if (b.getType() != BuildingType.kMINE && b.getType() != BuildingType.kWARP) {
       buildingWindowTimeLabelA.get(b.getType()).setText(String.valueOf(Math.round(b.getDisassembleTime(0))) + "s");
       buildingWindowTimeLabelB.get(b.getType()).setText(String.valueOf(Math.round(b.getDisassembleTime(1))) + "s");
       buildingWindowTimeLabelC.get(b.getType()).setText(String.valueOf(Math.round(b.getDisassembleTime(2))) + "s");
     }
     if (b.getType() != BuildingType.kWARP) {
-      buildingWindowUpgradeButton.get(b.getType()).setChecked( b.doUpgrade );
+      final int cost = b.getUpgradeCost();
+      Button upgradeButton = buildingWindowUpgradeButton.get(b.getType());
+      upgradeButton.setChecked( b.doUpgrade );
       float progress = 0;
       if (b.doUpgrade) progress = b.timeUpgrade / b.getUpgradeTime();
       else if (b.spriteProcessing != 0)  progress = b.timeDisassemble / b.getTimeDisassembleMax;
       buildingSelectProgress.get(b.getType()).setValue(progress);
-      buildingUpgradeLabelBonus.get(b.getType()).setText( "x" + df2.format(1f/b.getUpgradeFactor()) );
-      buildingUpgradeLabelCost.get(b.getType()).setText( String.valueOf(b.getUpgradeCost()) );
-      buildingUpgradeLabelTime.get(b.getType()).setText( df2.format(b.getUpgradeTime()) + " s" );
+      LabelDF bonus = buildingUpgradeLabelBonus.get(b.getType());
+      LabelDF costLabel = buildingUpgradeLabelCost.get(b.getType());
+      LabelDF upgradeTime = buildingUpgradeLabelTime.get(b.getType());
+      String usb = "x" + df2.format(1f/b.getNextUpgradeFactor());
+      bonus.setText( usb );
+      String ugc = String.valueOf(b.getUpgradeCost());
+      costLabel.setText( ugc );
+      String ugt = df2.format(b.getUpgradeTime()) + " s";
+      upgradeTime.setText( ugt );
+      com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle style = skin.get(com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle.class);
+      final boolean canAfford = (cost <= GameState.getInstance().playerEnergy);
+      if (!canAfford) {
+        upgradeButton.setDisabled(true);
+        bonus.getStyle().fontColor = style.disabledFontColor;
+        costLabel.getStyle().fontColor = style.disabledFontColor;
+        upgradeTime.getStyle().fontColor = style.disabledFontColor;
+      } else {
+        upgradeButton.setDisabled(false);
+        bonus.getStyle().fontColor = style.fontColor;
+        costLabel.getStyle().fontColor = style.fontColor;
+        upgradeTime.getStyle().fontColor = style.fontColor;
+      }
+      TextTooltipDF ttt = buildingUpgradeToolTip.get(b.getType());
+      String s = Lang.get("upgradeBuilding_A")
+          + Lang.get("upgradeBuilding_B") + ugc + " " + Lang.get("UI_ENERGY")
+          + Lang.get("upgradeBuilding_C") + ugt
+          + Lang.get("upgradeBuilding_D") + usb;
+      ttt.getActor().setText(s);
     }
   }
 
@@ -783,10 +836,14 @@ public class UI {
     }
     selectWindow.clear();
     /////////////////////
-    addToWin(selectWindow, getImage("zap"), SIZE_S, SIZE_S, 1); // Player Energy
+    addToWin(selectWindow, getImage("zap", "UI_ENERGY"), SIZE_S, SIZE_S, 1); // Player Energy
     addToWin(selectWindow, displayPlayerEnergyLabel, SIZE_L, SIZE_S, 1); // Player energy
     selectWindow.row(); // Player energy
+    addToWin(selectWindow, getImage("ball_grey", "UI_PARTICLES"), SIZE_S, SIZE_S, 1); // Player energy
+    addToWin(selectWindow, displayPLayerParticleLabel, SIZE_L, SIZE_S, 1); // Player energy
+    selectWindow.row(); // Player energy
     separator(selectWindow, 2); // Player energy
+    selectWindow.row(); // Player energy
     /////////////////////
     for (Particle p : selectedParticles) {
       selectLabel.get(p).setText(p.getString() + " (" + counter[p.ordinal()] + ")");
@@ -794,7 +851,8 @@ public class UI {
       addToWin(selectWindow, selectButton.get(p), SIZE_L+SIZE_M, SIZE_L, 2);
       selectWindow.row();
     }
-    addToWin(selectWindow, selectCross, SIZE_L+SIZE_M, SIZE_L, 2);
+    // TODO android
+//    addToWin(selectWindow, selectCross, SIZE_L+SIZE_M, SIZE_L, 2);
     table.clear();
     table.add(selectWindow);
     if (GameState.getInstance().debug > 0) table.debugAll();

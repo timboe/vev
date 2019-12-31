@@ -2,6 +2,7 @@ package timboe.vev.entity;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector3;
 import com.google.gwt.thirdparty.json.JSONException;
@@ -24,6 +25,7 @@ import timboe.vev.enums.Colour;
 import timboe.vev.enums.Particle;
 import timboe.vev.enums.TileType;
 import timboe.vev.manager.GameState;
+import timboe.vev.manager.Textures;
 import timboe.vev.manager.World;
 import timboe.vev.pathfinding.IVector2;
 
@@ -46,6 +48,7 @@ public class Tile extends Entity {
   public Cardinal queueExit; // Which sub-space is my last
   public boolean queueClockwise; // If true, clockwise - if false, counterclockwise
   private String queueTex; // Delayed rendering
+  private Boolean queueTexSet; // Delayed rendering activated
 
   public JSONObject serialise() throws JSONException {
     JSONObject json = super.serialise(true);
@@ -68,6 +71,7 @@ public class Tile extends Entity {
     json.put("queueExit", queueExit.name());
     json.put("queueClockwise", queueClockwise);
     json.put("queueTex", queueTex);
+    json.put("queueTexSet", queueTexSet);
     // NOTE: n8 not stored. Needs to be regenerated on load
     return json;
   }
@@ -77,6 +81,7 @@ public class Tile extends Entity {
     this.queueTex = json.getString("queueTex");
     this.queueClockwise = json.getBoolean("queueClockwise");
     this.queueExit = Cardinal.valueOf( json.getString("queueExit") );
+    this.queueTexSet = json.getBoolean("queueTexSet");
     this.mySprite = json.getInt("mySprite");
     JSONObject jsonParking = json.getJSONObject("parkingSpaces");
     Iterator it = jsonParking.keys();
@@ -93,6 +98,9 @@ public class Tile extends Entity {
     this.centreScaleTile = Util.deserialiseVec3( json.getJSONObject("centreScaleTile") );
     this.direction = Cardinal.valueOf( json.getString("direction") );
     this.type = TileType.valueOf( json.getString("type") );
+    if (this.queueTex != "" && this.queueTexSet) { // Delayed rendering was activated
+      setQueueTexture();
+    }
 //    if (this.x == 32 && this.y == 32) {
 //      Gdx.app.log("Tile ("+x+","+y+") id "+id+" DeSerial Debug", json.toString());
 //    }
@@ -109,6 +117,7 @@ public class Tile extends Entity {
     this.queueExit = Cardinal.kNONE;
     this.queueClockwise = true;
     this.queueTex = "";
+    this.queueTexSet = false;
   }
 
   public Set<IVector2> getPathFindNeighbours() {
@@ -143,17 +152,37 @@ public class Tile extends Entity {
     mySprite = b.id;
   }
 
+  public void removeBuilding() {
+    this.type = TileType.kGROUND;
+    this.mySprite = 0;
+    this.direction = Cardinal.kNONE;
+    this.queueExit = Cardinal.kNONE;
+    this.queueClockwise = true;
+    this.queueTexSet = false;
+    this.queueTex = "";
+    Gdx.app.log("removeBuilding","Called on "+coordinates);
+    loadTexture();
+  }
+
   public void setQueue(Cardinal from, Cardinal to, int buildingID, Cardinal queueExit, boolean queueClockwise) {
     type = TileType.kQUEUE;
     removeSprite();
     this.queueTex = "queue_"+tileColour.getString()+"_"+from.getString()+"_"+to.getString();
     this.queueExit = queueExit;
     this.queueClockwise = queueClockwise;
+    this.queueTexSet = false;
     mySprite = buildingID;
   }
 
   public void setQueueTexture() {
-    setTexture(queueTex, 1, false);
+    TextureRegion r = Textures.getInstance().getTexture(queueTex, false);
+    if (r == null) {
+      Gdx.app.error("setTexture", "Texture error " + queueTex);
+      r = Textures.getInstance().getTexture("missing3", false);
+    }
+    setTexture(r, 0);
+    this.queueTexSet = true;
+    this.frames = 1;
   }
 
   public boolean buildable() {
@@ -199,19 +228,30 @@ public class Tile extends Entity {
         return false;
       }
 
+      Building b = (Building) e;
       // This *is* my final destination. Can I stay here?
-      Pair<Tile, Cardinal> slot = ((Building) e).getFreeLocationInQueue(s);
+      if (!b.canJoinQueue(s)) {
+        // No - my type are not allowed to join this queue (or the building is still being built)
+        visitingSprite(s);
+        return false;
+      }
+      Pair<Tile, Cardinal> slot = b.getFreeLocationInQueue(s);
       if (slot == null) { // Cannot stay here
         // Do we have a standing order for overflow? This is the kBlank particle type
-        List<IVector2> pList = e.getBuildingPathingList(Particle.kBlank);
-        if (pList != null) { // We have an overflow destination configured
+        List<IVector2> pList = b.getBuildingPathingList(Particle.kBlank);
+        // We don't allow cyclic loops, however
+        final boolean returning = (s.bouncedBuildings.contains( b.id ));
+        if (pList != null && !returning) { // We have an overflow destination configured
           s.pathingList = new LinkedList<IVector2>(pList); // Off you go little one!
+          s.bouncedBuildings.add( b.id ); // But don't come back!
           return true;
         } else { // You're on your own. Find somewhere nearby to loiter
+          s.bouncedBuildings.clear();
           visitingSprite(s);
           return false;
         }
       } else { // We reg the sprite to (potentially) ANOTHER tile
+        s.bouncedBuildings.clear();
         s.myTile = slot.getKey().coordinates;
         slot.getKey().parkSprite(s, slot.getValue());
         return true;

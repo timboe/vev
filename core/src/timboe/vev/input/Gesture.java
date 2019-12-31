@@ -19,7 +19,7 @@ public class Gesture implements GestureDetector.GestureListener {
 
   @Override
   public boolean touchDown(float x, float y, int pointer, int button) {
-    if (button == Input.Buttons.LEFT) { // Start a SELECT action
+    if (button == Input.Buttons.LEFT && UI.getInstance().uiMode != UIMode.kSETTINGS) { // Start a SELECT action
      setStartEnd(x,y);
     }
     return false;
@@ -49,6 +49,8 @@ public class Gesture implements GestureDetector.GestureListener {
       state.placeBuilding();
     } else if (!Param.IS_ANDROID && ui.uiMode == UIMode.kWITH_BUILDING_SELECTION && GameState.getInstance().doingPlacement) {
       state.doConfirmStandingOrder();
+    } else if (!Param.IS_ANDROID && ui.uiMode == UIMode.kSETTINGS) {
+      return false;
     } else {
       boolean selectedJustNow = state.doParticleSelect(false); // rangeBased = false
       if (!selectedJustNow && !state.selectedSet.isEmpty()) {
@@ -70,6 +72,10 @@ public class Gesture implements GestureDetector.GestureListener {
 
   @Override
   public boolean fling(float velocityX, float velocityY, int button) {
+    if (!Param.IS_ANDROID && button == Input.Buttons.LEFT) {
+      // Only allow fling from the right mouse button
+      return false;
+    }
     Camera.getInstance().velocity(-velocityX * 0.01f, velocityY * 0.01f);
     return false;
   }
@@ -77,10 +83,10 @@ public class Gesture implements GestureDetector.GestureListener {
   @Override
   public boolean pan(float x, float y, float deltaX, float deltaY) {
     if (Param.IS_ANDROID) {
-      // Update both
-      if (UI.getInstance().selectParticlesButton != null && !UI.getInstance().selectParticlesButton.isChecked()) {
-        Camera.getInstance().translate(-deltaX, deltaY);
-      }
+      // Update both TODO android mode
+//      if (UI.getInstance().selectParticlesButton != null && !UI.getInstance().selectParticlesButton.isChecked()) {
+//        Camera.getInstance().translate(-deltaX, deltaY);
+//      }
       GameState.getInstance().selectEndScreen.set(x, y, 0);
       GameState.getInstance().selectEndWorld.set(GameState.getInstance().selectEndScreen);
       GameState.getInstance().selectEndWorld = Camera.getInstance().unproject(GameState.getInstance().selectEndWorld);
@@ -89,7 +95,7 @@ public class Gesture implements GestureDetector.GestureListener {
       if (Gdx.input.isButtonPressed(Input.Buttons.RIGHT)) { // Screen
         Camera.getInstance().translate(-deltaX, deltaY);
       }
-      if (Gdx.input.isButtonPressed(Input.Buttons.LEFT)) { // Select box
+      if (Gdx.input.isButtonPressed(Input.Buttons.LEFT) && UI.getInstance().uiMode != UIMode.kSETTINGS) { // Select box
         GameState.getInstance().selectEndScreen.set(x, y, 0);
         GameState.getInstance().selectEndWorld.set(GameState.getInstance().selectEndScreen);
         GameState.getInstance().selectEndWorld = Camera.getInstance().unproject(GameState.getInstance().selectEndWorld);

@@ -18,6 +18,7 @@ import timboe.vev.entity.Building;
 import timboe.vev.entity.Sprite;
 import timboe.vev.entity.Tile;
 import timboe.vev.entity.Warp;
+import timboe.vev.enums.UIMode;
 import timboe.vev.input.Gesture;
 import timboe.vev.input.Handler;
 import timboe.vev.manager.Camera;
@@ -60,14 +61,16 @@ public class GameScreen implements Screen {
 
   @Override
   public void render(float delta) {
-    ++Param.FRAME;
     delta = Math.min(delta, Param.FRAME_TIME * 10); // Do not let this get too extreme
     Util.renderClear();
+    final boolean paused = (ui.uiMode == UIMode.kSETTINGS);
+    final float fxDelta = (paused ? 0 : delta);
+    if (!paused) ++Param.FRAME;
 
     world.act(delta);
     camera.update(delta);
-    state.act(delta);
     ui.act(delta);
+    state.act(delta);
 
     ////////////////////////////////////////////////
     // Tiles, buildings and warps
@@ -120,13 +123,13 @@ public class GameScreen implements Screen {
     Batch batch = state.getTileStage().getBatch();
     batch.begin();
     for (Warp w : world.warps.values()) {
-      w.warpCloud.draw(batch, delta);
-      if (!w.zap.isComplete()) w.zap.draw(batch, delta);
+      w.warpCloud.draw(batch, fxDelta);
+      if (!w.zap.isComplete()) w.zap.draw(batch, fxDelta);
 
     }
     for (int i = state.dustEffects.size - 1; i >= 0; i--) {
       ParticleEffectPool.PooledEffect e = state.dustEffects.get(i);
-      e.draw(batch, delta);
+      e.draw(batch, fxDelta);
       if (e.isComplete()) {
         e.free();
         state.dustEffects.removeIndex(i);
@@ -176,10 +179,12 @@ public class GameScreen implements Screen {
     if (fadeIn > 0) {
       sr.setProjectionMatrix(Camera.getInstance().getUiCamera().combined);
       sr.begin(ShapeRenderer.ShapeType.Filled);
-      sr.setColor(136/255f, 57/255f, 80/255f, fadeIn/100f);
-      sr.rect(0, 0,Param.DISPLAY_X, Param.DISPLAY_Y);
+      sr.setColor(136 / 255f, 57 / 255f, 80 / 255f, fadeIn / 100f);
+      sr.rect(0, 0, Param.DISPLAY_X, Param.DISPLAY_Y);
       sr.end();
       fadeIn -= delta * 70f;
+    } else if (!GameState.getInstance().isGameOn()) {
+      GameState.getInstance().initialZap();
     }
 
 

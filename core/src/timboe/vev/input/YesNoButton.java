@@ -6,6 +6,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 
 import timboe.vev.enums.UIMode;
 import timboe.vev.manager.GameState;
+import timboe.vev.manager.IntroUI;
 import timboe.vev.manager.UI;
 
 /**
@@ -18,7 +19,7 @@ public class YesNoButton extends ChangeListener {
     boolean N = ((Integer) actor.getUserObject() == 0);
     if (N) {
       if (UI.getInstance().uiMode == UIMode.kSETTINGS) {
-        UI.getInstance().cancelSettingsChanges();
+        IntroUI.getInstance().cancelSettingsChanges();
       }
       GameState.getInstance().doRightClick();
     } else { // Y

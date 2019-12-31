@@ -148,13 +148,10 @@ public class Warp extends Building {
     for (int tp = 0; tp < toPlace; ++tp) {
       // Occasional random spawn mode
       Particle p = (toPlaceParticle == null ? Particle.random() : toPlaceParticle);
-      if (GameState.getInstance().warpEnergy > 0) {
+      if (GameState.getInstance().warpParticles > 0) {
         placeParticle(p);
-        GameState.getInstance().warpEnergy -= p.getCreateEnergy();
+        GameState.getInstance().warpParticles -= 1;
         placed = true;
-        if (GameState.getInstance().warpEnergy < 0) {
-          GameState.getInstance().warpEnergy = 0;
-        }
       }
     }
     return placed;

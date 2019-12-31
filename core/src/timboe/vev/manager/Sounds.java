@@ -26,6 +26,7 @@ public class Sounds {
   private Sound OK;
   private Sound click;
   private Sound poof;
+  private Sound demolish;
   private Music[] theme = new Music[nMusic];
 
   private int track;
@@ -47,6 +48,7 @@ public class Sounds {
     OK.dispose();
     click.dispose();
     poof.dispose();
+    demolish.dispose();
     for (int i = 0; i < nMusic; ++i) theme[i].dispose();
     for (int i = 0; i < nMove; ++i) move[i].dispose();
     for (int i = 0; i < nSelect; ++i) select[i].dispose();
@@ -119,6 +121,8 @@ public class Sounds {
     foot.play(Param.SFX_LEVEL * sfxMod);
   }
 
+  public void demolish() { demolish.play( Param.SFX_LEVEL * sfxMod); }
+
   public void pulse() {
     swoosh.play(Param.SFX_LEVEL);
     pulse.play(Param.SFX_LEVEL);
@@ -160,6 +164,7 @@ public class Sounds {
     electric[0] = Gdx.audio.newSound(Gdx.files.internal("Electric1-SoundBible.com-1439537520.mp3"));
     electric[1] = Gdx.audio.newSound(Gdx.files.internal("Electric2-SoundBible.com-742005847.mp3"));
     electric[2] = Gdx.audio.newSound(Gdx.files.internal("Electric3-SoundBible.com-1450168875.mp3"));
+    demolish = Gdx.audio.newSound(Gdx.files.internal("441497__mattix__retro-explosion-05.wav"));
   }
 
 }

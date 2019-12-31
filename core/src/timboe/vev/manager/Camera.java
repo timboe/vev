@@ -153,7 +153,6 @@ public class Camera {
     desiredZoom = Util.clamp(desiredZoom, Param.ZOOM_MIN, Param.ZOOM_MAX);
     float sfx = Util.clamp( 1f / (desiredZoom + 0.75f), 0.2f, 1f);
     Sounds.getInstance().sfxLevel( sfx );
-    Gdx.app.log("setZoom","zoom:"+desiredZoom+ " sfx:"+sfx);
   }
 
   public float getZoom() {

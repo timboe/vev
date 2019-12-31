@@ -23,15 +23,6 @@ public enum Colour {
     return values.get(R.nextInt(size));
   }
 
-  public static Colour fromString(String s) {
-    if      (s.equals("r")) return kRED;
-    else if (s.equals("r_dark")) return kRED_DARK;
-    else if (s.equals("g")) return kGREEN;
-    else if (s.equals("g_dark")) return kGREEN_DARK;
-    else if (s.equals("blue")) return kBLUE;
-    else return kBLACK;
-  }
-
   public String getString() {
     switch (this) {
       case kRED: return "r";

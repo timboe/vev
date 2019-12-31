@@ -246,8 +246,10 @@ public class World {
       }
     }
 
-    Util.R.setSeed(0);
-    R.setSeed(0);
+    if (Param.WORLD_SEED > 0) {
+      Util.R.setSeed(Param.WORLD_SEED);
+      R.setSeed(Param.WORLD_SEED);
+    }
   }
 
   private void generateIntro() {
@@ -482,7 +484,7 @@ public class World {
     for (int subX = 0; subX < 2; ++subX) {
       for (int subY = 0; subY < 2; ++subY) {
         if (distance > Math.abs(R.nextGaussian() * Param.PATCH_DENSITY * maxDistance)) continue;
-        Sprite s = newSprite(x, y, "tiberium_" + R.nextInt(Param.N_TIBERIUM), false, false);
+        Sprite s = newSprite(x, y, "tiberium_" + R.nextInt(Param.N_TIBERIUM_SPRITES), false, false);
         tiberiumShards.put(s.id, s);
         p.addContained(s);
         s.moveBy(subX * Param.TILE_S, subY * Param.TILE_S);
