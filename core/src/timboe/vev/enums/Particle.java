@@ -37,12 +37,12 @@ public enum Particle {
 
   public String getString() {
     switch (this) {
-      case kH: return "H";
-      case kW: return "W";
-      case kZ: return "Z";
-      case kE: return "e";
-      case kM: return "μ";
-      case kQ: return "q";
+      case kH: return "Θ";
+      case kW: return "Δ";
+      case kZ: return "Γ";
+      case kE: return "Ψ";
+      case kM: return "Ω";
+      case kQ: return "Σ";
       case kBlank:
       default: return "?";
     }
