@@ -412,6 +412,7 @@
                 <false/>
             </struct>
             <key type="filename">large/building_0.png</key>
+            <key type="filename">large/building_4_gs.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
                 <point_f>0.5,0.5</point_f>
@@ -421,6 +422,22 @@
                 <rect>12,16,24,32</rect>
                 <key>scale9Paddings</key>
                 <rect>12,16,24,32</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">large/building_0_gs.png</key>
+            <key type="filename">large/building_1_gs.png</key>
+            <key type="filename">large/building_2_gs.png</key>
+            <key type="filename">large/building_3_gs.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>8,12,16,24</rect>
+                <key>scale9Paddings</key>
+                <rect>8,12,16,24</rect>
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
