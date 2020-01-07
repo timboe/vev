@@ -115,7 +115,6 @@ public class Warp extends Building {
         for (Particle p2 : Particle.values()) {
           if (p == p2) continue;
           if (pathingStartPointWarp.get(p2) == null) continue;;
-//          Gdx.app.log("TIMM", ""+pathingStartPointWarp.get(p2));
           Tile startingPoint = coordinateToTile( pathingStartPointWarp.get(p2) );
           if ( startingPoint == tryTile) used = true;
         }

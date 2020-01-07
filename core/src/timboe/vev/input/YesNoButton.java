@@ -5,8 +5,9 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 
 import timboe.vev.enums.UIMode;
+import timboe.vev.manager.Camera;
 import timboe.vev.manager.GameState;
-import timboe.vev.manager.IntroUI;
+import timboe.vev.manager.UIIntro;
 import timboe.vev.manager.UI;
 
 /**
@@ -17,9 +18,23 @@ public class YesNoButton extends ChangeListener {
   @Override
   public void changed(ChangeEvent event, Actor actor) {
     boolean N = ((Integer) actor.getUserObject() == 0);
+
+    if (UI.getInstance().uiMode == UIMode.kHELP) {
+      if (N) {
+        UIIntro.getInstance().helpLevel -= 1;
+        if (UIIntro.getInstance().helpLevel == 0) {
+          GameState.getInstance().doRightClick();
+        }
+      } else {
+        UIIntro.getInstance().helpLevel += 1;
+      }
+      Camera.getInstance().setHelpPos(UIIntro.getInstance().helpLevel);
+      return;
+    }
+
     if (N) {
       if (UI.getInstance().uiMode == UIMode.kSETTINGS) {
-        IntroUI.getInstance().cancelSettingsChanges();
+        UIIntro.getInstance().cancelSettingsChanges();
       }
       GameState.getInstance().doRightClick();
     } else { // Y

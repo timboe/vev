@@ -10,6 +10,7 @@ import timboe.vev.Param;
 import timboe.vev.entity.Building;
 import timboe.vev.enums.BuildingType;
 import timboe.vev.manager.GameState;
+import timboe.vev.manager.IntroState;
 import timboe.vev.manager.UI;
 import timboe.vev.manager.World;
 
@@ -29,6 +30,6 @@ public class DemolishButton extends ChangeListener {
     destroyDialog.row();
     destroyDialog.button(UI.getInstance().getTextButton("YES",""), 1);
     destroyDialog.button(UI.getInstance().getTextButton("NO",""), 0);
-    destroyDialog.show(GameState.getInstance().getUIStage());
+    destroyDialog.show(IntroState.getInstance().getUIStage());
   }
 }

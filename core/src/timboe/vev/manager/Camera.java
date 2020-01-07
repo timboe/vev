@@ -34,7 +34,6 @@ public class Camera {
   private final Vector2 desiredPos = new Vector2(0,0);
   private final Vector2 velocity = new Vector2(0,0);
   private float shake;
-  private float shakeAngle;
 
   private final Random R = new Random();
 
@@ -53,6 +52,12 @@ public class Camera {
   public void setCurrentPos(float x, float y) {
     this.currentPos.set(x,y);
     this.desiredPos.set(x,y);
+  }
+
+  public void setHelpPos(int level) {
+    this.desiredPos.set(Param.TILES_INTRO_X/2 * Param.TILE_S,
+            (level + 1) * (Param.TILES_INTRO_Y/2 * Param.TILE_S));
+    setCurrentZoom(.25f);
   }
 
   public void setCurrentZoom(float currentZoom) {
@@ -99,7 +104,7 @@ public class Camera {
   }
 
   public Vector3 unproject(Vector3 v) {
-    return tileCamera.unproject(v);
+    return tileViewport.unproject(v);
   }
 
   boolean addShake(Entity e, float amount) {
@@ -144,6 +149,11 @@ public class Camera {
     this.velocity.set(x, y);
   }
 
+  public void modVelocity(float x, float y) {
+    this.velocity.x += x;
+    this.velocity.y += y;
+  }
+
   public void modZoom(float z){
     setZoom(desiredZoom + z);
   }
@@ -167,7 +177,7 @@ public class Camera {
     velocity.scl((float)Math.pow(0.9f, frames));
 
     shake *= (float)Math.pow(0.9f, frames);
-    shakeAngle = R.nextFloat() * (float)Math.PI * 2f;
+    float shakeAngle = R.nextFloat() * (float) Math.PI * 2f;
 
     currentPos.set(desiredPos);
     currentPos.add(shake * (float)Math.cos(shakeAngle), shake * (float)Math.sin(shakeAngle));

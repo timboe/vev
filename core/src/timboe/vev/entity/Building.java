@@ -515,6 +515,15 @@ public class Building extends Entity {
     spriteProcessing = 0;
   }
 
+  public boolean holdinPenEmpty() {
+    for (Particle p : Particle.values()) {
+      if (holdingPen.get(p) > 0) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   void placeParticle(Particle p) {
     if (p == null) return;
     Integer current = holdingPen.get(p);

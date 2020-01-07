@@ -52,7 +52,6 @@ public class World {
   private Vector<IVector2> worldEdges = new Vector<IVector2>();
   public boolean launchAfterGen = false;
   public boolean doLoad = false;
-  public JSONObject loadedSave = null;
   private int stage;
   private Tile[][] introTiles;
   private Zone[][] zones;
@@ -203,7 +202,10 @@ public class World {
   }
 
   public void reset(boolean includingIntro) {
-    GameState.getInstance().reset(includingIntro);
+    GameState.getInstance().reset();
+    if (includingIntro) {
+      IntroState.getInstance().reset();
+    }
     stage = 0;
     generated = false;
     warps.clear();
@@ -222,7 +224,7 @@ public class World {
       for (int x = 0; x < Param.TILES_INTRO_X; ++x) {
         for (int y = 0; y < Param.TILES_INTRO_Y; ++y) {
           introTiles[x][y] = new Tile(x, y);
-          GameState.getInstance().getIntroTileStage().addActor(introTiles[x][y]);
+          IntroState.getInstance().getIntroTileStage().addActor(introTiles[x][y]);
           introTiles[x][y].level = 1;
           introTiles[x][y].isIntro = true;
           if (x < 2*Param.TILES_INTRO_X / 5) { // 2/5 or 40%
@@ -269,14 +271,14 @@ public class World {
 
   private void load() {
     try {
-      deserialise( loadedSave.getJSONObject("World") );
-      GameState.getInstance().deserialise( loadedSave.getJSONObject("GameState") );
+      deserialise( Persistence.getInstance().save.getJSONObject("World") );
+      GameState.getInstance().deserialise( Persistence.getInstance().save.getJSONObject("GameState") );
     } catch (JSONException e) {
       e.printStackTrace();
     }
     generated = true;
     doLoad = false;
-    Gdx.app.log("DBG", "WARPS ACTORS SIZE " + GameState.getInstance().getWarpStage().getActors().size);
+    Gdx.app.log("DBG", "LOADED. WARPS ACTORS SIZE " + GameState.getInstance().getWarpStage().getActors().size);
     GameState.getInstance().transitionToGameScreen();
   }
 
@@ -373,7 +375,7 @@ public class World {
   private Sprite newSprite(int x, int y, String name, boolean isFoliage, boolean isIntro) {
     Sprite s = new Sprite(tiles[x][y]);
     if (isFoliage) {
-      if (isIntro) GameState.getInstance().getIntroFoliageStage().addActor(s);
+      if (isIntro) IntroState.getInstance().getIntroFoliageStage().addActor(s);
       else GameState.getInstance().getFoliageStage().addActor(s);
     }
     else GameState.getInstance().getSpriteStage().addActor(s);

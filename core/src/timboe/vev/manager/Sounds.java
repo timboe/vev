@@ -66,8 +66,8 @@ public class Sounds {
 
 
   public void musicVolume() {
-    Gdx.app.log("musicVolume","Now " + Param.MUSIC_LEVEL);
-    theme[track].setVolume(Param.MUSIC_LEVEL);
+    Gdx.app.log("musicVolume","Now " + Persistence.getInstance().musicLevel);
+    theme[track].setVolume(Persistence.getInstance().musicLevel);
   }
 
   public void doMusic(boolean initial) {
@@ -82,50 +82,50 @@ public class Sounds {
   }
 
   public void poof() {
-    poof.play(Param.SFX_LEVEL * sfxMod);
+    poof.play(Persistence.getInstance().sfxLevel * sfxMod);
   }
 
   public void click() {
-    click.play(Param.SFX_LEVEL);
+    click.play(Persistence.getInstance().sfxLevel);
   }
 
   public void OK() {
-    OK.play(Param.SFX_LEVEL);
+    OK.play(Persistence.getInstance().sfxLevel);
   }
 
   public void star() {
-    star.play(Param.SFX_LEVEL * sfxMod);
+    star.play(Persistence.getInstance().sfxLevel * sfxMod);
   }
 
   public void thud() {
-    thud.play(Param.SFX_LEVEL * sfxMod);
+    thud.play(Persistence.getInstance().sfxLevel * sfxMod);
   }
 
   public void boop() {
-    blop.play(Param.SFX_LEVEL * sfxMod);
+    blop.play(Persistence.getInstance().sfxLevel * sfxMod);
   }
 
   public void zap() {
-    electric[ R.nextInt(nElectric) ].play(Param.SFX_LEVEL * sfxMod);
+    electric[ R.nextInt(nElectric) ].play(Persistence.getInstance().sfxLevel * sfxMod);
   }
 
   public void moveOrder() {
-    move[ R.nextInt(nMove) ].play(Param.SFX_LEVEL);
+    move[ R.nextInt(nMove) ].play(Persistence.getInstance().sfxLevel);
   }
 
   public void selectOrder() {
-    select[ R.nextInt(nSelect) ].play(Param.SFX_LEVEL);
+    select[ R.nextInt(nSelect) ].play(Persistence.getInstance().sfxLevel);
   }
 
   public void foot() {
-    foot.play(Param.SFX_LEVEL * sfxMod);
+    foot.play(Persistence.getInstance().sfxLevel * sfxMod);
   }
 
-  public void demolish() { demolish.play( Param.SFX_LEVEL * sfxMod); }
+  public void demolish() { demolish.play( Persistence.getInstance().sfxLevel * sfxMod); }
 
   public void pulse() {
-    swoosh.play(Param.SFX_LEVEL);
-    pulse.play(Param.SFX_LEVEL);
+    swoosh.play(Persistence.getInstance().sfxLevel);
+    pulse.play(Persistence.getInstance().sfxLevel);
   }
 
 

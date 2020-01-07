@@ -87,6 +87,7 @@ public class GameState {
   public boolean doingPlacement = false;
   private EnumMap<BuildingType, Integer> buildingPrices = new EnumMap<BuildingType, Integer>(BuildingType.class);
   private EnumMap<BuildingType, Integer> buildingQueuePrices = new EnumMap<BuildingType, Integer>(BuildingType.class);
+  private Warp toFocusOn;
 
   public JSONObject serialise() throws JSONException {
     JSONObject json = new JSONObject();
@@ -202,14 +203,10 @@ public class GameState {
   public PathingCache<IVector2> pathingCache = new PathingCache<IVector2>();
   private final Random R = new Random();
 
-  private Stage introTileStage;
   private Stage tileStage;
   private Stage spriteStage;
-  private Stage introSpriteStage;
-  private Stage introFoliageStage;
   private Stage foliageStage;
   private Stage warpStage;
-  private Stage uiStage;
   private Stage buildingStage;
 
   private static GameState ourInstance = null;
@@ -233,7 +230,7 @@ public class GameState {
   private boolean gameOn;
 
   private GameState() {
-    reset(true);
+    reset();
   }
 
   public void setGame(VEVGame theGame) {
@@ -248,14 +245,9 @@ public class GameState {
 
     if (!World.getInstance().getGenerated()) return;
 
-    uiStage.act(delta);
+    IntroState.getInstance().getUIStage().act(delta);
 
-    if (!isGameOn()) {
-      introSpriteStage.act(delta);
-      return;
-    }
-
-    if (UI.getInstance().uiMode == UIMode.kSETTINGS) {
+    if (!isGameOn() || UI.getInstance().uiMode == UIMode.kSETTINGS) {
       return;
     }
 
@@ -266,7 +258,6 @@ public class GameState {
     warpStage.act(delta);
     buildingStage.act(delta);
 
-
     if (Param.IS_ANDROID) {
       cursor.set(Gdx.graphics.getWidth()/2f, Gdx.graphics.getHeight()/2f, 0);
     } else {
@@ -275,7 +266,9 @@ public class GameState {
     cursor = Camera.getInstance().unproject(cursor);
     cursor.scl(1f / (float) Param.TILE_S);
     Tile cursorTile = null;
-    if (Util.inBounds((int)cursor.x, (int)cursor.y, false)) cursorTile = World.getInstance().getTile(cursor.x, cursor.y);
+    if (Util.inBounds((int)cursor.x, (int)cursor.y, false)) {
+      cursorTile = World.getInstance().getTile(cursor.x, cursor.y);
+    }
 
     if (doingPlacement) {
       if (UI.getInstance().uiMode == UIMode.kPLACE_BUILDING) {
@@ -301,7 +294,7 @@ public class GameState {
             // Don't allow loop
             if (t.mySprite != 0 && t.mySprite == selectedBuilding) placeLocation = null;
             if (placeLocation != null) {
-              Building b = buildingMap.get( selectedBuilding );
+              Building b = buildingMap.get(selectedBuilding);
               b.updateDemoPathingList(selectedBuildingStandingOrderParticle, t);
             }
           }
@@ -309,9 +302,24 @@ public class GameState {
       }
     }
 
+    if (UI.getInstance().uiMode == UIMode.kWITH_PARTICLE_SELECTION && cursorTile != null) {
+      if (cursorTile.mySprite != 0) {
+        Building b = GameState.getInstance().buildingMap.get(cursorTile.mySprite);
+        if (b != null && b.getType() != BuildingType.kMINE) {
+          cursorTile = b.getQueuePathingTarget();
+        }
+      }
+      if (cursorTile.coordinates.pathFindNeighbours.size() > 0) {
+        cursorTile.setHighlightColour(Param.HIGHLIGHT_YELLOW);
+      }
+    }
+
     tickTime += delta;
-    boolean tooFew = (inWorldParticles < 10 && warpParticles > 0);
+    boolean tooFew = (inWorldParticles < 10 && warpParticles > 0 && toFocusOn.holdinPenEmpty());
     if (!tooFew && tickTime < warpSpawnTime) return;
+    if (tooFew) {
+      Gdx.app.log("act","Spawning due to 'too few'");
+    }
     tickTime -= warpSpawnTime;
     if (warpSpawnTime > Param.WARP_SPAWN_TIME_MIN) {
       warpSpawnTime -= Param.WARP_SPAWN_TIME_REDUCTION;
@@ -336,7 +344,7 @@ public class GameState {
     );
     if (stressTest) toPlace = 1000000;
     boolean placed = from.newParticles(toPlace, stressTest);
-    Gdx.app.log("act","Warp: SpawnTime: "+warpSpawnTime + " meanP: "
+    Gdx.app.debug("GameState:act","Warp: SpawnTime: "+warpSpawnTime + " meanP: "
         + newParticlesMean + " widthP: " + newParticlesWidth
         + " place:" + toPlace + " placed:" + placed);
 
@@ -401,6 +409,7 @@ public class GameState {
         boomDustEffect( World.getInstance().getTile(v) );
       }
     }
+    Camera.getInstance().addShake(selected, Param.WARP_SHAKE);
     // Run deconstructor
     selected.deconstruct();
     // Refund
@@ -503,8 +512,8 @@ public class GameState {
   }
 
   public void doRightClick() {
-    if (!gameOn && theTitleScreen.fadeTimer == 0) { // Canceling settings window
-      IntroUI.getInstance().resetTitle("main");
+    if (!gameOn && theTitleScreen.fadeTimer[0] == 0) { // Canceling settings window
+      UIIntro.getInstance().resetTitle("main");
       return;
     }
     if (!gameOn) {
@@ -632,9 +641,6 @@ public class GameState {
     for (Actor a : spriteStage.getActors()) {
       ((Entity)a).loadTexture();
     }
-    for (Actor a : introSpriteStage.getActors()) {
-      ((Entity)a).loadTexture();
-    }
   }
 
   public void doParticleMoveOrder(int x, int y) {
@@ -715,14 +721,30 @@ public class GameState {
 
 
   public void transitionToGameScreen() {
-    theTitleScreen.fadeTimer = 1f;
-    Sounds.getInstance().pulse();
+    if (theTitleScreen.fadeTimer[0] == 0) {
+      theTitleScreen.fadeTimer[0] = 1f;
+      Sounds.getInstance().pulse();
+    }
+  }
+
+  public void transitionToTitleScreen() {
+    if (theGameScreen.fadeTimer[0] == 0) {
+      theGameScreen.fadeTimer[0] = 1f;
+      Sounds.getInstance().pulse();
+    }
   }
 
   public void setToTitleScreen() {
     pathingCache.clear();
-    IntroUI.getInstance().resetTitle("main");
+    UIIntro.getInstance().resetTitle("main");
     game.setScreen(theTitleScreen);
+    theTitleScreen.fadeIn = 100f;
+    if (isGameOn()) {
+      Persistence.getInstance().trySave();
+      World.getInstance().reset(false);
+      reset();
+      Persistence.getInstance().flushSave();
+    }
     setGameOn(false);
   }
 
@@ -740,9 +762,14 @@ public class GameState {
   }
 
   public void initialZap() {
-    Iterator it = World.getInstance().warps.values().iterator();
-    Warp toFocusOn = (Warp)it.next();
-    tryNewParticles(false, toFocusOn, 20);
+    if (inWorldParticles == 0) {
+      Iterator it = World.getInstance().warps.values().iterator();
+      toFocusOn = (Warp) it.next();
+      for (int i = 0; i < R.nextInt(3)+1; ++i) {
+        tryNewParticles(false, toFocusOn, 20);
+      }
+      Gdx.app.log("initialZap", "Doing zap");
+    }
     setGameOn(true);
   }
 
@@ -750,42 +777,21 @@ public class GameState {
     return tileStage;
   }
 
-  public Stage getIntroTileStage() {
-    return introTileStage;
-  }
-
-  public Stage getUIStage() {
-    return uiStage;
-  }
-
   public Stage getWarpStage() { return warpStage; }
-
-  public Stage getIntroSpriteStage() {
-    return introSpriteStage;
-  }
 
   public Stage getSpriteStage() {
     return spriteStage;
   }
 
-  public Stage getFoliageStage() { return foliageStage; }
+  public Stage getFoliageStage() {
+    return foliageStage;
+  }
 
-  public Stage getIntroFoliageStage() { return introFoliageStage; }
+  public Stage getBuildingStage() {
+    return buildingStage;
+  }
 
-  public Stage getBuildingStage() { return buildingStage; }
-
-  public void reset(boolean includingIntro) {
-    if (includingIntro) {
-      if (introTileStage != null) introTileStage.dispose();
-      if (introFoliageStage != null) introFoliageStage.dispose();
-      if (introSpriteStage != null) introSpriteStage.dispose();
-      if (uiStage != null) uiStage.dispose();
-      introTileStage = new Stage(Camera.getInstance().getTileViewport());
-      introSpriteStage = new Stage(Camera.getInstance().getSpriteViewport());
-      introFoliageStage = new Stage(Camera.getInstance().getSpriteViewport());
-      uiStage = new Stage(Camera.getInstance().getUiViewport());
-
-    }
+  public void reset() {
     if (tileStage != null) tileStage.dispose();
     if (spriteStage != null) spriteStage.dispose();
     if (foliageStage != null) foliageStage.dispose();
@@ -814,7 +820,7 @@ public class GameState {
     playerEnergy = Param.PLAYER_STARTING_ENERGY;
     inWorldParticles = 0;
     warpParticles = Param.PARTICLES_SMALL;
-    debug = Param.DEBUG_INTIAL;
+    debug = Param.DEBUG_INITIAL;
     queueType = Param.QUEUE_INITIAL_TYPE;
     queueSize = Param.QUEUE_INITIAL_SIZE;
     warpSpawnTime = Param.WARP_SPAWN_TIME_INITIAL;
@@ -855,13 +861,9 @@ public class GameState {
   public void dispose() {
     theGameScreen.dispose();
     theTitleScreen.dispose();
-    introTileStage.dispose();
     tileStage.dispose();
     spriteStage.dispose();
-    introSpriteStage.dispose();
     foliageStage.dispose();
-    introFoliageStage.dispose();
-    uiStage.dispose();
     warpStage.dispose();
     buildingStage.dispose();
     ourInstance = null;

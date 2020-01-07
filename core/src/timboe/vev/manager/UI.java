@@ -35,6 +35,7 @@ import timboe.vev.enums.Particle;
 import timboe.vev.enums.QueueType;
 import timboe.vev.enums.UIMode;
 import timboe.vev.input.BuildingButton;
+import timboe.vev.input.ButtonHover;
 import timboe.vev.input.DemolishButton;
 import timboe.vev.input.ParticleSelectButton;
 import timboe.vev.input.QueueButton;
@@ -88,9 +89,9 @@ public class UI {
   private final StandingOrderButton standingOrderButton = new StandingOrderButton();
   private final UpgradeBuildingButton upgradeBuildingButton = new UpgradeBuildingButton();
   private final DemolishButton demolishButton = new DemolishButton();
+  private final ButtonHover buttonHover = new ButtonHover();
 
 //  public Button selectParticlesButton;
-  public boolean showPaths = false;
 
   private EnumMap<BuildingType, Button> buildBuildingButtonsEnabled = null;
   private EnumMap<BuildingType, Button> buildBuildingButtonsDisabled = null;
@@ -172,6 +173,11 @@ public class UI {
     TextButtonDF b = new TextButtonDF(label, skin, "default");
     b.getLabelCell().pad(10,30,10,30);
     TT(b,tt);
+    b.addListener(buttonHover);
+    if (label.equals("<") || label.equals(">")) {
+      b.setUserObject( label.equals("<") ? 0 : 1);
+      b.addListener(yesNoButton);
+    }
     return b;
   }
 
@@ -191,6 +197,7 @@ public class UI {
 
   public Button getImageButton(String image, String style, int resize, String tt) {
     Button ib = new Button(skin, style);
+    ib.addListener(buttonHover);
     if (image.equals("tick") || image.equals("cross")) {
       ib.setUserObject( image.equals("cross") ? 0 : 1);
       ib.addListener(yesNoButton);
@@ -328,8 +335,8 @@ public class UI {
     table.right();
     table.pad(Param.TILE_S);
 
-    GameState.getInstance().getUIStage().clear();
-    GameState.getInstance().getUIStage().addActor(table);
+    IntroState.getInstance().getUIStage().clear();
+    IntroState.getInstance().getUIStage().addActor(table);
 
     BuildingButton buildingButtonHandler = new BuildingButton();
     QueueLengthSlider queueLengthSlider = new QueueLengthSlider();
@@ -412,17 +419,7 @@ public class UI {
     mainWindow.add(buildingBuildTable).colspan(2);
     mainWindow.row();
     separator(mainWindow, 2);
-    // TODO android
-//    selectParticlesButton = getImageButton("select", "toggle", SIZE_M,"select");
-//    selectParticlesButton.addListener(new ChangeListener() {
-//      @Override
-//      public void changed(ChangeEvent event, Actor actor) {
-//        if (((Button)actor).isChecked()) GameState.getInstance().startSelectingAndroid();
-//      }
-//    });
-//    addToWin(mainWindow, selectParticlesButton, SIZE_L, SIZE_L, 1);
-//    showPathsButton = getImageButton("show_arrows", "toggle", SIZE_M, "showPaths");
-//    addToWin(mainWindow, showPathsButton, SIZE_L, SIZE_L, 1);
+
     mainWindow.row();
     Button settings = getImageButton("settings", "default", SIZE_L, "pause");
     settings.addListener(new ChangeListener() {
@@ -590,79 +587,18 @@ public class UI {
 
     // Settings window
     settingsWindow = getWindow();
-    addPlayerEnergy(settingsWindow, 4);
-    //
-    final LabelDF musicVL = getLabel(formatter.format(Param.MUSIC_LEVEL*100),"");
-    final LabelDF sfxcVL = getLabel(formatter.format(Param.SFX_LEVEL*100),"");
-    addToWin(settingsWindow, getLabel("M", "musicVolume"), SIZE_S, SIZE_S, 1);
-    Slider musicSlider = new Slider(0, 1, .01f, false, skin, "default-horizontal");
-    musicSlider.setValue(Param.MUSIC_LEVEL);
-    musicSlider.addListener(new ChangeListener() {
-      @Override
-      public void changed(ChangeEvent event, Actor actor) {
-        Param.MUSIC_LEVEL = ((Slider)actor).getValue();
-        musicVL.setText(formatter.format(Param.MUSIC_LEVEL*100));
-        Sounds.getInstance().musicVolume();
-      }
-    });
-    addToWin(settingsWindow, musicSlider, SIZE_L+SIZE_M, SIZE_S, 2);
-    addToWin(settingsWindow, musicVL, SIZE_S, SIZE_S, 1);
-    //
-    settingsWindow.row();
-    addToWin(settingsWindow, getLabel("S", "sfxVolume"), SIZE_S, SIZE_S, 1);
-    Slider sfxSlider = new Slider(0, 1, .01f, false, skin, "default-horizontal");
-    sfxSlider.setValue(Param.SFX_LEVEL);
-    sfxSlider.addListener(new ChangeListener() {
-      @Override
-      public void changed(ChangeEvent event, Actor actor) {
-        Param.SFX_LEVEL = ((Slider)actor).getValue();
-        sfxcVL.setText(formatter.format(Param.SFX_LEVEL*100));
-      }
-    });
-    addToWin(settingsWindow, sfxSlider, SIZE_L+SIZE_M, SIZE_S, 2);
-    addToWin(settingsWindow, sfxcVL, SIZE_S, SIZE_S, 1);
-    settingsWindow.row();
-    separator(settingsWindow, 4);
-    //
-    Button showPathsBut = getTextButton(Lang.get("UI_SHOW_PATHS")+" "+(showPaths?"ON":"OFF"),"showPaths");
-    showPathsBut.addListener(new ChangeListener() {
-      @Override
-      public void changed(ChangeEvent event, Actor actor) {
-        showPaths = !showPaths;
-        ((TextButtonDF)actor).setText(Lang.get("UI_SHOW_PATHS")+" "+(showPaths?"ON":"OFF"));
-      }
-    });
-    addToWin(settingsWindow, showPathsBut, SIZE_L*5, SIZE_L, 4);
-    settingsWindow.row();
-    separator(settingsWindow, 4);
-    //
-    Button fullscreen = getTextButton(Lang.get("UI_FULLSCREEN")+" "+(Gdx.graphics.isFullscreen()?"ON":"OFF"),"fullscreen");
-    fullscreen.addListener(new ChangeListener() {
-      @Override
-      public void changed(ChangeEvent event, Actor actor) {
-        Graphics.DisplayMode currentMode = Gdx.graphics.getDisplayMode();
-        if (Gdx.graphics.isFullscreen()) {
-          Gdx.graphics.setWindowedMode(currentMode.width, currentMode.height);
-        } else {
-          Gdx.graphics.setFullscreenMode(currentMode);
-        }
-        ((TextButtonDF)actor).setText(Lang.get("UI_FULLSCREEN")+" "+(Gdx.graphics.isFullscreen()?"ON":"OFF"));
-      }
-    });
-    addToWin(settingsWindow, fullscreen, SIZE_L*5, SIZE_L, 4);
-    settingsWindow.row();
-    separator(settingsWindow, 4);
+    addPlayerEnergy(settingsWindow, 2);
     //
     Button saveAndQuit = getTextButton(Lang.get("UI_SAVE_AND_QUIT"),"saveAndQuit");
     saveAndQuit.addListener(new ChangeListener() {
       @Override
       public void changed(ChangeEvent event, Actor actor) {
-        Gdx.app.exit();
+        GameState.getInstance().transitionToTitleScreen();
       }
     });
-    addToWin(settingsWindow, saveAndQuit, SIZE_L*5, SIZE_L, 4);
+    addToWin(settingsWindow, saveAndQuit, SIZE_L*3, SIZE_L+SIZE_M, 2);
     settingsWindow.row();
-    separator(settingsWindow, 4);
+    separator(settingsWindow, 2);
     //
     Button resume = getTextButton(Lang.get("UI_RESUME"),"resume");
     resume.addListener(new ChangeListener() {
@@ -671,7 +607,7 @@ public class UI {
         showMain();
       }
     });
-    addToWin(settingsWindow, resume, SIZE_L*5, SIZE_L, 4);
+    addToWin(settingsWindow, resume, SIZE_L*3, SIZE_L, 2);
     settingsWindow.row();
     //
 

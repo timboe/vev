@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.TextureData;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -32,6 +33,8 @@ public class Textures {
   private final Color redDark = new Color(72 / 255f, 43 / 255f, 81 / 255f, 1f);
   private final Color redBlack = new Color(39 / 255f, 32 / 255f, 49 / 255f, 1f);
 
+  public final EnumMap<Particle, Color> particleBaseColours = new EnumMap<Particle,Color>(Particle.class);
+
   public static Textures getInstance() {
     return ourInstance;
   }
@@ -50,15 +53,15 @@ public class Textures {
 
   public void updateParticleHues() {
     for (Particle p : Particle.values()) {
-      final int hue = Param.PARTICLE_HUE.get(p);
+      final int hue = Persistence.getInstance().particleHues.get(p);
       java.awt.Color awtColor = java.awt.Color.getHSBColor(hue / 360f, Param.HSB_BASE_SATURATION / 100f, Param.HSB_BASE_BRIGHTNESS / 100f);
-      Param.PARTICLE_BASE_COLOUR.put(p, new Color(awtColor.getRed() / 255f, awtColor.getGreen() / 255f, awtColor.getBlue() / 255f, 1f));
+      particleBaseColours.put(p, new Color(awtColor.getRed() / 255f, awtColor.getGreen() / 255f, awtColor.getBlue() / 255f, 1f));
     }
     loadMultiColouredBall();
   }
 
   private Color mod(Particle p, int hueMod, int s, int b) {
-    int hue = Param.PARTICLE_HUE.get(p);
+    int hue = Persistence.getInstance().particleHues.get(p);
     if (hue > 720) { // Final third (bright)
       hue -= 720;
       b += 30;
@@ -153,8 +156,11 @@ public class Textures {
     if (GameState.constructed()) {
       GameState.getInstance().retextureSprites();
     }
-    if (IntroUI.constructed()) {
-      IntroUI.getInstance().retextureSprites();
+    if (IntroState.constructed()) {
+      IntroState.getInstance().retextureSprites();
+    }
+    if (UIIntro.constructed()) {
+      UIIntro.getInstance().retextureSprites();
     }
   }
 

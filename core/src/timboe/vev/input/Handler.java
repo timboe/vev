@@ -31,7 +31,7 @@ public class Handler extends InputAdapter {
 
   @Override
   public boolean keyUp (int keycode) {
-    if (keycode == Input.Keys.D) {
+    if (keycode == Input.Keys.B) {
       if (++GameState.getInstance().debug == 4) GameState.getInstance().debug = 0;
       GameState.getInstance().getTileStage().setDebugAll( GameState.getInstance().debug > 1 );
     } else if (keycode == Input.Keys.N) {
@@ -46,6 +46,14 @@ public class Handler extends InputAdapter {
       }
     } else if (keycode == Input.Keys.ESCAPE) {
       Gdx.app.exit();
+    } else if (keycode == Input.Keys.W) {
+      Camera.getInstance().modVelocity(0, +10);
+    } else if (keycode == Input.Keys.A) {
+      Camera.getInstance().modVelocity(-10, 0);
+    } else if (keycode == Input.Keys.S) {
+      Camera.getInstance().modVelocity(0, -10);
+    } else if (keycode == Input.Keys.D) {
+      Camera.getInstance().modVelocity(+10, 0);
     }
     return false;
   }

@@ -2,6 +2,7 @@ package timboe.vev.enums;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Texture;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -9,6 +10,7 @@ import java.util.List;
 import java.util.Random;
 
 import timboe.vev.Param;
+import timboe.vev.manager.Textures;
 
 /**
  * Created by Tim on 01/01/2018.
@@ -63,7 +65,7 @@ public enum Particle {
   public Color getHighlightColour() {
     switch (this) {
       case kBlank: return Param.PARTICLE_Blank;
-      default: return Param.PARTICLE_BASE_COLOUR.get(this);
+      default: return Textures.getInstance().particleBaseColours.get(this);
     }
   }
 

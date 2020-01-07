@@ -23,6 +23,7 @@ import timboe.vev.input.Gesture;
 import timboe.vev.input.Handler;
 import timboe.vev.manager.Camera;
 import timboe.vev.manager.GameState;
+import timboe.vev.manager.IntroState;
 import timboe.vev.manager.UI;
 import timboe.vev.manager.World;
 
@@ -40,6 +41,7 @@ public class GameScreen implements Screen {
   private final UI ui = UI.getInstance();
 
   public float fadeIn = 0;
+  public float[] fadeTimer = new float[3];
 
   public GameScreen() {
     setMultiplexerInputs();
@@ -48,7 +50,7 @@ public class GameScreen implements Screen {
   public void setMultiplexerInputs() {
     gestureDetector.setLongPressSeconds(Param.LONG_PRESS_TIME);
     multiplexer.clear();
-    multiplexer.addProcessor(state.getUIStage());
+    multiplexer.addProcessor(IntroState.getInstance().getUIStage());
     multiplexer.addProcessor(handler);
     multiplexer.addProcessor(gestureDetector);
   }
@@ -56,6 +58,7 @@ public class GameScreen implements Screen {
   @Override
   public void show() {
     Gdx.input.setInputProcessor( multiplexer );
+    fadeTimer[0] = fadeTimer[1] = fadeTimer[2] = 0;
     Gdx.app.log("GameScreen", "Show " + Gdx.input.getInputProcessor());
   }
 
@@ -170,7 +173,7 @@ public class GameScreen implements Screen {
     ////////////////////////////////////////////////
     // UI
 
-    state.getUIStage().draw();
+    IntroState.getInstance().getUIStage().draw();
 
 
     ////////////////////////////////////////////////
@@ -182,6 +185,7 @@ public class GameScreen implements Screen {
       sr.setColor(136 / 255f, 57 / 255f, 80 / 255f, fadeIn / 100f);
       sr.rect(0, 0, Param.DISPLAY_X, Param.DISPLAY_Y);
       sr.end();
+      Gdx.app.log("FADE",""+fadeIn / 100f);
       fadeIn -= delta * 70f;
     } else if (!GameState.getInstance().isGameOn()) {
       GameState.getInstance().initialZap();
@@ -194,6 +198,13 @@ public class GameScreen implements Screen {
     sr.setColor(1, 0, 0, 1);
     sr.rect(0,0,Param.DISPLAY_X,Param.DISPLAY_Y);
     sr.end();
+
+    if (fadeTimer[0] > 0) {
+      final boolean finished = Util.doFade(sr, delta, fadeTimer);
+      if (finished) {
+        GameState.getInstance().setToTitleScreen();
+      }
+    }
   }
 
   @Override

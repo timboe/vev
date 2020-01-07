@@ -15,6 +15,7 @@ public class DesktopLauncher {
 		config.foregroundFPS = 60;
 		config.samples = 2;
 		config.fullscreen = false;
+		config.forceExit = false;
 		new LwjglApplication(new VEVGame(), config);
 	}
 }

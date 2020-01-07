@@ -45,6 +45,7 @@ public class Lang {
     EN_GB.put("resume","Un-pause and resume.");
     EN_GB.put("showPaths","Toggles the rendering of all\nbuilding's Standing Orders.");
     EN_GB.put("fullscreen","Toggles fullscreen mode.");
+    EN_GB.put("volume","Changes the volume.");
 
     EN_GB.put("UI_NEW", "NEW GAME");
     EN_GB.put("UI_LOAD", "CONTINUE");
@@ -58,11 +59,13 @@ public class Lang {
     EN_GB.put("UI_MED", "MEDIUM");
     EN_GB.put("UI_LONG", "LONG");
     EN_GB.put("UI_XL", "X-LONG");
+    EN_GB.put("UI_MUSIC", "MUSIC");
+    EN_GB.put("UI_SFX", "SOUND FX");
     EN_GB.put("UI_N_PARTICLES", "Deconstruct # Particles");
-    EN_GB.put("UI_CANCEL", "Cancel");
-    EN_GB.put("UI_SAVE_AND_QUIT", "SAVE AND EXIT");
+    EN_GB.put("UI_CANCEL", "CANCEL");
+    EN_GB.put("UI_BACK", "BACK");
+    EN_GB.put("UI_SAVE_AND_QUIT", "SAVE &\nEXIT");
     EN_GB.put("UI_RESUME", "RESUME");
-    EN_GB.put("UI_SHOW_PATHS", "SHOW PATHS");
     EN_GB.put("UI_FULLSCREEN", "FULLSCREEN");
 
 

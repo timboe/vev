@@ -12,14 +12,7 @@ import timboe.vev.enums.QueueType;
 
 public class Param {
 
-  // Persistent
-  public static float MUSIC_LEVEL = 0.f;
-  public static float SFX_LEVEL = 1.f;
-  public static EnumMap<Particle,Integer> PARTICLE_HUE = new EnumMap<Particle,Integer>(Particle.class);
-  public static Vector<Integer> BEST_TIME = new Vector<Integer>();
 
-  // Transient
-  public static EnumMap<Particle,Color> PARTICLE_BASE_COLOUR = new EnumMap<Particle,Color>(Particle.class);
 
 
   public static final int ZONES_X = 3; // Constant... or not to constant
@@ -164,7 +157,7 @@ public class Param {
   public static final int HSB_SHADOW_SATURATION = 46;
   public static final int HSB_SHADOW_BRIGHTNESS = 31;
 
-  public static final int DEBUG_INTIAL = 0;
+  public static final int DEBUG_INITIAL = 0;
   private static final boolean FAKE_ANDROID = false;
   public static final boolean IS_ANDROID = FAKE_ANDROID || Gdx.app.getType() == Application.ApplicationType.Android;
 

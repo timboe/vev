@@ -13,17 +13,20 @@ import timboe.vev.enums.Particle;
 import timboe.vev.input.Gesture;
 import timboe.vev.manager.Camera;
 import timboe.vev.manager.GameState;
+import timboe.vev.manager.IntroState;
 import timboe.vev.manager.UI;
+import timboe.vev.manager.UIIntro;
 import timboe.vev.manager.World;
 
 public class TitleScreen implements Screen {
 
   private final Camera camera = Camera.getInstance();
-  private final GameState state = GameState.getInstance();
+  private final IntroState state = IntroState.getInstance();
   private final World world = World.getInstance();
   private final UI ui = UI.getInstance();
   private final ShapeRenderer sr = new ShapeRenderer();
-  public float fadeTimer, fadeTimer2, fadeTimer3;
+  public float fadeIn = 0;
+  public float[] fadeTimer = new float[3];
 
   // Temp
   private final Gesture gesture = new Gesture();
@@ -37,10 +40,10 @@ public class TitleScreen implements Screen {
   public void show() {
     Gdx.input.setInputProcessor( state.getUIStage() );
 //    Gdx.input.setInputProcessor( gestureDetector );
-    camera.setCurrentPos(Param.TILES_INTRO_X/2 * Param.TILE_S,Param.TILES_INTRO_Y/2 * Param.TILE_S); // Edge+offset
-    camera.setCurrentZoom(.25f);
-    addParticles();
-    fadeTimer = fadeTimer2 = fadeTimer3 = 0;
+    camera.setHelpPos(0);
+    addParticles(); // TODO move this elswehere
+    GameState.getInstance().doRightClick();
+    fadeTimer[0] = fadeTimer[1] = fadeTimer[2] = 0;
   }
 
   void addParticles() {
@@ -60,7 +63,7 @@ public class TitleScreen implements Screen {
         s.setParticle(p);
         s.moveBy(Util.R.nextInt(Param.TILE_S), Util.R.nextInt(Param.TILE_S));
         s.idleTime = s.boredTime; // Start the wanderlust right away
-        GameState.getInstance().getIntroSpriteStage().addActor(s);
+        IntroState.getInstance().getIntroSpriteStage().addActor(s);
       }
     }
   }
@@ -81,48 +84,24 @@ public class TitleScreen implements Screen {
     state.getIntroTileStage().draw();
     state.getIntroSpriteStage().draw();
     state.getIntroFoliageStage().draw();
+    state.getIntroHelpStage().draw();
     state.getUIStage().draw();
 
-    if (fadeTimer > 0) {
-      sr.setProjectionMatrix(Camera.getInstance().getUiCamera().combined);
-      sr.setColor(206f/255f, 101f/255f, 80f/255f, 1f);
-      sr.begin(ShapeRenderer.ShapeType.Filled);
-      strokeRect(sr, fadeTimer, fadeTimer/4f);
-      sr.setColor(176/255f, 78/255f, 80/255f, 1f);
-      strokeRect(sr, fadeTimer2, fadeTimer2/4f);
-      sr.setColor(136/255f, 57/255f, 80/255f, 1f);
-      strokeRect(sr, fadeTimer3, fadeTimer3/4f);
-      sr.end();
-      Gdx.gl.glLineWidth(5);
-      sr.begin(ShapeRenderer.ShapeType.Line);
-      sr.setColor(72f/255f, 43f/255f, 81f/255f, 1f);
-      strokeRect(sr, fadeTimer, fadeTimer/4f);
-      strokeRect(sr, fadeTimer2, fadeTimer2/4f);
-      strokeRect(sr, fadeTimer3, fadeTimer3/4f);
-      sr.end();
-      fadeTimer += (delta * 5);
-      fadeTimer *= 1.1;
-      if (fadeTimer > 2.5 && fadeTimer2 == 0) fadeTimer2 = fadeTimer - 2.5f;
-      if (fadeTimer2 > 0) {
-        fadeTimer2 += (delta * 10);
-        fadeTimer2 *= 1.1;
-      }
-      if (fadeTimer2 > 2.5 && fadeTimer3 == 0) fadeTimer3 = fadeTimer2 - 2.5f;
-      if (fadeTimer3 > 0) {
-        fadeTimer3 += (delta * 10);
-        fadeTimer3 *= 1.1;
-      }
-      if (fadeTimer3 > 1100) {
+    if (fadeTimer[0] > 0) {
+      final boolean finished = Util.doFade(sr, delta, fadeTimer);
+      if (finished) {
         GameState.getInstance().setToGameScreen();
       }
     }
-  }
 
-  private void strokeRect(ShapeRenderer sr, float width, float angle) {
-    final float midX = Param.DISPLAY_X / 2, midY = Param.DISPLAY_Y / 2;
-    sr.rect(midX-width, midY-width,
-        width,width,2*width,2*width,
-        1,1,angle);
+    if (fadeIn > 0) {
+      sr.setProjectionMatrix(Camera.getInstance().getUiCamera().combined);
+      sr.begin(ShapeRenderer.ShapeType.Filled);
+      sr.setColor(136 / 255f, 57 / 255f, 80 / 255f, fadeIn / 100f);
+      sr.rect(0, 0, Param.DISPLAY_X, Param.DISPLAY_Y);
+      sr.end();
+      fadeIn -= delta * 70f;
+    }
   }
 
   @Override

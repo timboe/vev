@@ -27,13 +27,13 @@ public class IVector2 implements Comparable, Serializable, Node {
   public JSONObject serialiseTile() throws JSONException {
     JSONObject json = serialise();
     JSONObject n = new JSONObject();
-    Integer count = 0;
+    int count = 0;
     if (pathFindNeighbours != null) {
       for (IVector2 v : pathFindNeighbours) {
         JSONObject sub = new JSONObject();
         sub.put("x", v.x);
         sub.put("y", v.y);
-        n.put(count.toString(), sub);
+        n.put(Integer.toString(count), sub);
         ++count;
       }
     }

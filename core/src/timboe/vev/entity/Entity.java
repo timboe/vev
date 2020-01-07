@@ -21,6 +21,7 @@ import timboe.vev.Util;
 import timboe.vev.enums.Cardinal;
 import timboe.vev.enums.Colour;
 import timboe.vev.enums.Particle;
+import timboe.vev.enums.UIMode;
 import timboe.vev.manager.GameState;
 import timboe.vev.manager.Textures;
 import timboe.vev.manager.UI;
@@ -84,6 +85,7 @@ public class Entity extends Actor implements Serializable {
       for (EnumMap.Entry<Particle, List<IVector2>> entry : this.buildingPathingLists.entrySet()) {
         JSONObject vecList = new JSONObject();
         Integer count = 0;
+        //TODO got a null on the next line from one serialisation of a Warp
         for (IVector2 v : entry.getValue()) {
           vecList.put(count.toString(), v.serialise());
           ++count;
@@ -287,7 +289,7 @@ public class Entity extends Actor implements Serializable {
   }
 
   public void drawPath(ShapeRenderer sr) {
-    if (!selected && !UI.getInstance().showPaths) return;
+    if (!selected && !(UI.getInstance().uiMode == UIMode.kSETTINGS)) return;
     if (pathingList != null) { // in-progress
       sr.setColor(pathingParticle.getHighlightColour());
       drawList(pathingList, sr, pathingParticle.getStandingOrderOffset());

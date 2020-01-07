@@ -192,7 +192,6 @@ public class Tile extends Entity {
   public void setHighlightColour(Color c) {
     setColor(c);
     doTint = true;
-//    Gdx.app.log("setHighlightColour","called");
     Entity e = getMySprite();
     if (e != null) {
       e.setColor(c);
