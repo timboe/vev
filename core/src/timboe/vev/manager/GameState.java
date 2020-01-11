@@ -78,6 +78,7 @@ public class GameState {
   private final HashMap<Integer,Building> buildingMap = new HashMap<Integer,Building>(); // All buildings
   private final HashMap<Integer,Entity> buildingExtrasMap = new HashMap<Integer,Entity>(); // All building's extra sprites
   private final HashMap<Integer,Truck> trucksMap = new HashMap<Integer,Truck>(); // All Trucks
+  private final HashMap<Integer, Warp> warpMap = new HashMap<Integer, Warp>(); // All warps
 
   // Transient
   public final Set<Integer> selectedSet = new HashSet<Integer>(); // Sub-set, selected sprites
@@ -129,6 +130,13 @@ public class GameState {
       trucks.put(entry.getKey().toString(), entry.getValue().serialise());
     }
     json.put("trucksMap", trucks);
+    //
+    JSONObject jsonWarps = new JSONObject();
+    for (Map.Entry<Integer, Warp> entry : warpMap.entrySet()) {
+      jsonWarps.put(entry.getKey().toString(), entry.getValue().serialise());
+    }
+    json.put("warpMap", jsonWarps);
+    //
     return json;
   }
 
@@ -197,6 +205,16 @@ public class GameState {
       getSpriteStage().addActor(t);
       if (t.id != Integer.valueOf(key)) throw new AssertionError();
     }
+    //
+    JSONObject jsonWarps = json.getJSONObject("warpMap");
+    Iterator warpIt = jsonWarps.keys();
+    while (warpIt.hasNext()) {
+      String key = (String) warpIt.next();
+      Warp w = new Warp( jsonWarps.getJSONObject( key ) );
+      warpMap.put(w.id, w);
+      getWarpStage().addActor(w);
+      if (w.id != Integer.valueOf(key)) throw new AssertionError();
+    }
   }
 
 
@@ -208,6 +226,8 @@ public class GameState {
   private Stage foliageStage;
   private Stage warpStage;
   private Stage buildingStage;
+  private Stage uiStage;
+
 
   private static GameState ourInstance = null;
   public static GameState getInstance() {
@@ -241,11 +261,13 @@ public class GameState {
 
   public GameScreen getGameScreen() { return theGameScreen; }
 
+
+
   public void act(float delta) {
 
     if (!World.getInstance().getGenerated()) return;
 
-    IntroState.getInstance().getUIStage().act(delta);
+    uiStage.act(delta);
 
     if (!isGameOn() || UI.getInstance().uiMode == UIMode.kSETTINGS) {
       return;
@@ -294,7 +316,7 @@ public class GameState {
             // Don't allow loop
             if (t.mySprite != 0 && t.mySprite == selectedBuilding) placeLocation = null;
             if (placeLocation != null) {
-              Building b = buildingMap.get(selectedBuilding);
+              Building b = getSelectedBuilding();
               b.updateDemoPathingList(selectedBuildingStandingOrderParticle, t);
             }
           }
@@ -333,7 +355,7 @@ public class GameState {
   public void tryNewParticles(boolean stressTest, Warp from, int floor) {
     // Add a new sprite
     if (from == null) {
-      List<Map.Entry<Integer, Warp>> entries = new ArrayList<Map.Entry<Integer, Warp>>(World.getInstance().warps.entrySet());
+      List<Map.Entry<Integer, Warp>> entries = new ArrayList<Map.Entry<Integer, Warp>>(warpMap.entrySet());
       if (entries.size() == 0) return;
       Map.Entry<Integer, Warp> rWarp = entries.get(R.nextInt(entries.size()));
       from = rWarp.getValue();
@@ -384,11 +406,11 @@ public class GameState {
 
   public void killSelectedBuilding() {
     Building selected = getBuildingMap().remove( selectedBuilding );
-    selectedBuilding = 0;
     if (selected == null) {
-      Gdx.app.error("killSelectedBuilding", "Trying to kill NULL selected building?!");
+      Gdx.app.error("killSelectedBuilding", "Trying to kill NULL selected building?! selectedBuilding is " + selectedBuilding);
       return;
     }
+    selectedBuilding = 0;
     // Remove upgrade clock
     if (selected.clock != 0) {
       Entity clock = buildingExtrasMap.remove(selected.clock);
@@ -504,10 +526,10 @@ public class GameState {
     Sounds.getInstance().thud();
     Sounds.getInstance().OK();
     repath();
-    updateBuildingPrices();
     if (b.getType() == BuildingType.kMINE) {
       reallocateTrucks(); // In case we had any orphaned
     }
+    updateBuildingPrices();
     UI.getInstance().showMain();
   }
 
@@ -528,7 +550,7 @@ public class GameState {
   }
 
   public void doConfirmStandingOrder() {
-    Building b = buildingMap.get( selectedBuilding );
+    Building b = getSelectedBuilding();
     BuildingType bt = b.getType();
     boolean didSave = b.savePathingList(); // Save the pathing list
     if (!didSave) return;
@@ -565,10 +587,27 @@ public class GameState {
     }
     selectedSet.clear();
     if (selectedBuilding != 0) {
-      Building b = buildingMap.get(selectedBuilding);
+      Building b = getSelectedBuilding();
       b.selected = false;
     }
     selectedBuilding = 0;
+  }
+
+  private boolean contained(Entity e) {
+    Rectangle.tmp.set(e.getX(), e.getY(), e.getWidth(), e.getHeight());
+    if (Rectangle.tmp.contains(selectStartWorld.x, selectStartWorld.y)) {
+      clearSelect();
+      e.selected = true;
+      if (e.getClass() == Building.class || e.getClass() == Warp.class) {
+        selectedBuilding = e.id;
+        UI.getInstance().showBuildingInfo(e.getClass() == Building.class ? (Building)e : (Warp)e);
+      } else if (e.getClass() == Sprite.class) {
+        selectedSet.add(e.id);
+        UI.getInstance().doSelectParticle(selectedSet);
+      }
+      return true;
+    }
+    return false;
   }
 
   public boolean doParticleSelect(boolean rangeBased) {
@@ -597,26 +636,20 @@ public class GameState {
       // if particles are selected then we want to path to the building/location
 
       for (Building b : buildingMap.values()) {
-        Rectangle.tmp.set(b.getX(), b.getY(), b.getWidth(), b.getHeight());
-        if (Rectangle.tmp.contains(selectStartWorld.x, selectStartWorld.y)) {
-          clearSelect();
-          b.selected = true;
-          selectedBuilding = b.id;
-          UI.getInstance().showBuildingInfo(b);
+        if (contained(b)) {
+          return true;
+        }
+      }
+      for (Warp w : warpMap.values()) {
+        if (contained(w)) {
           return true;
         }
       }
       for (Sprite s : particleMap.values()) {
-        Rectangle.tmp.set(s.getX(), s.getY(), s.getWidth(), s.getHeight());
-        if (Rectangle.tmp.contains(selectStartWorld.x * Param.SPRITE_SCALE, selectStartWorld.y * Param.SPRITE_SCALE)) {
-          clearSelect();
-          s.selected = true;
-          selectedSet.add(s.id);
-          UI.getInstance().doSelectParticle(selectedSet);
+        if (contained(s)) {
           return true;
         }
       }
-
     }
     return false;
   }
@@ -624,6 +657,14 @@ public class GameState {
   private void repath() {
     pathingCache.clear();
     pathingInternal(null, true);
+  }
+
+  public Building getSelectedBuilding() {
+    Building b = buildingMap.get( selectedBuilding );
+    if (b == null) {
+      b = warpMap.get( selectedBuilding );
+    }
+    return  b;
   }
 
   public Tile mapPathingDestination(Tile target) {
@@ -716,6 +757,7 @@ public class GameState {
 
     if (doRepath) {
       for (Building b : buildingMap.values()) b.doRepath();
+      for (Warp w : warpMap.values()) w.doRepath();
     }
   }
 
@@ -753,7 +795,7 @@ public class GameState {
     UI.getInstance().resetGame();
     theGameScreen.setMultiplexerInputs();
     theGameScreen.fadeIn = 100f;
-    Iterator it = World.getInstance().warps.values().iterator();
+    Iterator it = warpMap.values().iterator();
     Warp toFocusOn = (Warp)it.next();
     Camera.getInstance().setCurrentPos(
         toFocusOn.getX() + (Param.WARP_SIZE/2 * Param.TILE_S),
@@ -763,7 +805,7 @@ public class GameState {
 
   public void initialZap() {
     if (inWorldParticles == 0) {
-      Iterator it = World.getInstance().warps.values().iterator();
+      Iterator it = warpMap.values().iterator();
       toFocusOn = (Warp) it.next();
       for (int i = 0; i < R.nextInt(3)+1; ++i) {
         tryNewParticles(false, toFocusOn, 20);
@@ -775,6 +817,10 @@ public class GameState {
 
   public Stage getTileStage() {
     return tileStage;
+  }
+
+  public Stage getUIStage() {
+    return uiStage;
   }
 
   public Stage getWarpStage() { return warpStage; }
@@ -797,16 +843,19 @@ public class GameState {
     if (foliageStage != null) foliageStage.dispose();
     if (warpStage != null) warpStage.dispose();
     if (buildingStage != null) buildingStage.dispose();
+    if (uiStage != null) uiStage.dispose();
     tileStage = new Stage(Camera.getInstance().getTileViewport());
     spriteStage = new Stage(Camera.getInstance().getSpriteViewport());
     foliageStage = new Stage(Camera.getInstance().getSpriteViewport());
     warpStage = new Stage(Camera.getInstance().getTileViewport());
     buildingStage = new Stage(Camera.getInstance().getTileViewport());
+    uiStage = new Stage(Camera.getInstance().getUiViewport());
     Color warpStageC = warpStage.getBatch().getColor();
     warpStageC.a = Param.WARP_TRANSPARENCY;
     warpStage.getBatch().setColor(warpStageC);
     particleMap.clear();
     buildingMap.clear();
+    warpMap.clear();
     dustEffects = new Array<ParticleEffectPool.PooledEffect>();
     ParticleEffect dustEffect = new ParticleEffect();
     dustEffect.load(Gdx.files.internal("dust_effect.txt"), Textures.getInstance().getAtlas());
@@ -866,6 +915,7 @@ public class GameState {
     foliageStage.dispose();
     warpStage.dispose();
     buildingStage.dispose();
+    uiStage.dispose();
     ourInstance = null;
   }
 
@@ -876,5 +926,9 @@ public class GameState {
 
   public HashMap<Integer, Building> getBuildingMap() {
     return buildingMap;
+  }
+
+  public HashMap<Integer, Warp> getWarpMap() {
+    return warpMap;
   }
 }

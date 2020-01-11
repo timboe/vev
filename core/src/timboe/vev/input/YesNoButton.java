@@ -22,13 +22,16 @@ public class YesNoButton extends ChangeListener {
     if (UI.getInstance().uiMode == UIMode.kHELP) {
       if (N) {
         UIIntro.getInstance().helpLevel -= 1;
-        if (UIIntro.getInstance().helpLevel == 0) {
-          GameState.getInstance().doRightClick();
-        }
       } else {
         UIIntro.getInstance().helpLevel += 1;
       }
-      Camera.getInstance().setHelpPos(UIIntro.getInstance().helpLevel);
+      if ((Integer) actor.getUserObject() == 2
+              || UIIntro.getInstance().helpLevel == 1
+              || UIIntro.getInstance().helpLevel == 5) { // Back is Obj==2
+        UIIntro.getInstance().helpLevel = 0;
+        GameState.getInstance().doRightClick();
+      }
+      Camera.getInstance().setHelpPos(UIIntro.getInstance().helpLevel, false);
       return;
     }
 

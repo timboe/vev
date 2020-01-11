@@ -14,6 +14,7 @@ import timboe.vev.input.Gesture;
 import timboe.vev.manager.Camera;
 import timboe.vev.manager.GameState;
 import timboe.vev.manager.IntroState;
+import timboe.vev.manager.Sounds;
 import timboe.vev.manager.UI;
 import timboe.vev.manager.UIIntro;
 import timboe.vev.manager.World;
@@ -40,33 +41,13 @@ public class TitleScreen implements Screen {
   public void show() {
     Gdx.input.setInputProcessor( state.getUIStage() );
 //    Gdx.input.setInputProcessor( gestureDetector );
-    camera.setHelpPos(0);
-    addParticles(); // TODO move this elswehere
+    camera.setHelpPos(0, true);
     GameState.getInstance().doRightClick();
+    state.addParticles();
     fadeTimer[0] = fadeTimer[1] = fadeTimer[2] = 0;
   }
 
-  void addParticles() {
-    int pType = 0;
-    for (double a = -Math.PI; a <= Math.PI; a += (2*Math.PI) / (double)(Particle.values().length - 1) ) { // -1 due to kBlank
-      if (pType == (Particle.values().length - 1)) break; // Else rely on floating point in for loop
-      Particle p = Particle.values()[ pType++ ];
-      int tileX = (Param.TILES_INTRO_X/2) + (int)Math.round( (Param.TILES_INTRO_X/3) * Math.cos(a) );
-      int tileY = (Param.TILES_INTRO_Y/2) + (int)Math.round( (Param.TILES_INTRO_Y/3) * Math.sin(a) );
-      Tile genTile = World.getInstance().getIntroTile(tileX, tileY);
-      for (int i = 0; i < 200; ++i) {
-        Sprite s = new Sprite(genTile);
-        s.isIntro = true;
-        s.moveBy(Param.TILE_S / 2, Param.TILE_S / 2);
-        s.pathTo(s.findPathingLocation(genTile, false, true, true, true), null, null);
-        s.setTexture("ball_" + p.getColourFromParticle().getString(), 6, false);
-        s.setParticle(p);
-        s.moveBy(Util.R.nextInt(Param.TILE_S), Util.R.nextInt(Param.TILE_S));
-        s.idleTime = s.boredTime; // Start the wanderlust right away
-        IntroState.getInstance().getIntroSpriteStage().addActor(s);
-      }
-    }
-  }
+
 
   @Override
   public void render(float delta) {
@@ -111,12 +92,12 @@ public class TitleScreen implements Screen {
 
   @Override
   public void pause() {
-
+    Sounds.getInstance().pause();
   }
 
   @Override
   public void resume() {
-
+    Sounds.getInstance().resume();
   }
 
   @Override

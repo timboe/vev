@@ -30,6 +30,6 @@ public class DemolishButton extends ChangeListener {
     destroyDialog.row();
     destroyDialog.button(UI.getInstance().getTextButton("YES",""), 1);
     destroyDialog.button(UI.getInstance().getTextButton("NO",""), 0);
-    destroyDialog.show(IntroState.getInstance().getUIStage());
+    destroyDialog.show(GameState.getInstance().getUIStage());
   }
 }

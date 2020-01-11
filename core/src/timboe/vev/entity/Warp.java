@@ -36,6 +36,7 @@ public class Warp extends Building {
   private final EnumMap<Particle, IVector2> pathingStartPointWarp = new EnumMap<Particle, IVector2>(Particle.class);
 
   public JSONObject serialise() throws JSONException {
+    Gdx.app.log("DBG_S","Saving WARP " + id );
     JSONObject json = super.serialise();
     JSONObject startPointJson = new JSONObject();
     for (EnumMap.Entry<Particle, IVector2> entry : pathingStartPointWarp.entrySet()) {
@@ -74,8 +75,7 @@ public class Warp extends Building {
     zap.setPosition(Param.TILE_S * fxX + Param.TILE_S / 2, Param.TILE_S * fxY);
     zap.allowCompletion();
 
-    // We are still crashing here...
-    updatePathingStartPoint();
+    // Don't updatePathingStartPoint() - this changes things
     updatePathingDestinations();
   }
 
@@ -128,7 +128,7 @@ public class Warp extends Building {
   @Override
   protected IVector2 getPathingStartPoint(Particle p) {
 //    Gdx.app.log("getPathingStartPoint WARP","Returning for "+p+" "+pathingStartPointWarp.get(p));
-    return pathingStartPointWarp.get(p);
+    return World.getInstance().getTile( pathingStartPointWarp.get(p) ).coordinates;
   }
 
   public boolean newParticles(int toPlace, boolean stressTest) {

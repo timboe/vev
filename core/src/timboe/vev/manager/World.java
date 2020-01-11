@@ -55,10 +55,10 @@ public class World {
   private int stage;
   private Tile[][] introTiles;
   private Zone[][] zones;
+  public final Map<Integer, Sprite> introFoliage = new HashMap<Integer, Sprite>();
 
   // Persistent
   private Tile[][] tiles;
-  public final Map<Integer, Warp> warps = new HashMap<Integer, Warp>();
   public final Map<Integer, Patch> tiberiumPatches = new HashMap<Integer, Patch>();
   public final Map<Integer, Sprite> tiberiumShards = new HashMap<Integer, Sprite>();
   public final Map<Integer, Sprite> foliage = new HashMap<Integer, Sprite>();
@@ -72,12 +72,6 @@ public class World {
       }
     }
     json.put("tiles", jsonTiles);
-    //
-    JSONObject jsonWarps = new JSONObject();
-    for (Map.Entry<Integer, Warp> entry : warps.entrySet()) {
-      jsonWarps.put(entry.getKey().toString(), entry.getValue().serialise());
-    }
-    json.put("warps", jsonWarps);
     //
     JSONObject jsonTiberium = new JSONObject();
     for (Map.Entry<Integer, Patch> entry : tiberiumPatches.entrySet()) {
@@ -111,17 +105,6 @@ public class World {
     }
     setNeighbours(tiles, Param.TILES_X, Param.TILES_Y);
     doPathGrid(tiles, Param.TILES_X, Param.TILES_Y); // Needed again? Only really for pathing debug regeneration.
-    //
-    JSONObject jsonWarps = json.getJSONObject("warps");
-    Iterator warpIt = jsonWarps.keys();
-    while (warpIt.hasNext()) {
-      String key = (String) warpIt.next();
-      Warp w = new Warp( jsonWarps.getJSONObject( key ) );
-      warps.put(w.id, w);
-      GameState.getInstance().getBuildingMap().put(w.id, w);
-      GameState.getInstance().getWarpStage().addActor(w);
-      if (w.id != Integer.valueOf(key)) throw new AssertionError();
-    }
     //
     JSONObject jsonTiberium = json.getJSONObject("tiberiumPatches");
     Iterator tiberiumIt = jsonTiberium.keys();
@@ -205,11 +188,14 @@ public class World {
     GameState.getInstance().reset();
     if (includingIntro) {
       IntroState.getInstance().reset();
+      introFoliage.clear();
     }
     stage = 0;
     generated = false;
-    warps.clear();
+    GameState.getInstance().getWarpMap().clear();
     tiberiumPatches.clear();
+    tiberiumShards.clear();
+    foliage.clear();
     tiles = new Tile[Param.TILES_X][Param.TILES_Y];
     for (int x = 0; x < Param.TILES_X; ++x) {
       for (int y = 0; y < Param.TILES_Y; ++y) {
@@ -373,7 +359,7 @@ public class World {
   }
 
   private Sprite newSprite(int x, int y, String name, boolean isFoliage, boolean isIntro) {
-    Sprite s = new Sprite(tiles[x][y]);
+    Sprite s = new Sprite(isIntro ? introTiles[x][y] : tiles[x][y]);
     if (isFoliage) {
       if (isIntro) IntroState.getInstance().getIntroFoliageStage().addActor(s);
       else GameState.getInstance().getFoliageStage().addActor(s);
@@ -427,8 +413,9 @@ public class World {
 
       Warp w = new Warp(tiles[_x][_y]);
       GameState.getInstance().getWarpStage().addActor(w);
-      GameState.getInstance().getBuildingMap().put(w.id, w);
-      warps.put(w.id, w);
+//      GameState.getInstance().getBuildingMap().put(w.id, w);
+      //TODO remove warpMap from building map. otherwise they get double-saved
+      GameState.getInstance().getWarpMap().put(w.id, w);
 
     } while (++fTry < Param.N_PATCH_TRIES && fPlaced < Param.MAX_WARP);
     if (fPlaced < Param.MIN_WARP) {
@@ -521,6 +508,7 @@ public class World {
         if (R.nextFloat() < Param.FOLIAGE_PROB) {
           Sprite s = newSprite(x, y, randomFoliage(tileArray[x][y].tileColour), true, isIntro);
           if (!isIntro) foliage.put(s.id, s);
+          else introFoliage.put(s.id, s);
           tileArray[x][y].type = TileType.kFOLIAGE;
           tileArray[x][y].mySprite = s.id;
 //        } else if (tiles[x][y].tileColour == Colour.kGREEN && R.nextFloat() < 0.01) {

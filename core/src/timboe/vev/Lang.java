@@ -14,7 +14,7 @@ public class Lang {
 
   private Lang() {
     EN_GB.put("energy","Get energy from mining and deconstructing.\nSpend it on new buildings, and on upgrading them.");
-    EN_GB.put("particles", "Particles in the world.\nDeconstruct them all to finish the game.");
+    EN_GB.put("particles", "Particles in the world.\nDeconstruct them all to finish the game.\nParticles will be spawned by the Warp Portals,\nuntil they're empty.");
     EN_GB.put("wParticles", "Particles yet to spawn into the world.");
     EN_GB.put("disassembleTime", "Time to deconstruct particle.");
     EN_GB.put("disassembleEnergy", "Energy released by deconstructing particle.");
@@ -36,6 +36,7 @@ public class Lang {
     EN_GB.put("upgradeBuilding_B","\nUpgrade Cost: ");
     EN_GB.put("upgradeBuilding_C","\nUpgrade Time: ");
     EN_GB.put("upgradeBuilding_D","\nBuilding Speed Bonus: ");
+    EN_GB.put("upgradeBuilding_D_Mine","\nAverage Truck Speed Bonus: ");
     EN_GB.put("buildBuilding_A","Build: ");
     EN_GB.put("buildBuilding_B","\nAccepts: ");
     EN_GB.put("buildBuilding_B_Mine","\nMines Ore, Produces Energy");

@@ -121,7 +121,7 @@ public class IVector2 implements Comparable, Serializable, Node {
   @Override
   public Set getNeighbours() {
     if (pathFindNeighbours == null) {
-      Gdx.app.error("Null Err","No neighbours!");
+      Gdx.app.error("Null Err","No neighbours! I am:" + this);
     }
     return pathFindNeighbours;
   }

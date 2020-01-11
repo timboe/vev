@@ -118,7 +118,7 @@ public class Util {
       fadeTimer[2] += (delta * 10);
       fadeTimer[2] *= 1.1;
     }
-    return (fadeTimer[2] > 1200);
+    return (fadeTimer[2] > 1300);
   }
 
   private static void strokeRect(ShapeRenderer sr, float width, float angle) {

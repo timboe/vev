@@ -64,6 +64,13 @@ public class Sounds {
     reset();
   }
 
+  public void pause() {
+    theme[track].pause();
+  }
+
+  public void resume() {
+    theme[track].play();
+  }
 
   public void musicVolume() {
     Gdx.app.log("musicVolume","Now " + Persistence.getInstance().musicLevel);
@@ -75,7 +82,6 @@ public class Sounds {
       int trackTemp = track;
       while (trackTemp == track) trackTemp = Util.R.nextInt(nMusic);
       track = trackTemp; // Random - but not the same
-
     }
     theme[track].play();
     musicVolume();

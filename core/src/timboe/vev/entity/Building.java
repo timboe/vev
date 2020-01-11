@@ -1,7 +1,6 @@
 package timboe.vev.entity;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.audio.Music;
 import com.google.gwt.thirdparty.json.JSONException;
 import com.google.gwt.thirdparty.json.JSONObject;
 
@@ -49,7 +48,7 @@ public class Building extends Entity {
   public int clock;
   public boolean clockVisible;
   private EnumMap<Particle, Integer> holdingPen = new EnumMap<Particle, Integer>(Particle.class);
-  private int built;
+  public int built;
   private boolean updateBuildingTexture;
   public float getTimeDisassembleMax; // Used to get % complete
   private int buildingLevel;
@@ -169,6 +168,7 @@ public class Building extends Entity {
       this.built = 1;
       updatePathingStartPoint();
       updateMyPatch();
+      addTruck();
     }
     // Move any sprites which are here
     moveOn();
@@ -261,14 +261,38 @@ public class Building extends Entity {
   }
 
   public float getUpgradeFactor() {
+    if (type == BuildingType.kMINE) {
+      int totalLevels = 0;
+      for (Truck t : GameState.getInstance().getTrucksMap().values()) {
+        if (t.myBuilding == this.id) {
+          totalLevels =+ t.level;
+        }
+      }
+      return (float)Math.pow(Param.BUILDING_DISASSEMBLE_BONUS, totalLevels);
+    }
+    // Else
     return (float)Math.pow(Param.BUILDING_DISASSEMBLE_BONUS, buildingLevel);
   }
 
-  public float getNextUpgradeFactor() {
+  public float getAverageNextUpgradeFactor() {
+    if (type == BuildingType.kMINE) {
+      int nTruck = 0;
+      float bonus = 0;
+      for (Truck t : GameState.getInstance().getTrucksMap().values()) {
+        if (t.myBuilding == this.id) {
+          nTruck += 1;
+          bonus += t.getNextUpgradeFactor();
+        }
+      }
+      if (nTruck == 0) {
+        Gdx.app.error("getAverageNextUpgradeFactor", "Encountered a mine with zero miners?");
+        return 0;
+      }
+      return (bonus / nTruck);
+    }
+    // Else
     return (float)Math.pow(Param.BUILDING_DISASSEMBLE_BONUS, buildingLevel + 1);
   }
-
-
 
   public void updatePathingStartPoint() {
 //    Gdx.app.log("updatePathingStartPoint", "CALLED myQueue:" + myQueue)
@@ -289,20 +313,22 @@ public class Building extends Entity {
     }
     for (Particle p : Particle.values()) {
       if (getBuildingPathingList(p) != null) {
+        Gdx.app.log("DBG","From " + p.getString() + " " + getPathingStartPoint(p) + " " + getBuildingDestination(p).coordinates + " " + getBuildingDestination(p).coordinates.getNeighbours());
         buildingPathingLists.put(p, PathFinding.doAStar(getPathingStartPoint(p), getBuildingDestination(p).coordinates, null, null, GameState.getInstance().pathingCache) );
       }
     }
   }
 
   protected IVector2 getPathingStartPoint(Particle p) {
-    Gdx.app.log("getPathingStartPoint BASE","Returning "+pathingStartPoint);
+//    Gdx.app.log("getPathingStartPoint BASE","Returning "+pathingStartPoint);
     // Note: p is only used in Warp's override of this function.
-    return pathingStartPoint;
+    // Note: We fetch the World version as this has the getNeighbours property set.
+    return World.getInstance().getTile(pathingStartPoint).coordinates;
   }
 
   public void updateDemoPathingList(Particle p, Tile t) {
     if (getDestination() != t) {
-      Gdx.app.log("DEBUG updateDemoPathingList","Start for "+p+" is "+getPathingStartPoint(p)+" with target t.coordinates " + t.coordinates);
+//      Gdx.app.log("DEBUG updateDemoPathingList","Start for "+p+" is "+getPathingStartPoint(p)+" with target t.coordinates " + t.coordinates);
       this.pathingList = PathFinding.doAStar(getPathingStartPoint(p), t.coordinates, null, null, GameState.getInstance().pathingCache);
       Sounds.getInstance().click();
     }
@@ -382,7 +408,6 @@ public class Building extends Entity {
       GameState.getInstance().dustEffect( t );
       for (Cardinal D : Cardinal.n8) GameState.getInstance().dustEffect( t.n8.get(D) );
       updateBuildingTexture = true;
-      if (type == BuildingType.kMINE) addTruck();
       // Introduce a small delay to let the cloud get into place
     }
     if (myQueue != null) {
@@ -423,7 +448,7 @@ public class Building extends Entity {
 
   private boolean isSelected() {
     if (GameState.getInstance().selectedBuilding != 0) {
-      Building b = GameState.getInstance().getBuildingMap().get( GameState.getInstance().selectedBuilding );
+      Building b = GameState.getInstance().getSelectedBuilding();
       return (b == this);
     }
     return false;
@@ -442,6 +467,13 @@ public class Building extends Entity {
       timeUpgrade -= delta;
       if (timeUpgrade > 0) return;
       ++buildingLevel;
+      if (type == BuildingType.kMINE) {
+        for (Truck truck : GameState.getInstance().getTrucksMap().values()) {
+          if (truck.myBuilding == this.id) {
+            truck.level++;
+          }
+        }
+      }
       // TODO update labels
       doUpgrade = false;
       clockVisible = false;

@@ -19,8 +19,13 @@ public class Param {
   public static final int ZONES_Y = 3;
   private static final int ZONES_MAX = Math.max(ZONES_X, ZONES_Y);
 
+  private static final int INTRO_STRETCH = 2;
   public static final int TILES_INTRO_X = 64;
-  public static final int TILES_INTRO_Y = 64;
+  public static final int TILES_INTRO_Y = TILES_INTRO_X * INTRO_STRETCH;
+
+  public static final int TILES_INTRO_X_MID = TILES_INTRO_X/2;
+  public static final int TILES_INTRO_Y_MID = (TILES_INTRO_X * (INTRO_STRETCH-1)) + (TILES_INTRO_X/2);
+  public static final float TILES_INTRO_ZOOM = .25f;
 
   public static final int TILES_X = 128+32;
   public static final int TILES_Y = 128+32;
@@ -111,6 +116,8 @@ public class Param {
   public static final int N_BUILDING = 5;
 
   public static final float SCROLL_ZOOM = 0.1f;
+  public static final float TRANSLATE_MOD = 2;
+  public static final float FLING_MOD = TRANSLATE_MOD * 0.01f;
 
   public static final float ZOOM_MIN = 0.1f;
   public static final float ZOOM_MAX = 3.0f;
@@ -139,6 +146,7 @@ public class Param {
 
   public static final int TRUCK_INITIAL_CAPACITY = 15000;
   public static final int TRUCK_LOAD_SPEED = 1250;
+  public static final float TRUCK_SPEED_BONUS = 1.1f; //^(building level)
 
   public static final Color PARTICLE_Blank = new Color(128/255f, 128/255f, 128/255f, 1f);
 

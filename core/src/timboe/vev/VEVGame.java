@@ -37,11 +37,6 @@ import static timboe.vev.enums.Particle.kZ;
 public class VEVGame extends Game {
 
 
-
-
-
-
-
   @Override
   public void create () {
     Persistence.create();

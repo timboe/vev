@@ -1,16 +1,14 @@
 package timboe.vev.screen;
 
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.g2d.Batch;
-import com.badlogic.gdx.graphics.g2d.ParticleEffect;
 import com.badlogic.gdx.graphics.g2d.ParticleEffectPool;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.scenes.scene2d.Actor;
-
-import java.util.HashMap;
 
 import timboe.vev.Param;
 import timboe.vev.Util;
@@ -24,6 +22,7 @@ import timboe.vev.input.Handler;
 import timboe.vev.manager.Camera;
 import timboe.vev.manager.GameState;
 import timboe.vev.manager.IntroState;
+import timboe.vev.manager.Sounds;
 import timboe.vev.manager.UI;
 import timboe.vev.manager.World;
 
@@ -50,7 +49,7 @@ public class GameScreen implements Screen {
   public void setMultiplexerInputs() {
     gestureDetector.setLongPressSeconds(Param.LONG_PRESS_TIME);
     multiplexer.clear();
-    multiplexer.addProcessor(IntroState.getInstance().getUIStage());
+    multiplexer.addProcessor(state.getUIStage());
     multiplexer.addProcessor(handler);
     multiplexer.addProcessor(gestureDetector);
   }
@@ -76,7 +75,7 @@ public class GameScreen implements Screen {
     state.act(delta);
 
     ////////////////////////////////////////////////
-    // Tiles, buildings and warps
+    // Tiles, buildings and warpMap
 
     state.getTileStage().getRoot().setCullingArea( camera.getCullBoxTile() );
     state.getBuildingStage().getRoot().setCullingArea( camera.getCullBoxTile() );
@@ -125,7 +124,7 @@ public class GameScreen implements Screen {
     // TODO optimise additive mixed batching
     Batch batch = state.getTileStage().getBatch();
     batch.begin();
-    for (Warp w : world.warps.values()) {
+    for (Warp w : state.getWarpMap().values()) {
       w.warpCloud.draw(batch, fxDelta);
       if (!w.zap.isComplete()) w.zap.draw(batch, fxDelta);
 
@@ -148,6 +147,10 @@ public class GameScreen implements Screen {
     for (Building b : state.getBuildingMap().values()) {
       b.drawSelected(sr);
       b.drawPath(sr);
+    }
+    for (Warp w : state.getWarpMap().values()) {
+      w.drawSelected(sr);
+      w.drawPath(sr);
     }
     sr.end();
 
@@ -173,8 +176,7 @@ public class GameScreen implements Screen {
     ////////////////////////////////////////////////
     // UI
 
-    IntroState.getInstance().getUIStage().draw();
-
+    state.getUIStage().draw();
 
     ////////////////////////////////////////////////
     // Fade in
@@ -185,10 +187,10 @@ public class GameScreen implements Screen {
       sr.setColor(136 / 255f, 57 / 255f, 80 / 255f, fadeIn / 100f);
       sr.rect(0, 0, Param.DISPLAY_X, Param.DISPLAY_Y);
       sr.end();
-      Gdx.app.log("FADE",""+fadeIn / 100f);
+//      Gdx.app.log("FADE",""+fadeIn / 100f);
       fadeIn -= delta * 70f;
-    } else if (!GameState.getInstance().isGameOn()) {
-      GameState.getInstance().initialZap();
+    } else if (!state.isGameOn()) {
+      state.initialZap();
     }
 
 
@@ -214,12 +216,13 @@ public class GameScreen implements Screen {
 
   @Override
   public void pause() {
-
+    Sounds.getInstance().pause();
+    UI.getInstance().showSettings();
   }
 
   @Override
   public void resume() {
-
+    Sounds.getInstance().resume();
   }
 
   @Override

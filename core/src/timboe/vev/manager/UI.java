@@ -1,10 +1,10 @@
 package timboe.vev.manager;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Graphics;
 import com.badlogic.gdx.graphics.g2d.NinePatch;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
@@ -67,6 +67,7 @@ public class UI {
   private Table table;
   public Skin skin;
   public ShaderProgram dfShader;
+//  public ShaderProgram dfShader_small;
   public ShaderProgram dfShader_medium;
   public ShaderProgram dfShader_large;
 
@@ -135,6 +136,9 @@ public class UI {
     dfShader_medium = new ShaderProgram(Gdx.files.internal("font.vert"), Gdx.files.internal("font_medium.frag"));
     if (!dfShader_medium.isCompiled()) Gdx.app.error("dfShader_medium", "compilation failed:\n" + dfShader_medium.getLog());
 
+//    dfShader_small = new ShaderProgram(Gdx.files.internal("font.vert"), Gdx.files.internal("font_small.frag"));
+//    if (!dfShader_small.isCompiled()) Gdx.app.error("dfShader_small", "compilation failed:\n" + dfShader_small.getLog());
+
     dfShader = new ShaderProgram(Gdx.files.internal("font.vert"), Gdx.files.internal("font.frag"));
     if (!dfShader.isCompiled()) Gdx.app.error("fontShader", "compilation failed:\n" + dfShader.getLog());
 
@@ -174,8 +178,11 @@ public class UI {
     b.getLabelCell().pad(10,30,10,30);
     TT(b,tt);
     b.addListener(buttonHover);
-    if (label.equals("<") || label.equals(">")) {
+    if (label.equals("<") || label.equals(">") || label.equals(Lang.get("UI_BACK"))) {
       b.setUserObject( label.equals("<") ? 0 : 1);
+      if ( label.equals(Lang.get("UI_BACK")) ) {
+        b.setUserObject( 2 );
+      }
       b.addListener(yesNoButton);
     }
     return b;
@@ -335,8 +342,9 @@ public class UI {
     table.right();
     table.pad(Param.TILE_S);
 
-    IntroState.getInstance().getUIStage().clear();
-    IntroState.getInstance().getUIStage().addActor(table);
+    Stage stage = GameState.getInstance().getUIStage();
+    stage.clear();
+    stage.addActor(table);
 
     BuildingButton buildingButtonHandler = new BuildingButton();
     QueueLengthSlider queueLengthSlider = new QueueLengthSlider();
@@ -718,48 +726,51 @@ public class UI {
     final int bSel = GameState.getInstance().selectedBuilding;
     if (bSel == 0) return;
     Building b = GameState.getInstance().getBuildingMap().get( bSel );
-    if (b.getType() != BuildingType.kMINE && b.getType() != BuildingType.kWARP) {
-      buildingWindowTimeLabelA.get(b.getType()).setText(String.valueOf(Math.round(b.getDisassembleTime(0))) + "s");
-      buildingWindowTimeLabelB.get(b.getType()).setText(String.valueOf(Math.round(b.getDisassembleTime(1))) + "s");
-      buildingWindowTimeLabelC.get(b.getType()).setText(String.valueOf(Math.round(b.getDisassembleTime(2))) + "s");
+    if (b == null) return; // True if b is a Warp (stored in getWarpMap)
+    if (b.getType() != BuildingType.kMINE) {
+      buildingWindowTimeLabelA.get(b.getType()).setText(Math.round(b.getDisassembleTime(0)) + "s");
+      buildingWindowTimeLabelB.get(b.getType()).setText(Math.round(b.getDisassembleTime(1)) + "s");
+      buildingWindowTimeLabelC.get(b.getType()).setText(Math.round(b.getDisassembleTime(2)) + "s");
     }
-    if (b.getType() != BuildingType.kWARP) {
-      final int cost = b.getUpgradeCost();
-      Button upgradeButton = buildingWindowUpgradeButton.get(b.getType());
-      upgradeButton.setChecked( b.doUpgrade );
-      float progress = 0;
-      if (b.doUpgrade) progress = b.timeUpgrade / b.getUpgradeTime();
-      else if (b.spriteProcessing != 0)  progress = b.timeDisassemble / b.getTimeDisassembleMax;
-      buildingSelectProgress.get(b.getType()).setValue(progress);
-      LabelDF bonus = buildingUpgradeLabelBonus.get(b.getType());
-      LabelDF costLabel = buildingUpgradeLabelCost.get(b.getType());
-      LabelDF upgradeTime = buildingUpgradeLabelTime.get(b.getType());
-      String usb = "x" + df2.format(1f/b.getNextUpgradeFactor());
-      bonus.setText( usb );
-      String ugc = String.valueOf(b.getUpgradeCost());
-      costLabel.setText( ugc );
-      String ugt = df2.format(b.getUpgradeTime()) + " s";
-      upgradeTime.setText( ugt );
-      com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle style = skin.get(com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle.class);
-      final boolean canAfford = (cost <= GameState.getInstance().playerEnergy);
-      if (!canAfford) {
-        upgradeButton.setDisabled(true);
-        bonus.getStyle().fontColor = style.disabledFontColor;
-        costLabel.getStyle().fontColor = style.disabledFontColor;
-        upgradeTime.getStyle().fontColor = style.disabledFontColor;
-      } else {
-        upgradeButton.setDisabled(false);
-        bonus.getStyle().fontColor = style.fontColor;
-        costLabel.getStyle().fontColor = style.fontColor;
-        upgradeTime.getStyle().fontColor = style.fontColor;
-      }
-      TextTooltipDF ttt = buildingUpgradeToolTip.get(b.getType());
-      String s = Lang.get("upgradeBuilding_A")
-          + Lang.get("upgradeBuilding_B") + ugc + " " + Lang.get("UI_ENERGY")
-          + Lang.get("upgradeBuilding_C") + ugt
-          + Lang.get("upgradeBuilding_D") + usb;
-      ttt.getActor().setText(s);
+    final int cost = b.getUpgradeCost();
+    Button upgradeButton = buildingWindowUpgradeButton.get(b.getType());
+    upgradeButton.setChecked( b.doUpgrade );
+    float progress = 0;
+    if (b.doUpgrade) progress = b.timeUpgrade / b.getUpgradeTime();
+    else if (b.spriteProcessing != 0)  progress = b.timeDisassemble / b.getTimeDisassembleMax;
+    buildingSelectProgress.get(b.getType()).setValue(progress);
+    LabelDF bonus = buildingUpgradeLabelBonus.get(b.getType());
+    LabelDF costLabel = buildingUpgradeLabelCost.get(b.getType());
+    LabelDF upgradeTime = buildingUpgradeLabelTime.get(b.getType());
+    String usb = "x" + df2.format(1f/b.getAverageNextUpgradeFactor());
+    bonus.setText( usb );
+    String ugc = String.valueOf(b.getUpgradeCost());
+    costLabel.setText( ugc );
+    String ugt = df2.format(b.getUpgradeTime()) + " s";
+    upgradeTime.setText( ugt );
+    com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle style = skin.get(com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle.class);
+    final boolean canAfford = (cost <= GameState.getInstance().playerEnergy);
+    if (!canAfford) {
+      upgradeButton.setDisabled(true);
+      bonus.getStyle().fontColor = style.disabledFontColor;
+      costLabel.getStyle().fontColor = style.disabledFontColor;
+      upgradeTime.getStyle().fontColor = style.disabledFontColor;
+    } else {
+      upgradeButton.setDisabled(false);
+      bonus.getStyle().fontColor = style.fontColor;
+      costLabel.getStyle().fontColor = style.fontColor;
+      upgradeTime.getStyle().fontColor = style.fontColor;
     }
+    TextTooltipDF ttt = buildingUpgradeToolTip.get(b.getType());
+    String s = Lang.get("upgradeBuilding_A")
+        + Lang.get("upgradeBuilding_B") + ugc + " " + Lang.get("UI_ENERGY")
+        + Lang.get("upgradeBuilding_C") + ugt;
+    if (b.getType() == BuildingType.kMINE) {
+      s += Lang.get("upgradeBuilding_D_Mine") + usb;
+    } else {
+      s += Lang.get("upgradeBuilding_D") + usb;
+    }
+    ttt.getActor().setText(s);
   }
 
   public void doSelectParticle(final Set<Integer> selected) {
@@ -804,7 +815,7 @@ public class UI {
     uiMode = UIMode.kNONE;
     GameState.getInstance().doingPlacement = false;
     if (GameState.getInstance().selectedBuilding != 0) {
-      GameState.getInstance().getBuildingMap().get( GameState.getInstance().selectedBuilding ).cancelUpdatePathingList();
+      GameState.getInstance().getSelectedBuilding().cancelUpdatePathingList();
     }
     GameState.getInstance().selectedBuilding = 0;
     GameState.getInstance().selectedBuildingStandingOrderParticle = null;

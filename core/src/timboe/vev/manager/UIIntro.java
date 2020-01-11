@@ -5,6 +5,7 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Event;
+import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.CheckBox;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
@@ -21,6 +22,7 @@ import com.badlogic.gdx.utils.Scaling;
 import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Vector;
 
 import timboe.vev.DistanceField.LabelDF;
 import timboe.vev.Lang;
@@ -74,49 +76,89 @@ public class UIIntro {
     }
   }
 
+  private LabelDF helpLabel(String s) {
+    LabelDF l = new LabelDF(s, UI.getInstance().skin, "default", UI.getInstance().dfShader);
+    l.setFontScale(0.3f);
+    return l;
+  }
+
+  private void addHelpLabel(Table t, String s, float left, float top) {
+    t.add(helpLabel(s)).padTop(top).padLeft(left).left().row();
+  }
+
+  private void addHelpLabel(Table t, String s, float left) {
+    addHelpLabel(t,s,left, 2);
+  }
+
+  private void addHelpLabel(Table t, String s) {
+    addHelpLabel(t,s,32, 2);
+  }
+
   protected void resetTitle(String toShow) {
     final UI ui = UI.getInstance();
 
     tableIntro = new Table();
     tableIntro.setFillParent(true);
+
     tableHelp = new Table();
-    tableHelp.setFillParent(true);
+    tableHelp.padLeft(Param.TILES_INTRO_X * Param.TILE_S);
+    tableHelp.padBottom(1992); //TODO un-magic this number
+
+    tableHelp.debugAll();
+    Vector<Container<Table>> helpContainers = new Vector<Container<Table>>();
+    for (int i = 0; i < 5; ++i) {
+      Container<Table> c = new Container<Table>();
+      c.width(Param.DISPLAY_X * Param.TILES_INTRO_ZOOM).height(Param.DISPLAY_Y * Param.TILES_INTRO_ZOOM);
+      tableHelp.add(c);
+      tableHelp.row();
+      c.setActor(new Table());
+      c.getActor().top().left();
+      helpContainers.add(c);
+    }
 
     if (Param.DEBUG_INITIAL > 0) {
       tableIntro.debugAll();
     }
 
-    tableHelp.top().left();
-//    tableHelp.row().fillX();
-    tableHelp.pad(Param.TILE_S * 2);
-
+    Table h0 = helpContainers.get(0).getActor();
     LabelDF vev = new LabelDF("VEV", ui.skin, "title", ui.dfShader_large);
     vev.setFontScale(6.5f);
-    tableHelp.add(vev).padLeft(256).padTop(400);
-    tableHelp.row();
+    h0.add(vev).padLeft(16);
+    h0.row();
+    //
+    addHelpLabel(h0, "A game by Tim Martin");
+    addHelpLabel(h0, "Music by Chris Zabriskie (CC v4)");
+    addHelpLabel(h0, "    Is That You Or Are You You? / Divider / CGI Snake");
+    addHelpLabel(h0, "Open Game Art by Buch");
 
-    LabelDF cred = ui.getLabel("A game by Tim Martin", "");
-    LabelDF music1 = ui.getLabel("Music by Chris Zabriskie (CC v4)", "");
-    LabelDF music2 = ui.getLabel("    Is That You Or Are You You? / Divider / CGI Snake", "");
-    LabelDF art = ui.getLabel("Open Game Art by Buch", "");
-    cred.setFontScale(0.3f);
-    music1.setFontScale(0.3f);
-    music2.setFontScale(0.3f);
-    art.setFontScale(0.3f);
-    tableHelp.add(cred).padLeft(256).left();
-    tableHelp.row();
-    tableHelp.add(music1).padLeft(256).left();
-    tableHelp.row();
-    tableHelp.add(music2).padLeft(256).left();
-    tableHelp.row();
-    tableHelp.add(art).padLeft(256).left();
+    Table h1 = helpContainers.get(2).getActor();
+    //
+    int h1pad = 128;
+    addHelpLabel(h1,"CONTROLS",h1pad,32);
+    addHelpLabel(h1,"- LEFT CLICK",h1pad);
+    addHelpLabel(h1,"     Select Particle / Building",h1pad);
+    addHelpLabel(h1,"     Confirm Particle Move Order",h1pad);
+    addHelpLabel(h1,"     Confirm Build New Building",h1pad);
+    addHelpLabel(h1,"     Confirm Building Move Destination",h1pad);
+    addHelpLabel(h1,"- LEFT CLICK AND DRAG",h1pad);
+    addHelpLabel(h1,"     Select Particles Within Box",h1pad);
+    addHelpLabel(h1,"- RIGHT CLICK",h1pad);
+    addHelpLabel(h1,"     Cancel Particle / Building Selection",h1pad);
+    addHelpLabel(h1,"- RIGHT CLICK AND DRAG / W-A-S-D",h1pad);
+    addHelpLabel(h1,"     Move Map",h1pad);
+    addHelpLabel(h1,"- MOUSE SCROLL / Q-E",h1pad);
+    addHelpLabel(h1,"     Zoom Map",h1pad);
 
-    IntroState.getInstance().getIntroHelpStage().clear();
-    IntroState.getInstance().getIntroHelpStage().addActor(tableHelp);
 
-    IntroState.getInstance().getUIStage().clear();
-    IntroState.getInstance().getUIStage().addActor(tableIntro);
 
+
+    Stage helpStage = IntroState.getInstance().getIntroHelpStage();
+    helpStage.clear();
+    helpStage.addActor(tableHelp);
+
+    Stage uiStage = IntroState.getInstance().getUIStage();
+    uiStage.clear();
+    uiStage.addActor(tableIntro);
 
     Table titleWindow = ui.getWindow();
     if (toShow.equals("main")) {
@@ -221,11 +263,14 @@ public class UIIntro {
     } else if (toShow.equals("help")) {
 
       ui.uiMode = UIMode.kHELP;
-      helpLevel = 1;
-      Camera.getInstance().setHelpPos(helpLevel);
+      helpLevel = 2;
+      Camera.getInstance().setHelpPos(helpLevel, false);
 
       ui.addToWin(titleWindow, ui.getTextButton("<",""), ui.SIZE_L, ui.SIZE_L, 1);
       ui.addToWin(titleWindow, ui.getTextButton(">",""), ui.SIZE_L, ui.SIZE_L, 1);
+      titleWindow.row();
+      ui.addToWin(titleWindow, ui.getTextButton(Lang.get("UI_BACK"),""), ui.SIZE_L * 2, ui.SIZE_L, 2);
+
 
     } else if (toShow.equals("settings")) {
 
@@ -242,7 +287,7 @@ public class UIIntro {
           Sounds.getInstance().click();
         }
       });
-      titleWindow.add(musicSlider).pad(ui.SIZE_S).width(ui.SIZE_S+ui.SIZE_M+ui.SIZE_L).fillX();
+      titleWindow.add(musicSlider).colspan(2).pad(ui.SIZE_S).width(ui.SIZE_S+ui.SIZE_M+ui.SIZE_L).fillX();
 
       titleWindow.row();
       ui.addToWin(titleWindow, ui.getLabel(Lang.get("UI_SFX"), ""), ui.SIZE_L, ui.SIZE_S, 2);
@@ -255,7 +300,7 @@ public class UIIntro {
           Sounds.getInstance().click();
         }
       });
-      ui.addToWin(titleWindow, sfxSlider, ui.SIZE_S+ui.SIZE_M+ui.SIZE_L, ui.SIZE_S, 1);
+      ui.addToWin(titleWindow, sfxSlider, ui.SIZE_S+ui.SIZE_M+ui.SIZE_L, ui.SIZE_S, 2);
 
       titleWindow.row();
       ui.addToWin(titleWindow, ui.getLabel(Lang.get("UI_FULLSCREEN"), ""), ui.SIZE_L, ui.SIZE_S, 2);
@@ -264,10 +309,10 @@ public class UIIntro {
       fsBox.addListener(fsListener);
       fsBox.getImage().setScaling(Scaling.fill);
       fsBox.getImageCell().size(ui.SIZE_S);
-      ui.addToWin(titleWindow, fsBox, ui.SIZE_S, ui.SIZE_S, 1);
+      ui.addToWin(titleWindow, fsBox, ui.SIZE_S, ui.SIZE_S, 2);
 
       titleWindow.row();
-      ui.separator(titleWindow, 3, Param.UI_WIDTH_INTRO);
+      ui.separator(titleWindow, 4, Param.UI_WIDTH_INTRO);
 
       ballImages.clear();
       for (Particle p : Particle.values()) {
@@ -275,8 +320,8 @@ public class UIIntro {
         assert p.getColourFromParticle() != null;
         Image i = ui.getImage("ball_" + p.getColourFromParticle().getString(),"");
         ballImages.add(i);
-        ui.addToWin(titleWindow, ui.getLabel(p.getString(),""), ui.SIZE_S);
-        ui.addToWin(titleWindow, i, ui.SIZE_M);
+        ui.addToWin(titleWindow, ui.getLabel(p.getString(),""), ui.SIZE_S, ui.SIZE_S, 1);
+        ui.addToWin(titleWindow, i, ui.SIZE_M, ui.SIZE_M, 1);
         Slider pSlider = new Slider(0, 360*3, 1, false, ui.skin, "default-horizontal");
         pSlider.setValue( Persistence.getInstance().particleHues.get(p) );
         pSlider.setUserObject(p);
@@ -288,7 +333,7 @@ public class UIIntro {
             Sounds.getInstance().click();
           }
         });
-        ui.addToWin(titleWindow, pSlider, ui.SIZE_M+ui.SIZE_L, ui.SIZE_M, 1);
+        ui.addToWin(titleWindow, pSlider, ui.SIZE_M+ui.SIZE_L, ui.SIZE_M, 2);
         titleWindow.row();
         cacheHue.put(p, Persistence.getInstance().particleHues.get(p));
       }
@@ -297,10 +342,10 @@ public class UIIntro {
       cacheSfx = Persistence.getInstance().sfxLevel;
       cacheFullscreen = Gdx.graphics.isFullscreen();
 
-      ui.separator(titleWindow, 3, Param.UI_WIDTH_INTRO);
+      ui.separator(titleWindow, 4, Param.UI_WIDTH_INTRO);
 
-      ui.addToWin(titleWindow, ui.getImageButton("tick",""), ui.SIZE_L, ui.SIZE_L, 1);
-      ui.addToWin(titleWindow, ui.getImageButton("cross",""), ui.SIZE_L, ui.SIZE_L, 1);
+      ui.addToWin(titleWindow, ui.getImageButton("tick",""), ui.SIZE_L, ui.SIZE_L, 2);
+      ui.addToWin(titleWindow, ui.getImageButton("cross",""), ui.SIZE_L, ui.SIZE_L, 2);
 
 
     } else {

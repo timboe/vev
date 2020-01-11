@@ -77,7 +77,7 @@ public class Gesture implements GestureDetector.GestureListener {
       // Only allow fling from the right mouse button
       return false;
     }
-    Camera.getInstance().velocity(-velocityX * 0.01f, velocityY * 0.01f);
+    Camera.getInstance().velocity(-velocityX, velocityY);
     return false;
   }
 

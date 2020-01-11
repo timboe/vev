@@ -88,6 +88,7 @@ public class Entity extends Actor implements Serializable {
         //TODO got a null on the next line from one serialisation of a Warp
         for (IVector2 v : entry.getValue()) {
           vecList.put(count.toString(), v.serialise());
+          Gdx.app.log("DBG_S",count.toString() + " = " + v.serialise().toString());
           ++count;
         }
         mapObj.put(entry.getKey().name(), vecList);
@@ -118,9 +119,16 @@ public class Entity extends Actor implements Serializable {
         JSONObject vecList = bpJson.getJSONObject(particleStrKey);
         Iterator vecListIt = vecList.keys();
         List<IVector2> pl = new LinkedList<IVector2>();
+        int maxKey = -1;
         while (vecListIt.hasNext()) {
-          IVector2 v = new IVector2(vecList.getJSONObject((String) vecListIt.next()));
-          pl.add(v);
+          maxKey = Math.max(maxKey, Integer.valueOf((String) vecListIt.next()));
+        }
+        if (maxKey >= 0) {
+          for (Integer i = 0; i <= maxKey; ++i) {
+            IVector2 v = new IVector2(vecList.getJSONObject(i.toString()));
+            Gdx.app.log("DBG_D",i.toString() + " = " + vecList.getJSONObject(i.toString()).toString());
+            pl.add(v);
+          }
         }
         this.buildingPathingLists.put(Particle.valueOf(particleStrKey), pl);
       }
@@ -139,9 +147,15 @@ public class Entity extends Actor implements Serializable {
       JSONObject pathingListJson = json.getJSONObject("pathingList");
       this.pathingList = new Vector<IVector2>();
       Iterator plIt = pathingListJson.keys();
+      int maxKey = -1;
       while (plIt.hasNext()) {
-        IVector2 v = new IVector2( pathingListJson.getJSONObject( (String) plIt.next()) );
-        this.pathingList.add(v);
+        maxKey = Math.max(maxKey, Integer.valueOf((String) plIt.next()));
+      }
+      if (maxKey >= 0) {
+        for (Integer i = 0; i <= maxKey; ++i) {
+          IVector2 v = new IVector2(pathingListJson.getJSONObject(i.toString()));
+          this.pathingList.add(v);
+        }
       }
     }
     //

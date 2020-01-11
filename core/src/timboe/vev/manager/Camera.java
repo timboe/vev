@@ -54,10 +54,14 @@ public class Camera {
     this.desiredPos.set(x,y);
   }
 
-  public void setHelpPos(int level) {
-    this.desiredPos.set(Param.TILES_INTRO_X/2 * Param.TILE_S,
-            (level + 1) * (Param.TILES_INTRO_Y/2 * Param.TILE_S));
-    setCurrentZoom(.25f);
+  public void setHelpPos(int level, boolean instant) {
+    this.desiredPos.set(Param.TILES_INTRO_X_MID * Param.TILE_S,
+            (Param.TILES_INTRO_Y_MID * Param.TILE_S) - (level * Param.DISPLAY_Y * Param.TILES_INTRO_ZOOM)); // TODO another magic number to deduce :(
+    setCurrentZoom(Param.TILES_INTRO_ZOOM);
+    if (instant) {
+      this.currentPos.set( this.desiredPos );
+    }
+    Gdx.app.log("setHelpPos", "Level:"+level + " " + this.desiredPos);
   }
 
   public void setCurrentZoom(float currentZoom) {
@@ -142,11 +146,11 @@ public class Camera {
   }
 
   public void translate(float x, float y) {
-    desiredPos.add(x * currentZoom, y * currentZoom);
+    desiredPos.add(x * currentZoom * Param.TRANSLATE_MOD, y * currentZoom * Param.TRANSLATE_MOD);
   }
 
   public void velocity(float x, float y) {
-    this.velocity.set(x, y);
+    this.velocity.set(x * Param.FLING_MOD, y * Param.FLING_MOD);
   }
 
   public void modVelocity(float x, float y) {
@@ -172,14 +176,17 @@ public class Camera {
 
   public void update(float delta) {
     float frames = delta / Param.FRAME_TIME;
+    final float scale = (float)Math.pow(0.9f, frames);
 
     desiredPos.add(velocity);
-    velocity.scl((float)Math.pow(0.9f, frames));
+    velocity.scl(scale);
 
     shake *= (float)Math.pow(0.9f, frames);
     float shakeAngle = R.nextFloat() * (float) Math.PI * 2f;
 
-    currentPos.set(desiredPos);
+    currentPos.x += (desiredPos.x - currentPos.x) * 0.1f;
+    currentPos.y += (desiredPos.y - currentPos.y) * 0.1f;
+
     currentPos.add(shake * (float)Math.cos(shakeAngle), shake * (float)Math.sin(shakeAngle));
     currentZoom += (desiredZoom - currentZoom) * 0.1f;
 

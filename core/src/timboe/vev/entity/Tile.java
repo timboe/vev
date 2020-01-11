@@ -134,7 +134,10 @@ public class Tile extends Entity {
     if (World.getInstance().foliage.containsKey(mySprite)) {
       return World.getInstance().foliage.get(mySprite);
     }
-    Gdx.app.error("getMySprite", "Cannot resolve "+String.valueOf(mySprite)+" I am "+coordinates.toString()+" I am intro? " + isIntro);
+    if (isIntro && World.getInstance().introFoliage.containsKey(mySprite)) {
+      return World.getInstance().introFoliage.get(mySprite);
+    }
+    Gdx.app.error("getMySprite", "Cannot resolve "+mySprite+" I am "+coordinates.toString()+" I am intro? " + isIntro);
     return null;
   }
 
@@ -212,7 +215,7 @@ public class Tile extends Entity {
   // Return wasParked
   public boolean tryRegSprite(Sprite s) {
     // De-reg from current
-    Tile t = World.getInstance().getTile(s.myTile);
+    Tile t = isIntro ? World.getInstance().getIntroTile(s.myTile) : World.getInstance().getTile(s.myTile);
     t.deRegSprite(s);
 
 //    Gdx.app.log("tryRegSprite", "Try reg "+s.id);
