@@ -191,6 +191,7 @@ public class GameScreen implements Screen {
       fadeIn -= delta * 70f;
     } else if (!state.isGameOn()) {
       state.initialZap();
+      state.doRightClick();
     }
 
 

@@ -30,6 +30,7 @@ public class OrderlyQueue {
   final IVector2 queueStart;
   private List<IVector2> queue = new LinkedList<IVector2>();
   final int myBuilding;
+  final boolean isIntro;
 
   public JSONObject serialise() throws JSONException {
     JSONObject json = new JSONObject();
@@ -42,31 +43,37 @@ public class OrderlyQueue {
     }
     json.put("queue", q);
     json.put("myBuilding", myBuilding);
+    json.put("isIntro", isIntro);
     return json;
   }
 
   public OrderlyQueue(JSONObject json) throws JSONException {
     myBuilding = json.getInt("myBuilding");
+    isIntro = json.getBoolean("isIntro");
     JSONObject q = json.getJSONObject("queue");
     Iterator qIt = q.keys();
     while (qIt.hasNext()) {
-      queue.add( new IVector2( q.getJSONObject((String) qIt.next()) ) );
+      queue.add(new IVector2(q.getJSONObject((String) qIt.next())));
     }
-    queueStart = new IVector2( json.getJSONObject("queueStart") );
+    queueStart = new IVector2(json.getJSONObject("queueStart"));
   }
 
 
-  public OrderlyQueue(int x, int y, List<IVector2> customQueue, Building b) {
-    myBuilding = b.id;
+  public OrderlyQueue(int x, int y, List<IVector2> customQueue, Building b, boolean isIntro) {
+    myBuilding = (b == null ? 0 : b.id);
+    this.isIntro = isIntro;
     if (customQueue == null) doQueue(x, y);
     else queue = customQueue;
     queueStart = queue.get(0);
     repath();
+    if (isIntro) {
+      setAllTextures();
+    }
   }
 
   public void deconstruct() {
     for (IVector2 v : queue) {
-      Tile t = tileFromCoordinate( v );
+      Tile t = tileFromCoordinate(v);
       t.removeBuilding();
     }
     repath();
@@ -79,15 +86,22 @@ public class OrderlyQueue {
 
 
   public IVector2 getQueuePathingTarget() {
-    return queue.get( queue.size()-1 );
+    return queue.get(queue.size() - 1);
   }
 
   private Tile tileFromCoordinate(IVector2 v) {
-    return World.getInstance().getTile(v);
+    return World.getInstance().getTile(v, isIntro);
   }
 
   private Building getMyBuilding() {
     return GameState.getInstance().getBuildingMap().get(myBuilding);
+  }
+
+  private void setAllTextures() {
+    for (IVector2 v : getQueue()) {
+      Tile t = tileFromCoordinate(v);
+      t.setQueueTexture();
+    }
   }
 
   public void moveAlongMoveAlong() {
@@ -221,8 +235,8 @@ public class OrderlyQueue {
     int step = 0, x = start.coordinates.x, y = start.coordinates.y, move = 3;
     World w = World.getInstance();
     while (step++ < GameState.getInstance().queueSize) {
-      if (!Util.inBounds(x,y,false) || !w.getTile(x,y).buildable()) return;
-      w.getTile(x,y).setHighlightColour(Param.HIGHLIGHT_YELLOW);
+      if (!Util.inBounds(x,y,false) || !w.getTile(x,y,false).buildable()) return;
+      w.getTile(x,y,false).setHighlightColour(Param.HIGHLIGHT_YELLOW);
       if (Math.abs(move) > 1) {
         x += 1 * Math.signum(move);
         move -= 1 * Math.signum(move);
@@ -243,7 +257,7 @@ public class OrderlyQueue {
   }
 
   private void doSpiralQueue(int xStart, int yStart) {
-    Tile t = World.getInstance().getTile(xStart, yStart);
+    Tile t = World.getInstance().getTile(xStart, yStart, isIntro);
     int step = 0, move = 3, toAdd =3;
     boolean inc = true;
     Cardinal D = Cardinal.kE, previousD = Cardinal.kN;
@@ -287,10 +301,10 @@ public class OrderlyQueue {
     while (step++ < GameState.getInstance().queueSize) {
       Cardinal D = getExitLocation(v.get(element).getValue());
       boolean isClockwise = getQueueClockwise(v.get(element).getKey(), v.get(element).getValue());
-      Tile t = w.getTile(x, y);
+      Tile t = w.getTile(x, y, isIntro);
       if (!t.buildable()) break;
       t.setQueue(v.get(element).getKey(), v.get(element).getValue(), myBuilding, D, isClockwise);
-      queue.add( w.getTile(x, y).coordinates );
+      queue.add( w.getTile(x, y, isIntro).coordinates );
       if (++element == v.size()) element = 0;
       if (Math.abs(move) > 1) {
         x += 1 * Math.signum(move);

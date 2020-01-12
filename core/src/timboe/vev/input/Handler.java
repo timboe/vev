@@ -46,14 +46,6 @@ public class Handler extends InputAdapter {
       }
     } else if (keycode == Input.Keys.ESCAPE) {
       Gdx.app.exit();
-    } else if (keycode == Input.Keys.W) {
-      Camera.getInstance().modVelocity(0, +10);
-    } else if (keycode == Input.Keys.A) {
-      Camera.getInstance().modVelocity(-10, 0);
-    } else if (keycode == Input.Keys.S) {
-      Camera.getInstance().modVelocity(0, -10);
-    } else if (keycode == Input.Keys.D) {
-      Camera.getInstance().modVelocity(+10, 0);
     }
     return false;
   }

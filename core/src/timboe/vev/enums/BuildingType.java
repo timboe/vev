@@ -128,7 +128,7 @@ public enum BuildingType {
     }
   }
 
-  public float getDissassembleBonus(Particle p) {
+  public float getDisassembleBonus(Particle p) {
     switch (this) {
       case kHZE:
         if (p == Particle.kH) return 0.75f; // Z, e

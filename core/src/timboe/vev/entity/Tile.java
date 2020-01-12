@@ -48,7 +48,7 @@ public class Tile extends Entity {
   public Cardinal queueExit; // Which sub-space is my last
   public boolean queueClockwise; // If true, clockwise - if false, counterclockwise
   private String queueTex; // Delayed rendering
-  private Boolean queueTexSet; // Delayed rendering activated
+  public Boolean queueTexSet; // Delayed rendering activated
 
   public JSONObject serialise() throws JSONException {
     JSONObject json = super.serialise(true);
@@ -215,7 +215,7 @@ public class Tile extends Entity {
   // Return wasParked
   public boolean tryRegSprite(Sprite s) {
     // De-reg from current
-    Tile t = isIntro ? World.getInstance().getIntroTile(s.myTile) : World.getInstance().getTile(s.myTile);
+    Tile t = World.getInstance().getTile(s.myTile, isIntro);
     t.deRegSprite(s);
 
 //    Gdx.app.log("tryRegSprite", "Try reg "+s.id);
@@ -252,9 +252,10 @@ public class Tile extends Entity {
           visitingSprite(s);
           return false;
         }
-      } else { // We reg the sprite to (potentially) ANOTHER tile
+      } else { // Accepting to the building. We reg the sprite to (potentially) ANOTHER tile
         s.bouncedBuildings.clear();
         s.myTile = slot.getKey().coordinates;
+        GameState.getInstance().removeFromSelectedSet(s);
         slot.getKey().parkSprite(s, slot.getValue());
         return true;
       }

@@ -45,7 +45,7 @@ public class Entity extends Actor implements Serializable {
   protected List<IVector2> pathingList; // Used by building and sprite
   Particle pathingParticle; // Used only by building
   public boolean isIntro;
-  EnumMap<Particle, List<IVector2>> buildingPathingLists;
+  public EnumMap<Particle, List<IVector2>> buildingPathingLists;
   public String texString;
   private int texFrames;
   private boolean texFlipped;
@@ -245,7 +245,7 @@ public class Entity extends Actor implements Serializable {
   }
 
   Tile coordinateToTile(IVector2 v) {
-    return (isIntro ? World.getInstance().getIntroTile(v) : World.getInstance().getTile(v));
+    return World.getInstance().getTile(v, isIntro);
   }
 
   public Tile getDestination() {
@@ -305,6 +305,7 @@ public class Entity extends Actor implements Serializable {
   public void drawPath(ShapeRenderer sr) {
     if (!selected && !(UI.getInstance().uiMode == UIMode.kSETTINGS)) return;
     if (pathingList != null) { // in-progress
+      Gdx.app.log("DBG", "pathingList:" + pathingList + " pathingParticle:" + pathingParticle + " me:" + this);
       sr.setColor(pathingParticle.getHighlightColour());
       drawList(pathingList, sr, pathingParticle.getStandingOrderOffset());
     }
@@ -321,14 +322,16 @@ public class Entity extends Actor implements Serializable {
     if (l == null || l.size() == 0) return;
     final int off = ((Param.FRAME / 2) + standingOrderOffset) % Param.TILE_S;
     Tile fin = coordinateToTile( l.get( l.size() - 1 ) );
+    Tile start = coordinateToTile( l.get( 0 ) );
     for (int i = 0; i < l.size(); ++i) {
       Tile previous = null;
       Tile current = coordinateToTile( l.get(i) );
       if (i == 0) {
         for (Cardinal D : Cardinal.n8) {
-          Integer s = current.n8.get(D).mySprite;
+          int s = current.n8.get(D).mySprite;
           if (s != 0 && s == this.id) { // This connects to the queue too.... TODO change
             previous = current.n8.get(D);
+            start = previous;
             break;
           }
         }
@@ -382,5 +385,6 @@ public class Entity extends Actor implements Serializable {
     }
     sr.rect(fin.getX(), fin.getY(), fin.getOriginX(), fin.getOriginY(),
         fin.getWidth(), fin.getHeight(), 1f, 1f, 45f);
+    sr.circle(start.getX() + start.getWidth()/2, start.getY() + start.getHeight()/2, start.getWidth()/2);
   }
 }

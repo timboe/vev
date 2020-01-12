@@ -109,7 +109,7 @@ public class Warp extends Building {
         double rAngle = -Math.PI + (R.nextFloat() * Math.PI * 2);
         int tryX = (int) Math.round(coordinates.x + Param.WARP_SIZE/2 - 2 + ((Param.WARP_SIZE/2 + 1) * Math.cos(rAngle)));
         int tryY = (int) Math.round(coordinates.y + Param.WARP_SIZE/2 - 2 + ((Param.WARP_SIZE/2 + 1) * Math.sin(rAngle)));
-        Tile tryTile = World.getInstance().getTile(tryX, tryY);
+        Tile tryTile = World.getInstance().getTile(tryX, tryY, isIntro);
         if (tryTile.coordinates.getNeighbours().size() == 0) continue; // Non-pathable
         boolean used = false;
         for (Particle p2 : Particle.values()) {
@@ -128,7 +128,7 @@ public class Warp extends Building {
   @Override
   protected IVector2 getPathingStartPoint(Particle p) {
 //    Gdx.app.log("getPathingStartPoint WARP","Returning for "+p+" "+pathingStartPointWarp.get(p));
-    return World.getInstance().getTile( pathingStartPointWarp.get(p) ).coordinates;
+    return World.getInstance().getTile( pathingStartPointWarp.get(p), isIntro).coordinates;
   }
 
   public boolean newParticles(int toPlace, boolean stressTest) {

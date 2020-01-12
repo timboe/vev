@@ -158,26 +158,18 @@ public class World {
     return generated;
   }
 
-  public Tile getTile(float x, float y) {
-    return getTile((int) x, (int) y);
+  public Tile getTile(float x, float y, boolean isIntro) {
+    return getTile((int) x, (int) y, isIntro);
   }
 
-  public Tile getTile(IVector2 v) {
-    return tiles[v.x][v.y];
+  public Tile getTile(IVector2 v, boolean isIntro) {
+    return isIntro ? introTiles[v.x][v.y] : tiles[v.x][v.y];
   }
 
-  public Tile getTile(int x, int y) {
+  public Tile getTile(int x, int y, boolean isIntro) {
     // Removed bounds check for speed....
 //    if (x < 0 || y < 0 || x >= Param.TILES_X-1 || y >= Param.TILES_Y-1) return null;
-    return tiles[x][y];
-  }
-
-  public Tile getIntroTile(int x, int y) {
-    return introTiles[x][y];
-  }
-
-  public Tile getIntroTile(IVector2 v) {
-    return introTiles[v.x][v.y];
+    return isIntro ? introTiles[x][y] : tiles[x][y];
   }
 
   public Map<Integer, Patch> getTiberiumPatches() {
@@ -211,13 +203,6 @@ public class World {
         for (int y = 0; y < Param.TILES_INTRO_Y; ++y) {
           introTiles[x][y] = new Tile(x, y);
           IntroState.getInstance().getIntroTileStage().addActor(introTiles[x][y]);
-          introTiles[x][y].level = 1;
-          introTiles[x][y].isIntro = true;
-          if (x < 2*Param.TILES_INTRO_X / 5) { // 2/5 or 40%
-            introTiles[x][y].tileColour = Colour.kGREEN;
-          } else {
-            introTiles[x][y].tileColour = Colour.kRED;
-          }
         }
       }
       setNeighbours(introTiles, Param.TILES_INTRO_X, Param.TILES_INTRO_Y);
@@ -241,6 +226,30 @@ public class World {
   }
 
   private void generateIntro() {
+
+    // Set 1/5 green, 4/5 red
+    for (int x = 0; x < Param.TILES_INTRO_X; ++x) {
+      for (int y = 0; y < Param.TILES_INTRO_Y; ++y) {
+        introTiles[x][y].level = 1;
+        introTiles[x][y].isIntro = true;
+        if (x < 2*Param.TILES_INTRO_X / 5) { // 2/5 or 40%
+          introTiles[x][y].tileColour = Colour.kGREEN;
+        } else {
+          introTiles[x][y].tileColour = Colour.kRED;
+        }
+      }
+    }
+
+    // Hole for intro warp demo
+    int _x = 37, _y = 27;
+    for (int x = _x - Param.WARP_SIZE / 2; x < _x + Param.WARP_SIZE / 2; ++x) {
+      for (int y = _y - Param.WARP_SIZE / 2; y < _y + Param.WARP_SIZE / 2; ++y) {
+        if (Param.WARP_SIZE / 2 <= Math.hypot(x - _x, y - _y)) continue;
+        introTiles[x][y].level = 0;
+        introTiles[x][y].tileColour = Colour.kBLACK;
+      }
+    }
+
     markCliffs(introTiles, Param.TILES_INTRO_X, Param.TILES_INTRO_Y);
     addFoliage(introTiles, Param.TILES_INTRO_X, Param.TILES_INTRO_Y, true);
     doPathGrid(introTiles, Param.TILES_INTRO_X, Param.TILES_INTRO_Y);
@@ -270,6 +279,9 @@ public class World {
 
   public void generate() {
     boolean success = false;
+    if (IntroState.getInstance().theTitleScreen.fadeIn > 0) {
+      return;
+    }
     switch (stage) {
       case 0: success = doZones(); break;
       case 1: success = doEdges(worldEdges, allZones, Colour.kBLACK, Colour.kRED, 0, 1, Param.KRINKLE_OFFSET, (2 * Param.KRINKLE_OFFSET) - Param.KRINKLE_GAP); break;
@@ -359,12 +371,16 @@ public class World {
   }
 
   private Sprite newSprite(int x, int y, String name, boolean isFoliage, boolean isIntro) {
-    Sprite s = new Sprite(isIntro ? introTiles[x][y] : tiles[x][y]);
+    Sprite s = new Sprite(getTile(x, y, isIntro));
     if (isFoliage) {
       if (isIntro) IntroState.getInstance().getIntroFoliageStage().addActor(s);
       else GameState.getInstance().getFoliageStage().addActor(s);
     }
-    else GameState.getInstance().getSpriteStage().addActor(s);
+    else {
+      if (isIntro) IntroState.getInstance().getIntroSpriteStage().addActor(s);
+      else GameState.getInstance().getSpriteStage().addActor(s);
+    }
+    s.isIntro = isIntro;
     s.setTexture(name, 1, R.nextBoolean());
     return s;
   }
@@ -413,8 +429,6 @@ public class World {
 
       Warp w = new Warp(tiles[_x][_y]);
       GameState.getInstance().getWarpStage().addActor(w);
-//      GameState.getInstance().getBuildingMap().put(w.id, w);
-      //TODO remove warpMap from building map. otherwise they get double-saved
       GameState.getInstance().getWarpMap().put(w.id, w);
 
     } while (++fTry < Param.N_PATCH_TRIES && fPlaced < Param.MAX_WARP);
@@ -445,18 +459,24 @@ public class World {
     }
     Patch patch = new Patch(_x, _y);
     if (!isForest) tiberiumPatches.put(patch.id, patch);
-    final String forestTexture = "tree_" + tiles[_x][_y].tileColour.getString() + "_" + R.nextInt(Param.N_TREE);
+    genPatch(_x, _y, isForest, patchSize, false, patch);
+    return true;
+  }
+
+  public void genPatch(final int _x, final int _y, final boolean isForest, final int patchSize, final boolean isIntro, Patch patch) {
     final double maxD = Math.sqrt(2 * Math.pow(patchSize, 2));
+    Tile t1 = getTile(_x, _y, isIntro);
+    final String forestTexture = "tree_" + t1.tileColour.getString() + "_" + R.nextInt(Param.N_TREE);
     for (int x = _x - patchSize; x < _x + patchSize; ++x) {
       for (int y = _y + patchSize - 1; y >= _y - patchSize; --y) {
-        if (tiles[x][y].tileColour != tiles[_x][_y].tileColour || tiles[x][y].type != TileType.kGROUND)
+        Tile t2 = getTile(x, y, isIntro);
+        if (t2.tileColour != t1.tileColour || t2.type != TileType.kGROUND)
           continue;
         final double d = Math.hypot(x - _x, y - _y);
         if (isForest) tryTree(d, maxD, x, y, forestTexture, patch);
-        else tryTiberium(d, maxD, x, y, patch);
+        else tryTiberium(d, maxD, x, y, patch, isIntro);
       }
     }
-    return true;
   }
 
   private void tryTree(final double distance, final double maxDistance, final int x, final int y, final String forestTexture, final Patch p) {
@@ -469,13 +489,15 @@ public class World {
     tiles[x][y].mySprite = s.id;
   }
 
-  private void tryTiberium(final double distance, final double maxDistance, final int x, final int y, final Patch p) {
+  private void tryTiberium(final double distance, final double maxDistance, final int x, final int y, final Patch p, final boolean isIntro) {
     for (int subX = 0; subX < 2; ++subX) {
       for (int subY = 0; subY < 2; ++subY) {
         if (distance > Math.abs(R.nextGaussian() * Param.PATCH_DENSITY * maxDistance)) continue;
-        Sprite s = newSprite(x, y, "tiberium_" + R.nextInt(Param.N_TIBERIUM_SPRITES), false, false);
-        tiberiumShards.put(s.id, s);
-        p.addContained(s);
+        Sprite s = newSprite(x, y, "tiberium_" + R.nextInt(Param.N_TIBERIUM_SPRITES), false, isIntro);
+        if (!isIntro) {
+          tiberiumShards.put(s.id, s);
+          p.addContained(s);
+        }
         s.moveBy(subX * Param.TILE_S, subY * Param.TILE_S);
         s.moveBy((-Param.WIGGLE / 2) + R.nextInt(Param.WIGGLE), (-Param.WIGGLE / 2) + R.nextInt(Param.WIGGLE));
       }

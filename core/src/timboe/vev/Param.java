@@ -129,8 +129,7 @@ public class Param {
   public static final int PARTICLES_SMALL = 1000;
   public static final int PARTICLES_MED = 5000;
   public static final int PARTICLES_LARGE = 20000;
-  public static final int PARTICLES_XL = 5000;
-
+  public static final int PARTICLES_XL = 50000;
 
   public static final float ANIM_TIME = 1/20f; // I.e. 12 frames per second
 

@@ -239,7 +239,6 @@ public class GameState {
   private ParticleEffectPool dustEffectPool, upgradeDustEffectPool, boomParticleEffectPool;
   public Array<ParticleEffectPool.PooledEffect> dustEffects;
 
-  TitleScreen theTitleScreen;
   private GameScreen theGameScreen;
   private VEVGame game;
 
@@ -255,13 +254,10 @@ public class GameState {
 
   public void setGame(VEVGame theGame) {
     game = theGame;
-    theTitleScreen = new TitleScreen();
     theGameScreen = new GameScreen();
   }
 
   public GameScreen getGameScreen() { return theGameScreen; }
-
-
 
   public void act(float delta) {
 
@@ -289,7 +285,7 @@ public class GameState {
     cursor.scl(1f / (float) Param.TILE_S);
     Tile cursorTile = null;
     if (Util.inBounds((int)cursor.x, (int)cursor.y, false)) {
-      cursorTile = World.getInstance().getTile(cursor.x, cursor.y);
+      cursorTile = World.getInstance().getTile(cursor.x, cursor.y, false);
     }
 
     if (doingPlacement) {
@@ -309,7 +305,7 @@ public class GameState {
           }
         }
       } else if (UI.getInstance().uiMode == UIMode.kWITH_BUILDING_SELECTION) {
-        if (cursorTile != null) {
+        if (cursorTile != null && selectedBuildingStandingOrderParticle != null) {
           Tile t = mapPathingDestination(cursorTile);
           if (t != null) {
             placeLocation = t.coordinates;
@@ -428,7 +424,7 @@ public class GameState {
     }
     if (selected.myQueue != null) {
       for (IVector2 v : selected.myQueue.getQueue()) {
-        boomDustEffect( World.getInstance().getTile(v) );
+        boomDustEffect( World.getInstance().getTile(v, false) );
       }
     }
     Camera.getInstance().addShake(selected, Param.WARP_SHAKE);
@@ -516,7 +512,7 @@ public class GameState {
 
   public void placeBuilding() {
     if (!buildingLocationGood || placeLocation == null) return;
-    Building b = new Building(World.getInstance().getTile(placeLocation), buildingBeingPlaced);
+    Building b = new Building(World.getInstance().getTile(placeLocation, false), buildingBeingPlaced);
     buildingStage.addActor(b);
     buildingMap.put(b.id, b);
     final int price = getBuildingPrice(false, buildingBeingPlaced);
@@ -534,7 +530,7 @@ public class GameState {
   }
 
   public void doRightClick() {
-    if (!gameOn && theTitleScreen.fadeTimer[0] == 0) { // Canceling settings window
+    if (!gameOn && IntroState.getInstance().theTitleScreen.fadeTimer[0] == 0) { // Canceling settings window
       UIIntro.getInstance().resetTitle("main");
       return;
     }
@@ -546,6 +542,8 @@ public class GameState {
     }
     selectEndWorld.setZero();
     selectStartWorld.setZero();
+    doingPlacement = false;
+    buildingBeingPlaced = null;
     UI.getInstance().showMain();
   }
 
@@ -563,6 +561,15 @@ public class GameState {
     }
   }
 
+  public void removeFromSelectedSet(Sprite s) {
+    if (!s.selected) {
+      return;
+    }
+    selectedSet.remove(s.id);
+    s.selected = false;
+    if (selectedSet.isEmpty()) UI.getInstance().showMain();
+    else UI.getInstance().doSelectParticle(selectedSet);
+  }
 
   public void reduceSelectedSet(Particle p, boolean invert) {
     Set<Integer> toRemove = new HashSet<Integer>();
@@ -589,13 +596,15 @@ public class GameState {
     if (selectedBuilding != 0) {
       Building b = getSelectedBuilding();
       b.selected = false;
+      b.cancelUpdatePathingList();
     }
     selectedBuilding = 0;
+    selectedBuildingStandingOrderParticle = null;
   }
 
-  private boolean contained(Entity e) {
+  private boolean contained(Entity e, int scale) {
     Rectangle.tmp.set(e.getX(), e.getY(), e.getWidth(), e.getHeight());
-    if (Rectangle.tmp.contains(selectStartWorld.x, selectStartWorld.y)) {
+    if (Rectangle.tmp.contains(selectStartWorld.x * scale, selectStartWorld.y * scale)) {
       clearSelect();
       e.selected = true;
       if (e.getClass() == Building.class || e.getClass() == Warp.class) {
@@ -620,6 +629,9 @@ public class GameState {
           Math.abs(selectEndWorld.x - selectStartWorld.x),
           Math.abs(selectEndWorld.y - selectStartWorld.y));
       for (Sprite s : particleMap.values()) {
+        if (s.getTile().queueTexSet) { // Do not allow user to select particles in the queue
+          continue;
+        }
         s.selected = Rectangle.tmp.contains(s.getX() / Param.SPRITE_SCALE, s.getY() / Param.SPRITE_SCALE);
         if (s.selected) selectedSet.add(s.id);
       }
@@ -636,17 +648,20 @@ public class GameState {
       // if particles are selected then we want to path to the building/location
 
       for (Building b : buildingMap.values()) {
-        if (contained(b)) {
+        if (contained(b, 1)) {
           return true;
         }
       }
       for (Warp w : warpMap.values()) {
-        if (contained(w)) {
+        if (contained(w, 1)) {
           return true;
         }
       }
       for (Sprite s : particleMap.values()) {
-        if (contained(s)) {
+        if (s.getTile().queueTexSet) { // Do not allow user to select particles in the queue
+          continue;
+        }
+        if (contained(s, Param.SPRITE_SCALE)) {
           return true;
         }
       }
@@ -686,7 +701,7 @@ public class GameState {
 
   public void doParticleMoveOrder(int x, int y) {
     if (!Util.inBounds(x / Param.TILE_S, y / Param.TILE_S, false)) return;
-    Tile target = World.getInstance().getTile(x / Param.TILE_S, y / Param.TILE_S);
+    Tile target = World.getInstance().getTile(x / Param.TILE_S, y / Param.TILE_S, false);
     target = mapPathingDestination(target);
     if (target == null) return;
     pathingInternal(target, false);
@@ -763,8 +778,8 @@ public class GameState {
 
 
   public void transitionToGameScreen() {
-    if (theTitleScreen.fadeTimer[0] == 0) {
-      theTitleScreen.fadeTimer[0] = 1f;
+    if (IntroState.getInstance().theTitleScreen.fadeTimer[0] == 0) {
+      IntroState.getInstance().theTitleScreen.fadeTimer[0] = 1f;
       Sounds.getInstance().pulse();
     }
   }
@@ -779,8 +794,8 @@ public class GameState {
   public void setToTitleScreen() {
     pathingCache.clear();
     UIIntro.getInstance().resetTitle("main");
-    game.setScreen(theTitleScreen);
-    theTitleScreen.fadeIn = 100f;
+    game.setScreen(IntroState.getInstance().theTitleScreen);
+    IntroState.getInstance().theTitleScreen.fadeIn = 50f;
     if (isGameOn()) {
       Persistence.getInstance().trySave();
       World.getInstance().reset(false);
@@ -810,7 +825,6 @@ public class GameState {
       for (int i = 0; i < R.nextInt(3)+1; ++i) {
         tryNewParticles(false, toFocusOn, 20);
       }
-      Gdx.app.log("initialZap", "Doing zap");
     }
     setGameOn(true);
   }
@@ -909,7 +923,6 @@ public class GameState {
 
   public void dispose() {
     theGameScreen.dispose();
-    theTitleScreen.dispose();
     tileStage.dispose();
     spriteStage.dispose();
     foliageStage.dispose();

@@ -1,6 +1,7 @@
 {
   com.badlogic.gdx.graphics.g2d.BitmapFont: {
   fixed-width-font: {file: VT323.fnt },
+  wide-font: {file: OpenSans-distance-field-wide.fnt },
   default-font: {file: OpenSans-distance-field.fnt },
   medium-font: {file: OpenSans-distance-field-64.fnt },
   small-font: {file: font-small.fnt }
@@ -68,6 +69,7 @@
 },
   com.badlogic.gdx.scenes.scene2d.ui.Label$LabelStyle: {
   default: {font: default-font, fontColor: white },
+  wide: {font: wide-font, fontColor: white },
   title: {font: fixed-width-font, fontColor: white },
   link-label: {fontColor: link-label, font: default-font },
   small: {font: small-font, fontColor: white },

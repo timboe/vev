@@ -149,8 +149,4 @@ public enum Particle {
     }
   }
 
-  public static String getStringFromColour(Colour c) {
-    return getParticleFromColour(c).getString();
-  }
-
 }

@@ -77,7 +77,7 @@ public class UIIntro {
   }
 
   private LabelDF helpLabel(String s) {
-    LabelDF l = new LabelDF(s, UI.getInstance().skin, "default", UI.getInstance().dfShader);
+    LabelDF l = new LabelDF(s, UI.getInstance().skin, "wide", UI.getInstance().dfShader_medium);
     l.setFontScale(0.3f);
     return l;
   }
@@ -102,11 +102,12 @@ public class UIIntro {
 
     tableHelp = new Table();
     tableHelp.padLeft(Param.TILES_INTRO_X * Param.TILE_S);
-    tableHelp.padBottom(1992); //TODO un-magic this number
+    final int nScreens = 6;
+    tableHelp.padBottom((Param.DISPLAY_Y * Param.TILES_INTRO_ZOOM * nScreens) + 101); //TODO un-magic this number
 
     tableHelp.debugAll();
     Vector<Container<Table>> helpContainers = new Vector<Container<Table>>();
-    for (int i = 0; i < 5; ++i) {
+    for (int i = 0; i < nScreens; ++i) {
       Container<Table> c = new Container<Table>();
       c.width(Param.DISPLAY_X * Param.TILES_INTRO_ZOOM).height(Param.DISPLAY_Y * Param.TILES_INTRO_ZOOM);
       tableHelp.add(c);
@@ -122,17 +123,16 @@ public class UIIntro {
 
     Table h0 = helpContainers.get(0).getActor();
     LabelDF vev = new LabelDF("VEV", ui.skin, "title", ui.dfShader_large);
-    vev.setFontScale(6.5f);
-    h0.add(vev).padLeft(16);
+    vev.setFontScale(6.4f);
+    h0.add(vev).padLeft(16).left();
     h0.row();
     //
-    addHelpLabel(h0, "A game by Tim Martin");
-    addHelpLabel(h0, "Music by Chris Zabriskie (CC v4)");
-    addHelpLabel(h0, "    Is That You Or Are You You? / Divider / CGI Snake");
-    addHelpLabel(h0, "Open Game Art by Buch");
+    addHelpLabel(h0, "A game by Tim Martin", 16);
+    addHelpLabel(h0, "Music by Chris Zabriskie (CC v4)", 16);
+    addHelpLabel(h0, "    Is That You Or Are You You? / Divider / CGI Snake", 16);
+    addHelpLabel(h0, "Open Game Art by Buch", 16);
 
     Table h1 = helpContainers.get(2).getActor();
-    //
     int h1pad = 128;
     addHelpLabel(h1,"CONTROLS",h1pad,32);
     addHelpLabel(h1,"- LEFT CLICK",h1pad);
@@ -149,6 +149,29 @@ public class UIIntro {
     addHelpLabel(h1,"- MOUSE SCROLL / Q-E",h1pad);
     addHelpLabel(h1,"     Zoom Map",h1pad);
 
+    Table h2 = helpContainers.get(3).getActor();
+    addHelpLabel(h2,"Get energy by harvesting ore and deconstructing particles.",16,16);
+    addHelpLabel(h2,"Spend energy on creating and upgrading buildings.",16);
+    addHelpLabel(h2,"Deconstruct particles in buildings.",16);
+    addHelpLabel(h2,"Deconstruct all particles to win the game.",16);
+    addHelpLabel(h2,"ORE PATCH",230,30);
+    addHelpLabel(h2,"(ONLY FOUND IN DESERTS)",180);
+    addHelpLabel(h2,"ORE REFINERY",16);
+    addHelpLabel(h2,"(YOU CAN ONLY BUILD ON GRASS)",16);
+    addHelpLabel(h2,"ORE TRUCK",160,20);
+    addHelpLabel(h2,"ORE TRUCK'S ROUTE",140,50);
+
+    Table h3 = helpContainers.get(4).getActor();
+    addHelpLabel(h3,"Setup standing orders to route particles from White Holes,",16,16);
+    addHelpLabel(h3,"and between deconstruction buildings.",16);
+    addHelpLabel(h3,"WHITE HOLE",295,30);
+    addHelpLabel(h3,"(ONLY FOUND IN DESERTS)",255);
+    addHelpLabel(h3,"(SPAWNS PARTICLES UNTIL EMPTY)",230);
+    addHelpLabel(h3,"DECONSTRUCTION",90);
+    addHelpLabel(h3,"BUILDING'S QUEUE",90);
+    addHelpLabel(h3,"DECONSTRUCTION",90,20);
+    addHelpLabel(h3,"BUILDING'S ACCEPTED",90);
+    addHelpLabel(h3,"XXX",120,30);
 
 
 
@@ -196,13 +219,25 @@ public class UIIntro {
               }
             }
           };
+          String timeStr;
+          String header = Lang.get("UI_GAME_LENGTH");
+          header += "\n" + Lang.get("UI_SHORT") + Lang.get("UI_N_PARTICLES#" + Param.PARTICLES_SMALL);
+          header += Lang.get("UI_BEST_TIME#"+ (Persistence.getInstance().bestTimes.get(0) == 0 ? "N/A" : Persistence.getInstance().bestTimes.get(0)) );
+          header += "\n" + Lang.get("UI_MED") + Lang.get("UI_N_PARTICLES#" + Param.PARTICLES_MED);
+          header += Lang.get("UI_BEST_TIME#"+ (Persistence.getInstance().bestTimes.get(1) == 0 ? "N/A" : Persistence.getInstance().bestTimes.get(1)) );
+          header += "\n" + Lang.get("UI_LONG") + Lang.get("UI_N_PARTICLES#" + Param.PARTICLES_LARGE);
+          header += Lang.get("UI_BEST_TIME#"+ (Persistence.getInstance().bestTimes.get(2) == 0 ? "N/A" : Persistence.getInstance().bestTimes.get(2)) );
+          header += "\n" + Lang.get("UI_XL") + Lang.get("UI_N_PARTICLES#" + Param.PARTICLES_XL);
+          header += Lang.get("UI_BEST_TIME#"+ (Persistence.getInstance().bestTimes.get(3) == 0 ? "N/A" : Persistence.getInstance().bestTimes.get(3)) );
           newGameDialog.pad(ui.PAD * 4);
+          newGameDialog.getContentTable().pad(ui.PAD * 4);
+          newGameDialog.getButtonTable().pad(ui.PAD * 4);
           newGameDialog.align(Align.center);
-          newGameDialog.text(ui.getLabel(Lang.get("UI_GAME_LENGTH"), ""));
-          newGameDialog.button(ui.getTextButton(Lang.get("UI_SHORT"), "UI_N_PARTICLES#" + Param.PARTICLES_SMALL), 0);
-          newGameDialog.button(ui.getTextButton(Lang.get("UI_MED"), "UI_N_PARTICLES#" + Param.PARTICLES_MED), 1);
-          newGameDialog.button(ui.getTextButton(Lang.get("UI_LONG"), "UI_N_PARTICLES#" + Param.PARTICLES_LARGE), 2);
-          newGameDialog.button(ui.getTextButton(Lang.get("UI_XL"), "UI_N_PARTICLES#" + Param.PARTICLES_XL), 3);
+          newGameDialog.text(ui.getLabel(header, ""));
+          newGameDialog.button(ui.getTextButton(Lang.get("UI_SHORT"), ""), 0);
+          newGameDialog.button(ui.getTextButton(Lang.get("UI_MED"), ""), 1);
+          newGameDialog.button(ui.getTextButton(Lang.get("UI_LONG"), ""), 2);
+          newGameDialog.button(ui.getTextButton(Lang.get("UI_XL"), ""), 3);
           newGameDialog.getButtonTable().row();
           Button c = ui.getTextButton(Lang.get("UI_CANCEL"), "");
           newGameDialog.button(c, -1);
@@ -211,10 +246,10 @@ public class UIIntro {
           newGameDialog.show(IntroState.getInstance().getUIStage());
         }
       });
-      titleWindow.add(newGame).pad(ui.SIZE_S).colspan(2).fillX();
+      titleWindow.add(newGame).pad(ui.SIZE_S/2).colspan(2).fillX();
 
       titleWindow.row();
-      ui.separator(titleWindow, 2, Param.UI_WIDTH_INTRO);
+      ui.separator(titleWindow, 1);
       Button loadGame = ui.getTextButton(Lang.get("UI_LOAD"), "loadGame");
       loadGame.addListener(new ChangeListener() {
         @Override
@@ -225,10 +260,10 @@ public class UIIntro {
       if (Persistence.getInstance().save == null) {
         loadGame.setDisabled(true);
       }
-      titleWindow.add(loadGame).pad(ui.SIZE_S).colspan(2).fillX();
+      titleWindow.add(loadGame).pad(ui.SIZE_S/2).colspan(1).fillX();
 
       titleWindow.row();
-      ui.separator(titleWindow, 2, Param.UI_WIDTH_INTRO);
+      ui.separator(titleWindow, 1);
       Button settingsButton = ui.getTextButton(Lang.get("UI_SETTINGS"), "settings");
       settingsButton.addListener(new ChangeListener() {
         @Override
@@ -236,10 +271,10 @@ public class UIIntro {
           resetTitle("settings");
         }
       });
-      titleWindow.add(settingsButton).pad(ui.SIZE_S).colspan(2).fillX();
+      titleWindow.add(settingsButton).pad(ui.SIZE_S/2).colspan(1).fillX();
 
       titleWindow.row();
-      ui.separator(titleWindow, 2, Param.UI_WIDTH_INTRO);
+      ui.separator(titleWindow, 1);
       Button howToPlayButton = ui.getTextButton(Lang.get("UI_HOW"), "");
       howToPlayButton.addListener(new ChangeListener() {
         @Override
@@ -247,10 +282,21 @@ public class UIIntro {
           resetTitle("help");
         }
       });
-      titleWindow.add(howToPlayButton).pad(ui.SIZE_S).colspan(2).fillX();
+      titleWindow.add(howToPlayButton).pad(ui.SIZE_S/2).colspan(1).fillX();
 
       titleWindow.row();
-      ui.separator(titleWindow, 2, Param.UI_WIDTH_INTRO);
+      ui.separator(titleWindow, 1);
+      Button credit = ui.getTextButton(Lang.get("UI_CREDITS"), "");
+      credit.addListener(new ChangeListener() {
+        @Override
+        public void changed(ChangeEvent event, Actor actor) {
+          resetTitle("credit");
+        }
+      });
+      titleWindow.add(credit).pad(ui.SIZE_S/2).colspan(1).fillX();
+
+      titleWindow.row();
+      ui.separator(titleWindow, 1);
       Button exitGame = ui.getTextButton(Lang.get("UI_EXIT"), "");
       exitGame.addListener(new ChangeListener() {
         @Override
@@ -258,18 +304,21 @@ public class UIIntro {
           Gdx.app.exit();
         }
       });
-      titleWindow.add(exitGame).pad(ui.SIZE_S).colspan(2).fillX();
+      titleWindow.add(exitGame).pad(ui.SIZE_S/2).colspan(1).fillX();
 
-    } else if (toShow.equals("help")) {
+    } else if (toShow.equals("help") || toShow.equals("credit")) {
 
       ui.uiMode = UIMode.kHELP;
-      helpLevel = 2;
+      final boolean helpMode = toShow.equals("help");
+      helpLevel = helpMode ? 2 : 5;
       Camera.getInstance().setHelpPos(helpLevel, false);
 
-      ui.addToWin(titleWindow, ui.getTextButton("<",""), ui.SIZE_L, ui.SIZE_L, 1);
-      ui.addToWin(titleWindow, ui.getTextButton(">",""), ui.SIZE_L, ui.SIZE_L, 1);
-      titleWindow.row();
-      ui.addToWin(titleWindow, ui.getTextButton(Lang.get("UI_BACK"),""), ui.SIZE_L * 2, ui.SIZE_L, 2);
+      if (helpMode) {
+        ui.addToWin(titleWindow, ui.getTextButton("<",""), ui.SIZE_L, ui.SIZE_L, 1);
+        ui.addToWin(titleWindow, ui.getTextButton(">",""), ui.SIZE_L, ui.SIZE_L, 1);
+        titleWindow.row();
+      }
+      ui.addToWin(titleWindow, ui.getTextButton(Lang.get("UI_BACK"),""), (ui.SIZE_L + ui.PAD ) * 2, ui.SIZE_L, helpMode ? 2 : 1);
 
 
     } else if (toShow.equals("settings")) {

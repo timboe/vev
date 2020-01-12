@@ -162,7 +162,7 @@ public class Building extends Entity {
     for (Cardinal D : Cardinal.n8) t.n8.get(D).setBuilding(this);
     updatePathingGrid();
     if (type != BuildingType.kMINE) {
-      this.myQueue = new OrderlyQueue(t.coordinates.x - 1, t.coordinates.y - 2, null, this);
+      this.myQueue = new OrderlyQueue(t.coordinates.x - 1, t.coordinates.y - 2, null, this, isIntro);
       this.built = myQueue.getQueue().size();
     } else {
       this.built = 1;
@@ -177,7 +177,7 @@ public class Building extends Entity {
   public void deconstruct() {
     Sounds.getInstance().demolish();
     finishProcessingParticle();
-    Tile t = World.getInstance().getTile( coordinates.x + 1, coordinates.y + 1 ); // Assuming 3x3
+    Tile t = World.getInstance().getTile( coordinates.x + 1, coordinates.y + 1, isIntro); // Assuming 3x3
     t.removeBuilding();
     for (Cardinal D : Cardinal.n8) {
       t.n8.get(D).removeBuilding();
@@ -219,7 +219,8 @@ public class Building extends Entity {
     // kBLank pathing is used for the truck
     Tile tibTile = World.getInstance().getTile(
         patch.coordinates.x + (-Param.WARP_SIZE/2) + Util.R.nextInt( Param.WARP_SIZE ),
-        patch.coordinates.y + (-Param.WARP_SIZE/2) + Util.R.nextInt( Param.WARP_SIZE ));
+        patch.coordinates.y + (-Param.WARP_SIZE/2) + Util.R.nextInt( Param.WARP_SIZE ),
+            isIntro);
     Tile tibGoal = Sprite.findPathingLocation(tibTile, true, false, false, false);
     updateDemoPathingList(Particle.kBlank, tibGoal);
     savePathingList();
@@ -245,7 +246,7 @@ public class Building extends Entity {
   private float getDisassembleTime(Particle p) {
     return p.getDisassembleTime()
         * getUpgradeFactor()
-        * type.getDissassembleBonus(p);
+        * type.getDisassembleBonus(p);
   }
 
   public float getDisassembleTime(int mode) {
@@ -296,7 +297,7 @@ public class Building extends Entity {
 
   public void updatePathingStartPoint() {
 //    Gdx.app.log("updatePathingStartPoint", "CALLED myQueue:" + myQueue)
-    Tile queueStart = myQueue != null ? tileFromCoordinate( myQueue.getQueuePathingTarget() ) : getCentreTile();;
+    Tile queueStart = myQueue != null ? tileFromCoordinate( myQueue.getQueuePathingTarget() ) : getCentreTile();
     // TODO graphically, appears to be starting from within the queue?
     Tile pathingStartPointTile = Sprite.findPathingLocation(queueStart, true, false, false, false); //reproducible=True, requireParking=False
     if (pathingStartPointTile == null) {
@@ -313,7 +314,7 @@ public class Building extends Entity {
     }
     for (Particle p : Particle.values()) {
       if (getBuildingPathingList(p) != null) {
-        Gdx.app.log("DBG","From " + p.getString() + " " + getPathingStartPoint(p) + " " + getBuildingDestination(p).coordinates + " " + getBuildingDestination(p).coordinates.getNeighbours());
+//        Gdx.app.log("DBG","From " + p.getString() + " " + getPathingStartPoint(p) + " " + getBuildingDestination(p).coordinates + " " + getBuildingDestination(p).coordinates.getNeighbours());
         buildingPathingLists.put(p, PathFinding.doAStar(getPathingStartPoint(p), getBuildingDestination(p).coordinates, null, null, GameState.getInstance().pathingCache) );
       }
     }
@@ -323,7 +324,7 @@ public class Building extends Entity {
 //    Gdx.app.log("getPathingStartPoint BASE","Returning "+pathingStartPoint);
     // Note: p is only used in Warp's override of this function.
     // Note: We fetch the World version as this has the getNeighbours property set.
-    return World.getInstance().getTile(pathingStartPoint).coordinates;
+    return World.getInstance().getTile(pathingStartPoint, isIntro).coordinates;
   }
 
   public void updateDemoPathingList(Particle p, Tile t) {
@@ -363,7 +364,7 @@ public class Building extends Entity {
   }
 
   public Pair<Tile, Cardinal> getFreeLocationInQueue(Sprite s) {
-    Gdx.app.log("TIMM","Sprite "+s+" is accepted " + type.accepts(s));
+//    Gdx.app.log("getFreeLocationInQueue","Sprite "+s+" is accepted " + type.accepts(s));
     // NOTE: Now expect canJoinQueue to be called independently of this, first
     return myQueue.getFreeLocationInQueue();
   }
@@ -374,11 +375,11 @@ public class Building extends Entity {
   }
 
   private Tile tileFromCoordinate(IVector2 v) {
-    return World.getInstance().getTile(v);
+    return World.getInstance().getTile(v, isIntro);
   }
 
   public Tile getCentreTile() {
-    return World.getInstance().getTile(centre);
+    return World.getInstance().getTile(centre, isIntro);
   }
 
   // Moves on any sprites under the building
@@ -429,7 +430,7 @@ public class Building extends Entity {
       for (int i = 0; i < BuildingType.N_MODES; ++i) {
         Entity p = new Entity(Param.SPRITE_SCALE*(coordinates.x), Param.SPRITE_SCALE*(coordinates.y + 1));
         p.moveBy(73, -5 + (20 * i)); // Fine tune-position of
-        Particle input = type.getInput(i);
+        Particle input = type.getInput(BuildingType.N_MODES - i - 1);
         assert input != null;
         assert input.getColourFromParticle() != null;
         p.setTexture("ball_" + input.getColourFromParticle().getString(), 1, false);

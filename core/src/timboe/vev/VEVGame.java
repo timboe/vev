@@ -51,6 +51,7 @@ public class VEVGame extends Game {
     UIIntro.create();
     UI.create();
 
+    IntroState.getInstance().setGame(this);
     GameState.getInstance().setGame(this);
     GameState.getInstance().setToTitleScreen();
     Sounds.getInstance().doMusic(true);

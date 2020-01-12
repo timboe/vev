@@ -122,7 +122,7 @@ public class Sprite extends Entity {
   }
 
   public Tile getTile() {
-    return isIntro ? World.getInstance().getIntroTile(myTile) : World.getInstance().getTile(myTile);
+    return World.getInstance().getTile(myTile, isIntro);
   }
 
   protected void actMovement(float delta) {
@@ -154,11 +154,7 @@ public class Sprite extends Entity {
       int newY = (int) Util.clamp(myTile.y - (Param.PARTICLE_WANDER_R/2) + Util.R.nextInt(Param.PARTICLE_WANDER_R), 1, Param.TILES_Y - 2);
       Tile idleWander = null;
       if (Util.inBounds(newX, newY, isIntro)) {
-        if (isIntro) {
-          idleWander = GameState.getInstance().mapPathingDestination(World.getInstance().getIntroTile(newX, newY));
-        } else {
-          idleWander = GameState.getInstance().mapPathingDestination(World.getInstance().getTile(newX, newY)); // Routes to building entrances if a building is hit
-        }
+        idleWander = GameState.getInstance().mapPathingDestination(World.getInstance().getTile(newX, newY, isIntro));
       }
       if (idleWander != null) {
 //        Gdx.app.log("act", "Trying idle wander to " + idleWander + " (isIntro = " + isIntro + ")");
@@ -179,7 +175,7 @@ public class Sprite extends Entity {
 
   // Check a (nearby) space for its connectedness, suitability for particle and if it has parking space
   private static Tile tryWanderDest(int x, int y, int level, boolean requireSameHeight, boolean requireParking, boolean isIntroSprite) {
-    Tile tempTilePtr = (isIntroSprite ? World.getInstance().getIntroTile(x, y) : World.getInstance().getTile(x, y));
+    Tile tempTilePtr = World.getInstance().getTile(x, y, isIntroSprite);
     if (tempTilePtr.mySprite != 0) return null; // Building or queue or vegetation
     if (tempTilePtr.getPathFindNeighbours() == null) {
       Gdx.app.error("tryWanderDest","Tile "+tempTilePtr.coordinates.x+","+tempTilePtr.coordinates.y+" doesn't have p.f. N. Investigate this!");

@@ -43,20 +43,25 @@ public class Persistence {
   public JSONObject save = null;
 
   private Persistence() {
+    reset();
+    tryLoadSetting();
+  }
+
+  private void reset() {
     musicLevel = 1f;
     sfxLevel = 1f;
-    particleHues.put(kH, 7);
-    particleHues.put(kW, 7);
-    particleHues.put(kZ, 7);
-    particleHues.put(kE, 7);
-    particleHues.put(kM, 7);
-    particleHues.put(kQ, 7);
+    particleHues.put(kH, 1080);
+    particleHues.put(kW, 791);
+    particleHues.put(kZ, 385);
+    particleHues.put(kE, 480);
+    particleHues.put(kM, 958);
+    particleHues.put(kQ, 277);
     particleHues.put(kBlank, 7);
+    bestTimes.clear();
     bestTimes.add(0);
     bestTimes.add(0);
     bestTimes.add(0);
     bestTimes.add(0);
-    tryLoadSetting();
   }
 
   public void tryLoadGameSave() {
@@ -98,8 +103,14 @@ public class Persistence {
         for (Particle p : Particle.values()) {
           particleHues.put(p, hue.getInt(p.name()));
         }
+        bestTimes.clear();
+        bestTimes.add(json.getInt("bestTime0"));
+        bestTimes.add(json.getInt("bestTime1"));
+        bestTimes.add(json.getInt("bestTime2"));
+        bestTimes.add(json.getInt("bestTime3"));
       } catch (JSONException e) {
         e.printStackTrace();
+        reset();
       }
     }
   }
@@ -118,6 +129,10 @@ public class Persistence {
         hue.put(p.name(), particleHues.get(p));
       }
       jsonSettings.put("hue", hue);
+      jsonSettings.put("bestTime0", bestTimes.get(0));
+      jsonSettings.put("bestTime1", bestTimes.get(1));
+      jsonSettings.put("bestTime2", bestTimes.get(2));
+      jsonSettings.put("bestTime3", bestTimes.get(3));
     } catch (JSONException e) {
       e.printStackTrace();
     }

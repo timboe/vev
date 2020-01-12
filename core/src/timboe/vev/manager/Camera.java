@@ -1,6 +1,7 @@
 package timboe.vev.manager;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.Rectangle;
@@ -145,6 +146,28 @@ public class Camera {
     uiViewport = new FitViewport(Param.DISPLAY_X, Param.DISPLAY_Y, uiCamera);
   }
 
+  void pollInputs() {
+    if (Gdx.input.isKeyPressed(Input.Keys.W)) {
+      modVelocity(0, +2);
+    }
+    if (Gdx.input.isKeyPressed(Input.Keys.A)) {
+      modVelocity(-2, 0);
+    }
+    if (Gdx.input.isKeyPressed(Input.Keys.S)) {
+      modVelocity(0, -2);
+    }
+    if (Gdx.input.isKeyPressed(Input.Keys.D)) {
+      modVelocity(+2, 0);
+    }
+
+    if (Gdx.input.isKeyPressed(Input.Keys.Q)) {
+      modZoom(0.02f);
+    }
+    if (Gdx.input.isKeyPressed(Input.Keys.E)) {
+      modZoom(-0.02f);
+    }
+  }
+
   public void translate(float x, float y) {
     desiredPos.add(x * currentZoom * Param.TRANSLATE_MOD, y * currentZoom * Param.TRANSLATE_MOD);
   }
@@ -175,6 +198,8 @@ public class Camera {
 
 
   public void update(float delta) {
+    pollInputs();
+
     float frames = delta / Param.FRAME_TIME;
     final float scale = (float)Math.pow(0.9f, frames);
 

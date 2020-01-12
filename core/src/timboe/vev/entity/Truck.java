@@ -29,10 +29,10 @@ public class Truck extends Sprite {
 
   // Persistent
   private TruckState truckState;
-  private int holding = 0;
+  public int holding = 0;
   public int level = 0;
   public int myBuilding;
-  private int extraFrames;
+  public int extraFrames;
 
   public JSONObject serialise() throws JSONException {
     JSONObject json = super.serialise();
@@ -73,7 +73,7 @@ public class Truck extends Sprite {
     super(t);
     setTexture("pyramid", Param.N_TRUCK_SPRITES, false);
     moveBy(0, Param.TILE_S/2); // Floats
-    this.myBuilding = myBuilding.id;
+    this.myBuilding = myBuilding == null ? 0 : myBuilding.id;
     this.frame = 0;
     this.extraFrames = 0;
     this.truckState = TruckState.kOFFLOAD;
@@ -134,7 +134,7 @@ public class Truck extends Sprite {
         this.holding -= toRemove;
         if (Util.R.nextFloat() > 0.8f) {
           IVector2 v = myB.coordinates;
-          GameState.getInstance().upgradeDustEffect( World.getInstance().getTile( v.x + 1, v.y + 2) );
+          GameState.getInstance().upgradeDustEffect( World.getInstance().getTile( v.x + 1, v.y + 2, isIntro) );
         }
         this.extraFrames = Math.round((this.holding / getCapacity()) * (Param.N_TRUCK_SPRITES - 1));
         GameState.getInstance().playerEnergy += toRemove;
@@ -159,7 +159,7 @@ public class Truck extends Sprite {
         }
         if (holding >= getCapacity() || myPatch.remaining() == 0) {
           holding = (int) Math.floor(capacity);
-          Tile t = World.getInstance().getTile( myB.getPathingStartPoint(Particle.kBlank) );
+          Tile t = World.getInstance().getTile( myB.getPathingStartPoint(Particle.kBlank), isIntro);
           pathTo(t, null, null);
           truckState = TruckState.kRETURN_FROM_PATCH;
         }
@@ -169,7 +169,7 @@ public class Truck extends Sprite {
         break;
       case kDORMANT:
         // If we have made it this far, we have a new home
-        Tile t = World.getInstance().getTile( myB.getPathingStartPoint(Particle.kBlank) );
+        Tile t = World.getInstance().getTile( myB.getPathingStartPoint(Particle.kBlank), isIntro);
         pathTo(t, null, null);
         truckState = TruckState.kRETURN_FROM_PATCH;
       default:

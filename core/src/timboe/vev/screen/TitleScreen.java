@@ -2,13 +2,17 @@ package timboe.vev.screen;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.input.GestureDetector;
 
 import timboe.vev.Param;
 import timboe.vev.Util;
+import timboe.vev.entity.Building;
+import timboe.vev.entity.Entity;
 import timboe.vev.entity.Sprite;
 import timboe.vev.entity.Tile;
+import timboe.vev.entity.Warp;
 import timboe.vev.enums.Particle;
 import timboe.vev.input.Gesture;
 import timboe.vev.manager.Camera;
@@ -29,18 +33,12 @@ public class TitleScreen implements Screen {
   public float fadeIn = 0;
   public float[] fadeTimer = new float[3];
 
-  // Temp
-  private final Gesture gesture = new Gesture();
-  private final GestureDetector gestureDetector = new GestureDetector(gesture);
-
-
   public TitleScreen() {
   }
 
   @Override
   public void show() {
     Gdx.input.setInputProcessor( state.getUIStage() );
-//    Gdx.input.setInputProcessor( gestureDetector );
     camera.setHelpPos(0, true);
     GameState.getInstance().doRightClick();
     state.addParticles();
@@ -63,9 +61,34 @@ public class TitleScreen implements Screen {
 //    state.getIntroTileStage().getRoot().setCullingArea( camera.getCullBoxTile() );
 
     state.getIntroTileStage().draw();
-    state.getIntroSpriteStage().draw();
     state.getIntroFoliageStage().draw();
+    state.getIntroBuildingStage().draw();
+    state.getIntroSpriteStage().draw();
+    state.getIntroWarpStage().draw(); // Different blending
     state.getIntroHelpStage().draw();
+
+    ////////////////////////////////////////////////
+    // Building select and pathing
+
+    sr.setProjectionMatrix(camera.getTileCamera().combined);
+    sr.begin(ShapeRenderer.ShapeType.Filled);
+    for (Entity e: state.demoBuildings) {
+      e.drawPath(sr);
+    }
+    sr.end();
+
+    ////////////////////////////////////////////////
+    // FX
+
+    Batch batch = state.getIntroTileStage().getBatch();
+    batch.begin();
+    state.demoWarp.warpCloud.draw(batch, delta);
+    //if (!state.demoWarp.zap.isComplete()) state.demoWarp.zap.draw(batch, delta);     // We currently don't zap
+    batch.end();
+
+    ////////////////////////////////////////////////
+    // UI
+
     state.getUIStage().draw();
 
     if (fadeTimer[0] > 0) {

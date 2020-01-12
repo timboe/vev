@@ -146,7 +146,7 @@ public class UI {
     skin.addRegions(Textures.getInstance().getUIAtlas());
   }
 
-  private void separator(Table w, int colspan) {
+  public void separator(Table w, int colspan) {
     w.add(new Image( Textures.getInstance().getTexture("separator", false) )).fillX().height(4).pad(6,2,6,2).colspan(colspan);
     w.row();
   }
@@ -490,7 +490,7 @@ public class UI {
         qSpiral.addListener(queueButton);
         bw.row();
         ///////////////////////
-        Slider slider = new Slider(1, 99, 1, false, skin, "default-horizontal");
+        Slider slider = new Slider(1, 101, 1, false, skin, "default-horizontal");
         slider.addListener(queueLengthSlider);
         buildingWindowQSlider.put(bt, slider);
         addToWin(bw, getImage("queue_g_E_N",""), SIZE_S, SIZE_S, 1);
@@ -813,13 +813,6 @@ public class UI {
     table.add(mainWindow);
     if (GameState.getInstance().debug > 0) table.debugAll();
     uiMode = UIMode.kNONE;
-    GameState.getInstance().doingPlacement = false;
-    if (GameState.getInstance().selectedBuilding != 0) {
-      GameState.getInstance().getSelectedBuilding().cancelUpdatePathingList();
-    }
-    GameState.getInstance().selectedBuilding = 0;
-    GameState.getInstance().selectedBuildingStandingOrderParticle = null;
-    GameState.getInstance().buildingBeingPlaced = null;
   }
 
 }
