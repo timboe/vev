@@ -220,7 +220,7 @@ public class OrderlyQueue {
     Cardinal D = Cardinal.kE;
     while (step++ < GameState.getInstance().queueSize) {
       if (!t.buildable()) return;
-      t.setHighlightColour(Param.HIGHLIGHT_YELLOW);
+      t.setHighlightColour(Param.HIGHLIGHT_YELLOW, (move == toAdd ? D.next90(true) : D));
       t = t.n8.get(D);
       if (--move == 0) {
         if (inc) ++toAdd;
@@ -233,16 +233,19 @@ public class OrderlyQueue {
 
   private static void hintSimpleQueue(final Tile start) {
     int step = 0, x = start.coordinates.x, y = start.coordinates.y, move = 3;
+    Cardinal D = Cardinal.kE;
     World w = World.getInstance();
     while (step++ < GameState.getInstance().queueSize) {
       if (!Util.inBounds(x,y,false) || !w.getTile(x,y,false).buildable()) return;
-      w.getTile(x,y,false).setHighlightColour(Param.HIGHLIGHT_YELLOW);
+      w.getTile(x,y,false).setHighlightColour(Param.HIGHLIGHT_YELLOW, D);
       if (Math.abs(move) > 1) {
         x += 1 * Math.signum(move);
         move -= 1 * Math.signum(move);
+        D = (move > 0 ? Cardinal.kE : Cardinal.kW);
       } else {
         --y;
         move *= -3;
+        D = Cardinal.kS;
       }
     }
   }

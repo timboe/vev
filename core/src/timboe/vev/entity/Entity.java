@@ -40,7 +40,6 @@ public class Entity extends Actor implements Serializable {
   int frame;
   float time;
   public boolean selected;
-  public boolean doTint = false;
   public final IVector2 coordinates; // (initial) X-Y tile grid coordinates
   protected List<IVector2> pathingList; // Used by building and sprite
   Particle pathingParticle; // Used only by building
@@ -50,7 +49,10 @@ public class Entity extends Actor implements Serializable {
   private int texFrames;
   private boolean texFlipped;
 
+  // Transient
   transient final TextureRegion[] textureRegion = new TextureRegion[Param.MAX_FRAMES];
+  public boolean doTint = false;
+  protected Cardinal tintArrow = Cardinal.kNONE;
 
   public JSONObject serialise(boolean isTile) throws JSONException {
     JSONObject json = new JSONObject();
@@ -65,7 +67,6 @@ public class Entity extends Actor implements Serializable {
     json.put("frame", this.frame);
     json.put("time", this.time);
     json.put("selected", this.selected);
-    json.put("doTint", this.doTint);
     json.put("coordinates", isTile ? this.coordinates.serialiseTile() : this.coordinates.serialise());
     if (this.pathingList != null) {
       JSONObject pathing = new JSONObject();
@@ -160,7 +161,6 @@ public class Entity extends Actor implements Serializable {
     }
     //
     this.coordinates = new IVector2( json.getJSONObject("coordinates") );
-    this.doTint = json.getBoolean("doTint");
     this.selected = json.getBoolean("selected");
     this.time = (float) json.getDouble("time");
     this.frame = json.getInt("frame");
@@ -289,16 +289,42 @@ public class Entity extends Actor implements Serializable {
   }
 
   public void drawSelected(ShapeRenderer sr) {
-    if (!selected) return;
-    sr.setColor(1, 0, 0, 1);
-    float off = Param.FRAME * 0.25f / (float)Math.PI;
-    final float xC = getX() + getWidth()/2f, yC = getY() + getHeight()/2f;
-    for (float a = (float)-Math.PI; a < Math.PI; a += 2f*Math.PI/3f) {
-      sr.rectLine(xC + getWidth()/2f * ((float) Math.cos(a + off)),
-          yC + getHeight()/2f * ((float) Math.sin(a + off)),
-          xC + getWidth()/2f * ((float) Math.cos(a + off + Math.PI / 6f)),
-          yC + getHeight()/2f * ((float) Math.sin(a + off + Math.PI / 6f)),
-          2);
+    if (tintArrow != Cardinal.kNONE) {
+      sr.setColor(getColor());
+      switch (tintArrow) {
+        case kS:
+          sr.rectLine(getX() + 5, getY() + 5, getX() + getWidth()/2, getY() + getHeight() - 5, 2);
+          sr.rectLine(getX() + getWidth() - 5, getY() + 5, getX() + getWidth()/2, getY() + getHeight() - 5, 2);
+          break;
+        case kN:
+          sr.rectLine(getX() + 5, getY() + getHeight() - 5, getX() + getWidth()/2, getY() + 5, 2);
+          sr.rectLine(getX() + getWidth() - 5, getY() + getHeight() - 5, getX() + getWidth()/2, getY() + 5, 2);
+          break;
+        case kW:
+          sr.rectLine(getX() + 5, getY() + getHeight() - 5, getX() + getWidth() - 5, getY() + getHeight()/2, 2);
+          sr.rectLine(getX() + 5, getY() + 5, getX() + getWidth() - 5, getY() + getHeight()/2, 2);
+          break;
+        case kE:
+          sr.rectLine(getX() + getWidth() - 5, getY() + getHeight() - 5, getX() + 5, getY() + getHeight()/2, 2);
+          sr.rectLine(getX() + getWidth() - 5, getY() + 5, getX() + 5, getY() + getHeight()/2, 2);
+      }
+//      sr.circle(getX(), getY(), 5);
+      tintArrow = Cardinal.kNONE;
+      return;
+    }
+
+    if (selected) {
+      sr.setColor(1, 0, 0, 1);
+      float off = Param.FRAME * 0.25f / (float)Math.PI;
+      final float xC = getX() + getWidth()/2f, yC = getY() + getHeight()/2f;
+      for (float a = (float)-Math.PI; a < Math.PI; a += 2f*Math.PI/3f) {
+        sr.rectLine(xC + getWidth() / 2f * ((float) Math.cos(a + off)),
+                yC + getHeight() / 2f * ((float) Math.sin(a + off)),
+                xC + getWidth() / 2f * ((float) Math.cos(a + off + Math.PI / 6f)),
+                yC + getHeight() / 2f * ((float) Math.sin(a + off + Math.PI / 6f)),
+                2);
+      }
+      return;
     }
   }
 

@@ -127,7 +127,6 @@ public class GameScreen implements Screen {
     for (Warp w : state.getWarpMap().values()) {
       w.warpCloud.draw(batch, fxDelta);
       if (!w.zap.isComplete()) w.zap.draw(batch, fxDelta);
-
     }
     for (int i = state.dustEffects.size - 1; i >= 0; i--) {
       ParticleEffectPool.PooledEffect e = state.dustEffects.get(i);
@@ -151,6 +150,13 @@ public class GameScreen implements Screen {
     for (Warp w : state.getWarpMap().values()) {
       w.drawSelected(sr);
       w.drawPath(sr);
+    }
+    if (state.doingPlacement) {
+      for (Tile x[] : world.getTile(false)) {
+        for (Tile xy : x) {
+          xy.drawSelected(sr);
+        }
+      }
     }
     sr.end();
 

@@ -25,8 +25,8 @@ public class Lang {
     EN_GB.put("newGame", "Start a new game.\nWill overwrite any existing save.");
     EN_GB.put("loadGame", "Load from the single save slot.");
     EN_GB.put("settings", "Change sound volume\nand particle colours.");
-    EN_GB.put("standingOrder","Setup Standing Order.\nSpawned # will be sent to this location.");
-    EN_GB.put("standingBlank","Setup Overflow Standing Order.\nParticles which COULD be accepted,\nbut are turned away due to a full queue\nwill be sent here. NO cyclic loops.");
+    EN_GB.put("standingOrder","Setup Standing Move Order.\nSpawned # will be sent to this location.");
+    EN_GB.put("standingBlank","Setup Overflow Standing Move Order.\nParticles which COULD be accepted,\nbut are turned away due to a full queue\nwill be sent here. NO cyclic loops.");
     EN_GB.put("select","Toggle selection mode.");
     EN_GB.put("pause","Show the pause menu.");
     EN_GB.put("particleSelect","Refine selection to just #");
@@ -43,10 +43,11 @@ public class Lang {
     EN_GB.put("buildBuilding_C","\nBase Cost: ");
     EN_GB.put("wrecking","Demolish building.\nRecoup #% of building's cost.");
     EN_GB.put("saveAndQuit","Save the game and exit VEV.");
+    EN_GB.put("quitToTitle","Exit to the title screen.");
     EN_GB.put("resume","Un-pause and resume.");
-    EN_GB.put("showPaths","Toggles the rendering of all\nbuilding's Standing Orders.");
     EN_GB.put("fullscreen","Toggles fullscreen mode.");
     EN_GB.put("volume","Changes the volume.");
+    EN_GB.put("settingsTime","Current game time.");
 
     EN_GB.put("UI_NEW", "NEW GAME");
     EN_GB.put("UI_LOAD", "CONTINUE");
@@ -70,6 +71,12 @@ public class Lang {
     EN_GB.put("UI_SAVE_AND_QUIT", "SAVE &\nEXIT");
     EN_GB.put("UI_RESUME", "RESUME");
     EN_GB.put("UI_FULLSCREEN", "FULLSCREEN");
+    EN_GB.put("UI_GENERATING", "GENERATING");
+    EN_GB.put("UI_TIME", "Time");
+    EN_GB.put("UI_FINISHED", "FINISHED!");
+    EN_GB.put("UI_FINISHED_BEST", "NEW BEST TIME!");
+    EN_GB.put("UI_END_TIME", "TIME:#s");
+    EN_GB.put("UI_END_BEST_TIME", "BEST:#s");
 
 
   }

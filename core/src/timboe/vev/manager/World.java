@@ -166,7 +166,12 @@ public class World {
     return isIntro ? introTiles[v.x][v.y] : tiles[v.x][v.y];
   }
 
-  public Tile getTile(int x, int y, boolean isIntro) {
+  public Tile[][] getTile(boolean isIntro) {
+    return isIntro ? introTiles : tiles;
+  }
+
+
+    public Tile getTile(int x, int y, boolean isIntro) {
     // Removed bounds check for speed....
 //    if (x < 0 || y < 0 || x >= Param.TILES_X-1 || y >= Param.TILES_Y-1) return null;
     return isIntro ? introTiles[x][y] : tiles[x][y];

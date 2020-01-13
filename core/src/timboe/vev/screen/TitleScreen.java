@@ -28,7 +28,7 @@ public class TitleScreen implements Screen {
   private final Camera camera = Camera.getInstance();
   private final IntroState state = IntroState.getInstance();
   private final World world = World.getInstance();
-  private final UI ui = UI.getInstance();
+  private final UIIntro ui = UIIntro.getInstance();
   private final ShapeRenderer sr = new ShapeRenderer();
   public float fadeIn = 0;
   public float[] fadeTimer = new float[3];
@@ -56,7 +56,7 @@ public class TitleScreen implements Screen {
     world.act(delta);
     camera.update(delta);
     state.act(delta);
-    ui.act(delta);
+//    ui.act(delta);
 
 //    state.getIntroTileStage().getRoot().setCullingArea( camera.getCullBoxTile() );
 
@@ -65,7 +65,6 @@ public class TitleScreen implements Screen {
     state.getIntroBuildingStage().draw();
     state.getIntroSpriteStage().draw();
     state.getIntroWarpStage().draw(); // Different blending
-    state.getIntroHelpStage().draw();
 
     ////////////////////////////////////////////////
     // Building select and pathing
@@ -88,6 +87,10 @@ public class TitleScreen implements Screen {
 
     ////////////////////////////////////////////////
     // UI
+
+    state.getIntroHelpStage().draw();
+
+    UIIntro.getInstance().generating.setVisible( !World.getInstance().getGenerated() );
 
     state.getUIStage().draw();
 

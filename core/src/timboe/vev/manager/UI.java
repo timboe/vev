@@ -74,6 +74,7 @@ public class UI {
   private Table mainWindow;
   private Table settingsWindow;
   private Table selectWindow;
+  private Table finishedTable;
 
   private float displayPlayerEnergy = Param.PLAYER_STARTING_ENERGY;
   private float displayInWorldParticles = 0;
@@ -85,6 +86,10 @@ public class UI {
   private Set<LabelDF> displayPlayerEnergyLabelSet = new HashSet<LabelDF>();
   private Set<LabelDF> displayPlayerParticleLabelSet = new HashSet<LabelDF>();
   private LabelDF displayWarpParticlesLabel;
+  private LabelDF elapsedTime;
+  private LabelDF finishedTime;
+  private LabelDF finishedBest;
+  private LabelDF finishedTitle;
 
   private final YesNoButton yesNoButton = new YesNoButton();
   private final StandingOrderButton standingOrderButton = new StandingOrderButton();
@@ -433,7 +438,8 @@ public class UI {
     settings.addListener(new ChangeListener() {
       @Override
       public void changed(ChangeEvent event, Actor actor) {
-        UI.getInstance().showSettings();
+//        UI.getInstance().showSettings();
+        UI.getInstance().showFin();
       }
     });
     addToWin(mainWindow, settings, SIZE_L + SIZE_M, SIZE_L, 2);
@@ -490,7 +496,7 @@ public class UI {
         qSpiral.addListener(queueButton);
         bw.row();
         ///////////////////////
-        Slider slider = new Slider(1, 101, 1, false, skin, "default-horizontal");
+        Slider slider = new Slider(1, 91, 1, false, skin, "default-horizontal");
         slider.addListener(queueLengthSlider);
         buildingWindowQSlider.put(bt, slider);
         addToWin(bw, getImage("queue_g_E_N",""), SIZE_S, SIZE_S, 1);
@@ -597,6 +603,12 @@ public class UI {
     settingsWindow = getWindow();
     addPlayerEnergy(settingsWindow, 2);
     //
+    elapsedTime = getLabel("","settingsTime");
+    addToWin(settingsWindow, getImage("clock","UI_TIME"), SIZE_S, SIZE_S,1);
+    addToWin(settingsWindow, elapsedTime, SIZE_L, SIZE_S, 1);
+    settingsWindow.row();
+    separator(settingsWindow, 2);
+    //
     Button saveAndQuit = getTextButton(Lang.get("UI_SAVE_AND_QUIT"),"saveAndQuit");
     saveAndQuit.addListener(new ChangeListener() {
       @Override
@@ -617,7 +629,28 @@ public class UI {
     });
     addToWin(settingsWindow, resume, SIZE_L*3, SIZE_L, 2);
     settingsWindow.row();
-    //
+
+    // Finish window
+    Table finishedWindow = getWindow();
+    Button quit = getTextButton(Lang.get("UI_EXIT"),"quitToTitle");
+    saveAndQuit.addListener(new ChangeListener() {
+      @Override
+      public void changed(ChangeEvent event, Actor actor) {
+        GameState.getInstance().transitionToTitleScreen();
+      }
+    });
+    addToWin(finishedWindow, quit, SIZE_L*2, SIZE_L, 2);
+    finishedTable = new Table();
+    finishedTitle = new LabelDF("", skin, "title", dfShader_large);
+    finishedTitle.setFontScale(10f);
+    finishedTime = new LabelDF("", skin, "title", dfShader_large);
+    finishedTime.setFontScale(7f);
+    finishedBest = new LabelDF("", skin, "title", dfShader_large);
+    finishedBest.setFontScale(7f);
+    finishedTable.add(finishedTitle).align(Align.center).row();
+    finishedTable.add(finishedTime).align(Align.center).row();
+    finishedTable.add(finishedBest).align(Align.center).row();
+    finishedTable.add(finishedWindow).align(Align.center);
 
     for (LabelDF l : displayPlayerEnergyLabelSet) {
       l.setText(formatter.format(Math.round(displayPlayerEnergy)));
@@ -719,6 +752,24 @@ public class UI {
   public void showSettings() {
     table.clear();
     table.add(settingsWindow);
+    elapsedTime.setText(formatter.format(GameState.getInstance().gameTime)+"s");
+    uiMode = UIMode.kSETTINGS;
+  }
+
+  public void showFin() {
+    final int gameTime = Math.round(GameState.getInstance().gameTime);
+    int bestTime = Persistence.getInstance().bestTimes.get(GameState.getInstance().difficulty);
+    boolean best = false;
+    if (gameTime < bestTime || bestTime == 0) {
+      bestTime = gameTime;
+      best = true;
+      Persistence.getInstance().bestTimes.set(GameState.getInstance().difficulty, bestTime);
+    }
+    finishedTitle.setText(Lang.get(best ? "UI_FINISHED_BEST" : "UI_FINISHED"));
+    finishedTime.setText(Lang.get("UI_END_TIME#"+gameTime));
+    finishedBest.setText(Lang.get("UI_END_BEST_TIME#"+bestTime));
+    table.clear();
+    table.add(finishedTable).align(Align.center).expandX();
     uiMode = UIMode.kSETTINGS;
   }
 

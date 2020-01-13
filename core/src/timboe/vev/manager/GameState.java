@@ -43,6 +43,7 @@ import timboe.vev.pathfinding.PathingCache;
 import timboe.vev.screen.GameScreen;
 import timboe.vev.screen.TitleScreen;
 
+import static timboe.vev.enums.Cardinal.kNONE;
 import static timboe.vev.enums.Cardinal.kS;
 import static timboe.vev.enums.Cardinal.kSW;
 
@@ -328,7 +329,7 @@ public class GameState {
         }
       }
       if (cursorTile.coordinates.pathFindNeighbours.size() > 0) {
-        cursorTile.setHighlightColour(Param.HIGHLIGHT_YELLOW);
+        cursorTile.setHighlightColour(Param.HIGHLIGHT_YELLOW, kNONE);
       }
     }
 

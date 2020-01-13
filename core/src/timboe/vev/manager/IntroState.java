@@ -20,10 +20,13 @@ import timboe.vev.entity.Tile;
 import timboe.vev.entity.Truck;
 import timboe.vev.entity.Warp;
 import timboe.vev.enums.BuildingType;
+import timboe.vev.enums.Colour;
 import timboe.vev.enums.Particle;
 import timboe.vev.pathfinding.IVector2;
 import timboe.vev.pathfinding.OrderlyQueue;
 import timboe.vev.screen.TitleScreen;
+
+import static timboe.vev.enums.Particle.kW;
 
 public class IntroState {
 
@@ -127,11 +130,11 @@ public class IntroState {
     getIntroWarpStage().addActor(demoWarp);
     demoBuildings.add(demoWarp);
     demoWarp.buildingPathingLists = new EnumMap<Particle, List<IVector2>>(Particle.class);
-    demoMine.buildingPathingLists.put(Particle.kW, new ArrayList<IVector2>());
-    demoMine.buildingPathingLists.get(Particle.kW).add(new IVector2(41,23));
-    demoMine.buildingPathingLists.get(Particle.kW).add(new IVector2(40,22));
+    demoMine.buildingPathingLists.put(kW, new ArrayList<IVector2>());
+    demoMine.buildingPathingLists.get(kW).add(new IVector2(41,23));
+    demoMine.buildingPathingLists.get(kW).add(new IVector2(40,22));
     for (int x = 39; x > 20; --x) {
-      demoMine.buildingPathingLists.get(Particle.kW).add(new IVector2(x,21));
+      demoMine.buildingPathingLists.get(kW).add(new IVector2(x,21));
     }
     //
     final int b1_x = 19, b1_y = 24;
@@ -154,13 +157,15 @@ public class IntroState {
     OrderlyQueue q_1 = new OrderlyQueue(b1_x , b1_y - 1, null, null, true);
     demoBuilding1.buildingPathingLists = new EnumMap<Particle, List<IVector2>>(Particle.class);
     demoBuilding1.buildingPathingLists.put(Particle.kE, new ArrayList<IVector2>());
-    demoBuilding1.buildingPathingLists.get(Particle.kE).add(new IVector2(18,24));
-    demoBuilding1.buildingPathingLists.get(Particle.kE).add(new IVector2(18,25));
-    demoBuilding1.buildingPathingLists.get(Particle.kE).add(new IVector2(18,26));
+    demoBuilding1.buildingPathingLists.get(Particle.kE).add(new IVector2(21,21));
+    demoBuilding1.buildingPathingLists.get(Particle.kE).add(new IVector2(20,20));
+    demoBuilding1.buildingPathingLists.get(Particle.kE).add(new IVector2(19,20));
+    for (int y = 21; y <= 26; ++y) {
+      demoBuilding1.buildingPathingLists.get(Particle.kE).add(new IVector2(18,y));
+    }
     demoBuilding1.buildingPathingLists.get(Particle.kE).add(new IVector2(19,27));
     demoBuilding1.buildingPathingLists.get(Particle.kE).add(new IVector2(20,27));
     demoBuilding1.buildingPathingLists.get(Particle.kE).add(new IVector2(21,28));
-
     //
     final int b2_x = 19, b2_y = 31;
     final BuildingType b2_t = BuildingType.kHZE;
@@ -181,6 +186,15 @@ public class IntroState {
     }
     OrderlyQueue q_2 = new OrderlyQueue(b2_x , b2_y - 1, null, null, true);
     //
+    for (int i = 0; i < 4; ++i) {
+      Sprite demoSprite = new Sprite(World.getInstance().getTile(31+i, 22, true));
+      demoSprite.setTexture("ball_" + kW.getColourFromParticle().getString(), 6, false);
+      demoSprite.setParticle(kW);
+      demoSprite.moveBy(Param.TILE_S / 2, Param.TILE_S / 2);
+      demoSprite.idleTime = -9999f; // Never wander
+      getIntroSpriteStage().addActor(demoSprite);
+    }
+
   }
 
   public void dispose() {

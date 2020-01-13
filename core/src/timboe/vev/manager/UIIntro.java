@@ -18,6 +18,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.FocusListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Scaling;
+import com.google.gwt.user.client.ui.TabBar;
 
 import java.util.EnumMap;
 import java.util.HashSet;
@@ -48,6 +49,7 @@ public class UIIntro {
 
   public Table tableIntro = null;
   public Table tableHelp = null;
+  public Table generating = null;
 
   // Settings cache
   private float cacheMusic, cacheSfx;
@@ -97,9 +99,6 @@ public class UIIntro {
   protected void resetTitle(String toShow) {
     final UI ui = UI.getInstance();
 
-    tableIntro = new Table();
-    tableIntro.setFillParent(true);
-
     tableHelp = new Table();
     tableHelp.padLeft(Param.TILES_INTRO_X * Param.TILE_S);
     final int nScreens = 6;
@@ -117,9 +116,7 @@ public class UIIntro {
       helpContainers.add(c);
     }
 
-    if (Param.DEBUG_INITIAL > 0) {
-      tableIntro.debugAll();
-    }
+
 
     Table h0 = helpContainers.get(0).getActor();
     LabelDF vev = new LabelDF("VEV", ui.skin, "title", ui.dfShader_large);
@@ -135,19 +132,19 @@ public class UIIntro {
     Table h1 = helpContainers.get(2).getActor();
     int h1pad = 128;
     addHelpLabel(h1,"CONTROLS",h1pad,32);
-    addHelpLabel(h1,"- LEFT CLICK",h1pad);
-    addHelpLabel(h1,"     Select Particle / Building",h1pad);
-    addHelpLabel(h1,"     Confirm Particle Move Order",h1pad);
-    addHelpLabel(h1,"     Confirm Build New Building",h1pad);
-    addHelpLabel(h1,"     Confirm Building Move Destination",h1pad);
-    addHelpLabel(h1,"- LEFT CLICK AND DRAG",h1pad);
-    addHelpLabel(h1,"     Select Particles Within Box",h1pad);
-    addHelpLabel(h1,"- RIGHT CLICK",h1pad);
-    addHelpLabel(h1,"     Cancel Particle / Building Selection",h1pad);
-    addHelpLabel(h1,"- RIGHT CLICK AND DRAG / W-A-S-D",h1pad);
-    addHelpLabel(h1,"     Move Map",h1pad);
-    addHelpLabel(h1,"- MOUSE SCROLL / Q-E",h1pad);
-    addHelpLabel(h1,"     Zoom Map",h1pad);
+    addHelpLabel(h1,"    LEFT CLICK",h1pad);
+    addHelpLabel(h1,"        Select Particle / Building",h1pad);
+    addHelpLabel(h1,"        Confirm Particle Move Order",h1pad);
+    addHelpLabel(h1,"        Confirm Build New Building",h1pad);
+    addHelpLabel(h1,"        Confirm Building Move Destination",h1pad);
+    addHelpLabel(h1,"    LEFT CLICK AND DRAG",h1pad);
+    addHelpLabel(h1,"        Select Particles Within Box",h1pad);
+    addHelpLabel(h1,"    RIGHT CLICK",h1pad);
+    addHelpLabel(h1,"        Cancel Particle / Building Selection",h1pad);
+    addHelpLabel(h1,"    RIGHT CLICK AND DRAG / W-A-S-D",h1pad);
+    addHelpLabel(h1,"        Move Map",h1pad);
+    addHelpLabel(h1,"    MOUSE SCROLL / Q-E",h1pad);
+    addHelpLabel(h1,"        Zoom Map",h1pad);
 
     Table h2 = helpContainers.get(3).getActor();
     addHelpLabel(h2,"Get energy by harvesting ore and deconstructing particles.",16,16);
@@ -162,7 +159,7 @@ public class UIIntro {
     addHelpLabel(h2,"ORE TRUCK'S ROUTE",140,50);
 
     Table h3 = helpContainers.get(4).getActor();
-    addHelpLabel(h3,"Setup standing orders to route particles from White Holes,",16,16);
+    addHelpLabel(h3,"Setup standing move orders to route particles from White Holes,",16,16);
     addHelpLabel(h3,"and between deconstruction buildings.",16);
     addHelpLabel(h3,"WHITE HOLE",295,30);
     addHelpLabel(h3,"(ONLY FOUND IN DESERTS)",255);
@@ -171,17 +168,28 @@ public class UIIntro {
     addHelpLabel(h3,"BUILDING'S QUEUE",90);
     addHelpLabel(h3,"DECONSTRUCTION",90,20);
     addHelpLabel(h3,"BUILDING'S ACCEPTED",90);
-    addHelpLabel(h3,"XXX",120,30);
+    addHelpLabel(h3,Particle.kH.getString() + " PARTICLES",150,40);
+    addHelpLabel(h3,"WHITE HOLE'S STANDING MOVE ORDER FOR "+Particle.kH.getString()+" PARTICLES",90,15);
+
+    Table h4 = helpContainers.get(5).getActor();
+    addHelpLabel(h4,"CREDITS",h1pad,20);
+    addHelpLabel(h4,"    MUSIC AND SOUND EFFECTS", h1pad);
+    addHelpLabel(h4,"        cameronmusic: pulse1. Planman: Poof of Smoke", h1pad);
+    addHelpLabel(h4,"        FxKid2: Cute Walk Run 2. tix99: skiffy1-9", h1pad);
+    addHelpLabel(h4,"        waveplay_old: Short Click. Raclure: Affirmative", h1pad);
+    addHelpLabel(h4,"        MATTIX: Retro Explosion 5. Mark DiAngelo: Blip", h1pad);
+    addHelpLabel(h4,"        man: Swoosh 1. ", h1pad);
+    addHelpLabel(h4,"        Chris Zabriskie: Is That You Or Are You You?,", h1pad);
+    addHelpLabel(h4,"        Divider, CGI Snake", h1pad);
+    addHelpLabel(h4,"    FONTS AND GRAPHICS", h1pad);
+    addHelpLabel(h4,"        Steve Matteson: Open Sans. Peter Hull: VT323", h1pad);
+
 
 
 
     Stage helpStage = IntroState.getInstance().getIntroHelpStage();
     helpStage.clear();
     helpStage.addActor(tableHelp);
-
-    Stage uiStage = IntroState.getInstance().getUIStage();
-    uiStage.clear();
-    uiStage.addActor(tableIntro);
 
     Table titleWindow = ui.getWindow();
     if (toShow.equals("main")) {
@@ -402,13 +410,24 @@ public class UIIntro {
       Gdx.app.exit();
     }
 
-    tableIntro.row().fillY();
-    tableIntro.top();
-    tableIntro.right();
+    generating = ui.getWindow();
+    generating.add(ui.getLabel(Lang.get("UI_GENERATING"),"")).width(ui.SIZE_L*2).height(ui.SIZE_M);
+
+    tableIntro = new Table();
+    tableIntro.setFillParent(true);
+    if (Param.DEBUG_INITIAL > 0) {
+      tableIntro.debugAll();
+    }
+
     tableIntro.pad(Param.TILE_S*2);
+    tableIntro.top().left();
+    tableIntro.add(generating).align(Align.top);
+    tableIntro.add(new Table()).expandX();
     tableIntro.add(titleWindow);
 
-
+    Stage uiStage = IntroState.getInstance().getUIStage();
+    uiStage.clear();
+    uiStage.addActor(tableIntro);
 
     Gdx.app.log("resetTitle", "made intro UI");
   }

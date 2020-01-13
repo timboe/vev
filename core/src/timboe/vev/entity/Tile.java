@@ -192,9 +192,10 @@ public class Tile extends Entity {
     return tileColour == kGREEN && (type == TileType.kGROUND || type == TileType.kFOLIAGE);
   }
 
-  public void setHighlightColour(Color c) {
+  public void setHighlightColour(Color c, Cardinal direction) {
     setColor(c);
     doTint = true;
+    tintArrow = direction;
     Entity e = getMySprite();
     if (e != null) {
       e.setColor(c);
@@ -204,10 +205,10 @@ public class Tile extends Entity {
 
   public boolean setBuildableHighlight() {
     if (buildable()) {
-      setHighlightColour(Param.HIGHLIGHT_GREEN);
+      setHighlightColour(Param.HIGHLIGHT_GREEN, Cardinal.kNONE);
       return true;
     } else {
-      setHighlightColour(Param.HIGHLIGHT_RED);
+      setHighlightColour(Param.HIGHLIGHT_RED, Cardinal.kNONE);
       return false;
     }
   }
