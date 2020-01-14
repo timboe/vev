@@ -1,6 +1,7 @@
 package timboe.vev.manager;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.google.gwt.thirdparty.json.JSONException;
 import com.google.gwt.thirdparty.json.JSONObject;
@@ -27,6 +28,7 @@ import timboe.vev.entity.Zone;
 import timboe.vev.enums.Cardinal;
 import timboe.vev.enums.Colour;
 import timboe.vev.enums.Edge;
+import timboe.vev.enums.Particle;
 import timboe.vev.enums.TileType;
 import timboe.vev.pathfinding.IVector2;
 
@@ -56,6 +58,8 @@ public class World {
   private Tile[][] introTiles;
   private Zone[][] zones;
   public final Map<Integer, Sprite> introFoliage = new HashMap<Integer, Sprite>();
+  private float animTime;
+  private int animFrame;
 
   // Persistent
   private Tile[][] tiles;
@@ -188,6 +192,8 @@ public class World {
       introFoliage.clear();
     }
     stage = 0;
+    animFrame = 0;
+    animTime = 0;
     generated = false;
     GameState.getInstance().getWarpMap().clear();
     tiberiumPatches.clear();
@@ -1174,6 +1180,56 @@ public class World {
     }
     if (!ok) Gdx.app.error("applyTileGraphics", "Graphics errors reported");
     return ok;
+  }
+
+  public void paintFin(float delta) {
+    final float slowdown = 10f;
+    final float dim = 0.4f;
+    animTime += delta;
+    if (animTime > Param.ANIM_TIME * slowdown) {
+      animTime -=  Param.ANIM_TIME * slowdown;
+      ++animFrame;
+    }
+    final int X2 = Param.TILES_X/2, Y2 = Param.TILES_Y/2;
+    for (int x = 0; x <= X2; ++x) {
+      if (x > animFrame) break;
+      Color c;
+      switch ((x + animFrame) % 12) {
+        case 0: case 1: case 2:
+          c = Param.HIGHLIGHT_RED;
+          break;
+        case 3: case 4: case 5:
+        case 9: case 10: case 11:
+          c = Param.HIGHLIGHT_YELLOW;
+          break;
+        case 6: case 7: case 8:
+          c = Param.HIGHLIGHT_GREEN;
+          break;
+        default:
+          continue;
+      }
+      c.a = dim;
+      for (int y = 0; y <= Y2; ++y) {
+        final int xMod = x - y;
+        if (xMod < 0) break;
+        // BL
+        tiles[xMod][y].setHighlightColour(c, Cardinal.kNONE);
+        tiles[X2 - xMod][Y2 - y].setHighlightColour(c, Cardinal.kNONE);
+
+        // BR
+        tiles[Param.TILES_X-1 - xMod][y].setHighlightColour(c, Cardinal.kNONE);
+        tiles[X2 - 1  + xMod][Y2 - y].setHighlightColour(c, Cardinal.kNONE);
+
+        // TL
+        tiles[xMod][Param.TILES_Y - 1 - y].setHighlightColour(c, Cardinal.kNONE);
+        tiles[X2 - xMod][Y2 - 1 + y].setHighlightColour(c, Cardinal.kNONE);
+
+        // TR
+        tiles[X2 - 1 + xMod][Y2 - 1 + y].setHighlightColour(c, Cardinal.kNONE);
+        tiles[Param.TILES_X - 1 - xMod][Param.TILES_Y - 1 - y].setHighlightColour(c, Cardinal.kNONE);
+
+      }
+    }
   }
 
 }

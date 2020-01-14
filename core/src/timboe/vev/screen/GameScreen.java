@@ -182,6 +182,8 @@ public class GameScreen implements Screen {
     ////////////////////////////////////////////////
     // UI
 
+    state.getFireworkStage().draw();
+
     state.getUIStage().draw();
 
     ////////////////////////////////////////////////

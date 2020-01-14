@@ -28,6 +28,7 @@ import timboe.vev.Param;
 import timboe.vev.Util;
 import timboe.vev.entity.Building;
 import timboe.vev.entity.Entity;
+import timboe.vev.entity.Firework;
 import timboe.vev.entity.Sprite;
 import timboe.vev.entity.Tile;
 import timboe.vev.entity.Truck;
@@ -228,6 +229,7 @@ public class GameState {
   private Stage warpStage;
   private Stage buildingStage;
   private Stage uiStage;
+  private Stage fireworkStage;
 
 
   private static GameState ourInstance = null;
@@ -265,6 +267,17 @@ public class GameState {
     if (!World.getInstance().getGenerated()) return;
 
     uiStage.act(delta);
+
+    if (UI.getInstance().uiMode == UIMode.kSETTINGS) {
+
+      if (R.nextInt(100) == 0) {
+        fireworkStage.addActor(new Firework(R.nextInt(Param.DISPLAY_X)));
+      }
+      fireworkStage.act(delta);
+
+
+      World.getInstance().paintFin(delta);
+    }
 
     if (!isGameOn() || UI.getInstance().uiMode == UIMode.kSETTINGS) {
       return;
@@ -838,6 +851,10 @@ public class GameState {
     return uiStage;
   }
 
+  public Stage getFireworkStage() {
+    return fireworkStage;
+  }
+
   public Stage getWarpStage() { return warpStage; }
 
   public Stage getSpriteStage() {
@@ -859,12 +876,14 @@ public class GameState {
     if (warpStage != null) warpStage.dispose();
     if (buildingStage != null) buildingStage.dispose();
     if (uiStage != null) uiStage.dispose();
+    if (fireworkStage != null) fireworkStage.dispose();
     tileStage = new Stage(Camera.getInstance().getTileViewport());
     spriteStage = new Stage(Camera.getInstance().getSpriteViewport());
     foliageStage = new Stage(Camera.getInstance().getSpriteViewport());
     warpStage = new Stage(Camera.getInstance().getTileViewport());
     buildingStage = new Stage(Camera.getInstance().getTileViewport());
     uiStage = new Stage(Camera.getInstance().getUiViewport());
+    fireworkStage = new Stage(Camera.getInstance().getUiViewport());
     Color warpStageC = warpStage.getBatch().getColor();
     warpStageC.a = Param.WARP_TRANSPARENCY;
     warpStage.getBatch().setColor(warpStageC);
@@ -930,6 +949,7 @@ public class GameState {
     warpStage.dispose();
     buildingStage.dispose();
     uiStage.dispose();
+    fireworkStage.dispose();
     ourInstance = null;
   }
 

@@ -150,8 +150,8 @@ public class Sprite extends Entity {
     time -= Param.ANIM_TIME;
     if (idleTime > boredTime && Util.R.nextFloat() < Param.PARTICLE_WANDER_CHANCE) {
       bouncedBuildings.clear(); // Another safe place to reset the buildings that I have visited
-      int newX = (int) Util.clamp(myTile.x - (Param.PARTICLE_WANDER_R/2) + Util.R.nextInt(Param.PARTICLE_WANDER_R), 1, Param.TILES_X - 2);
-      int newY = (int) Util.clamp(myTile.y - (Param.PARTICLE_WANDER_R/2) + Util.R.nextInt(Param.PARTICLE_WANDER_R), 1, Param.TILES_Y - 2);
+      int newX = Util.clamp(myTile.x - (Param.PARTICLE_WANDER_R/2) + Util.R.nextInt(Param.PARTICLE_WANDER_R), 1, Param.TILES_X - 2);
+      int newY = Util.clamp(myTile.y - (Param.PARTICLE_WANDER_R/2) + Util.R.nextInt(Param.PARTICLE_WANDER_R), 1, Param.TILES_Y - 2);
       Tile idleWander = null;
       if (Util.inBounds(newX, newY, isIntro)) {
         idleWander = GameState.getInstance().mapPathingDestination(World.getInstance().getTile(newX, newY, isIntro));
