@@ -7,14 +7,17 @@ import com.badlogic.gdx.math.Vector2;
 import java.util.ArrayDeque;
 
 import timboe.vev.Pair;
+import timboe.vev.Param;
 import timboe.vev.Util;
 import timboe.vev.enums.Particle;
+import timboe.vev.manager.Camera;
+import timboe.vev.manager.Sounds;
 import timboe.vev.manager.Textures;
 
 public class Firework extends Entity {
 
   // All members are transient (class does not need serialisation)
-  private final float g = 0.2f;
+  private final float g = 600f;
   private final float angleJitter = 0.1f;
   private ArrayDeque<Pair<Vector2,ArrayDeque<Vector2>>> locations = new ArrayDeque<Pair<Vector2,ArrayDeque<Vector2>>>();
 
@@ -24,12 +27,12 @@ public class Firework extends Entity {
     setTexture(Textures.getInstance().getTexture("ball_" + Particle.random().getColourFromParticle().getString(), false),1);
     this.frame = 0;
     Pair<Vector2,ArrayDeque<Vector2>> last = extend();
-    last.getKey().set(Util.R.nextFloat(), randomVel());
+    last.getKey().set(-80 + Util.R.nextFloat()*160, randomVel());
     last.getValue().addLast(new Vector2(x,0));
   }
 
   private float randomVel() {
-    return 15 + Util.R.nextInt(5);
+    return 800 + Util.R.nextInt(300);
   }
 
   public void act(float delta){
@@ -47,12 +50,12 @@ public class Firework extends Entity {
 
       if ((isStick && !isBooming) || (!isStick && !isDead)) {
         Vector2 current = p.getValue().getLast();
-        p.getValue().addLast(new Vector2(current.x + p.getKey().x, current.y + p.getKey().y));
+        p.getValue().addLast(new Vector2(current.x + p.getKey().x * delta, current.y + p.getKey().y * delta));
       }
 
       // Gravity
       if (!isDead) {
-        p.getKey().y -= g;
+        p.getKey().y -= g * delta;
       }
 
       // Cull
@@ -77,7 +80,7 @@ public class Firework extends Entity {
       }
     }
 
-    if (locations.size() == 1 && locations.getFirst().getKey().y < 3) {
+    if (locations.size() == 1 && locations.getFirst().getKey().y < 100) {
       explode();
     }
 
@@ -87,6 +90,8 @@ public class Firework extends Entity {
   }
 
   private void explode() {
+    Sounds.getInstance().thud();
+    Camera.getInstance().addShake(Param.BUILDING_SHAKE);
     final int N = Util.clamp(50 + (int)Util.R.nextGaussian() * 20, 20, 100);
     float a = Util.R.nextFloat();
     for (int n = 0; n < N; ++n) {

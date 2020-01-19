@@ -89,7 +89,7 @@ public class Entity extends Actor implements Serializable {
         //TODO got a null on the next line from one serialisation of a Warp
         for (IVector2 v : entry.getValue()) {
           vecList.put(count.toString(), v.serialise());
-          Gdx.app.log("DBG_S",count.toString() + " = " + v.serialise().toString());
+//          Gdx.app.log("DBG_S",count.toString() + " = " + v.serialise().toString());
           ++count;
         }
         mapObj.put(entry.getKey().name(), vecList);
@@ -127,7 +127,7 @@ public class Entity extends Actor implements Serializable {
         if (maxKey >= 0) {
           for (Integer i = 0; i <= maxKey; ++i) {
             IVector2 v = new IVector2(vecList.getJSONObject(i.toString()));
-            Gdx.app.log("DBG_D",i.toString() + " = " + vecList.getJSONObject(i.toString()).toString());
+//            Gdx.app.log("DBG_D",i.toString() + " = " + vecList.getJSONObject(i.toString()).toString());
             pl.add(v);
           }
         }
@@ -331,7 +331,7 @@ public class Entity extends Actor implements Serializable {
   public void drawPath(ShapeRenderer sr) {
     if (!selected && !(UI.getInstance().uiMode == UIMode.kSETTINGS)) return;
     if (pathingList != null) { // in-progress
-      Gdx.app.log("DBG", "pathingList:" + pathingList + " pathingParticle:" + pathingParticle + " me:" + this);
+//      Gdx.app.log("DBG", "pathingList:" + pathingList + " pathingParticle:" + pathingParticle + " me:" + this);
       sr.setColor(pathingParticle.getHighlightColour());
       drawList(pathingList, sr, pathingParticle.getStandingOrderOffset());
     }

@@ -48,9 +48,6 @@ public class IntroState {
   public HashSet<Entity> demoBuildings = new HashSet<Entity>();
   public Warp demoWarp;
 
-  public TitleScreen theTitleScreen;
-  private VEVGame game;
-
   private IntroState() {
     reset();
   }
@@ -74,11 +71,6 @@ public class IntroState {
     warpStageC.a = Param.WARP_TRANSPARENCY;
     introWarpStage.getBatch().setColor(warpStageC);
     demoBuildings.clear();
-  }
-
-  public void setGame(VEVGame theGame) {
-    game = theGame;
-    theTitleScreen = new TitleScreen();
   }
 
   public void addParticles() {
@@ -198,7 +190,6 @@ public class IntroState {
   }
 
   public void dispose() {
-    theTitleScreen.dispose();
     introTileStage.dispose();
     introSpriteStage.dispose();
     introFoliageStage.dispose();

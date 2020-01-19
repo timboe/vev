@@ -508,25 +508,7 @@ public class Building extends Entity {
     if (timeHoldingPen > nextReleaseTime) {
       timeHoldingPen -= nextReleaseTime;
       nextReleaseTime = Util.R.nextFloat() * Param.NEW_PARTICLE_TIME;
-      for (Particle p : Particle.values()) {
-        if (holdingPen.get(p) == 0) continue;
-        Integer toPlace = holdingPen.get(p);
-        int N = toPlace > 5 ? toPlace / 10 : 1; // If lots - place lots at a time
-        holdingPen.put(p, toPlace - N);
-        for (int i = 0; i < N; ++i) {
-          Sprite s = new Sprite( tileFromCoordinate( getPathingStartPoint(p) ) );
-          List<IVector2> pList = getBuildingPathingList(p); // Do I have a standing order?
-          if (pList == null) s.pathTo( Sprite.findPathingLocation(tileFromCoordinate( getPathingStartPoint(p) ), true, true, true, false), null, null);  // random direction=True, needs parking=True, requireSameHeight=True
-          else s.pathingList = new LinkedList<IVector2>(pList); // Clone
-          assert p.getColourFromParticle() != null;
-          s.setTexture("ball_" + p.getColourFromParticle().getString(), 6, false);
-          s.setParticle(p);
-          s.moveBy(Param.TILE_S / 2, Param.TILE_S / 2);
-          s.moveBy( Util.R.nextInt(Param.TILE_S ), Util.R.nextInt(Param.TILE_S )  );
-          GameState.getInstance().addSprite(s);
-          GameState.getInstance().inWorldParticles += 1;
-        }
-      }
+      doRelease();
     }
 
     if (spriteProcessing == 0) return;
@@ -536,14 +518,41 @@ public class Building extends Entity {
     finishProcessingParticle();
   }
 
+  private void doRelease() {
+    for (Particle p : Particle.values()) {
+      if (holdingPen.get(p) == 0) continue;
+      Integer toPlace = holdingPen.get(p);
+      final int N = (toPlace > 10 ? Math.round(toPlace / 10f) : 1); // If lots - place lots at a time
+      assert N <= toPlace;
+      holdingPen.put(p, toPlace - N);
+      for (int i = 0; i < N; ++i) {
+        Sprite s = new Sprite( tileFromCoordinate( getPathingStartPoint(p) ) );
+        List<IVector2> pList = getBuildingPathingList(p); // Do I have a standing order?
+        if (pList == null) s.pathTo( Sprite.findPathingLocation(tileFromCoordinate( getPathingStartPoint(p) ), true, true, true, false), null, null);  // random direction=True, needs parking=True, requireSameHeight=True
+        else s.pathingList = new LinkedList<IVector2>(pList); // Clone
+        assert p.getColourFromParticle() != null;
+        s.setTexture("ball_" + p.getColourFromParticle().getString(), 6, false);
+        s.setParticle(p);
+        s.moveBy(Param.TILE_S / 2, Param.TILE_S / 2);
+        s.moveBy( Util.R.nextInt(Param.TILE_S ), Util.R.nextInt(Param.TILE_S )  );
+        GameState.getInstance().addSprite(s);
+        ++GameState.getInstance().inWorldParticles;
+      }
+    }
+  }
+
   private void finishProcessingParticle() {
     if (spriteProcessing == 0) return;
     Sprite s = GameState.getInstance().getParticleMap().get(spriteProcessing);
     Pair<Particle,Particle> myDecay = type.getOutputs( s.getParticle() );
     assert myDecay != null;
-    placeParticle( myDecay.getKey()   ); // Output #1
-    placeParticle( myDecay.getValue() ); // Output #2
-    GameState.getInstance().playerEnergy += type.getOutputEnergy( s.getParticle() );
+    if (myDecay.getKey() != null) {
+      placeParticle( myDecay.getKey(), true); // Output #1
+    }
+    if (myDecay.getValue() != null) {
+      placeParticle(myDecay.getValue(), true); // Output #2
+    }
+    GameState.getInstance().addEnergy( type.getOutputEnergy( s.getParticle() ) );
     GameState.getInstance().killSprite(s);
     spriteProcessing = 0;
   }
@@ -557,10 +566,16 @@ public class Building extends Entity {
     return true;
   }
 
-  void placeParticle(Particle p) {
-    if (p == null) return;
+  void placeParticle(Particle p, boolean now) {
+    if (p == null) {
+      Gdx.app.log("placeParticle", "Passed NULL");
+      return;
+    }
     Integer current = holdingPen.get(p);
     holdingPen.put(p, current + 1);
+    if (now) {
+      doRelease();
+    }
   }
 
   // Update my pathing orders as the world map has changed
@@ -594,6 +609,7 @@ public class Building extends Entity {
     clockVisible = true;
     GameState.getInstance().getBuildingExtrasMap().get( clock ).setVisible(true);
     Sounds.getInstance().OK();
+    ++GameState.getInstance().upgradesPurchased;
     return true;
   }
 }

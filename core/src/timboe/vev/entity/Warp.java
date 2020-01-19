@@ -36,7 +36,7 @@ public class Warp extends Building {
   private final EnumMap<Particle, IVector2> pathingStartPointWarp = new EnumMap<Particle, IVector2>(Particle.class);
 
   public JSONObject serialise() throws JSONException {
-    Gdx.app.log("DBG_S","Saving WARP " + id );
+    //Gdx.app.log("DBG_S","Saving WARP " + id );
     JSONObject json = super.serialise();
     JSONObject startPointJson = new JSONObject();
     for (EnumMap.Entry<Particle, IVector2> entry : pathingStartPointWarp.entrySet()) {
@@ -148,8 +148,8 @@ public class Warp extends Building {
       // Occasional random spawn mode
       Particle p = (toPlaceParticle == null ? Particle.random() : toPlaceParticle);
       if (GameState.getInstance().warpParticles > 0) {
-        placeParticle(p);
-        GameState.getInstance().warpParticles -= 1;
+        --GameState.getInstance().warpParticles;
+        placeParticle(p, false);
         placed = true;
       }
     }

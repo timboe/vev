@@ -2,7 +2,6 @@ package timboe.vev.manager;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.graphics.Color;
 import com.google.gwt.thirdparty.json.JSONException;
 import com.google.gwt.thirdparty.json.JSONObject;
 
@@ -115,7 +114,7 @@ public class Persistence {
     }
   }
 
-  public void trySave() {
+  public void trySaveSettings() {
     if (!Gdx.files.isLocalStorageAvailable()) return;
 
     Gdx.app.log("trySave", "SAVE SETTINGS");
@@ -137,23 +136,25 @@ public class Persistence {
       e.printStackTrace();
     }
     settings.writeString(jsonSettings.toString(), false);
+  }
 
-    if (GameState.getInstance().isGameOn()) {
-      Gdx.app.log("trySave", "SAVING");
-      save = new JSONObject();
-      try {
-        save.put("GameState", GameState.getInstance().serialise());
-        save.put("World", World.getInstance().serialise());
-      } catch (JSONException e) {
-        e.printStackTrace();
-      }
+  public void trySaveGame() {
+    if (!Gdx.files.isLocalStorageAvailable()) return;
+
+    Gdx.app.log("trySave", "SAVING");
+    save = new JSONObject();
+    try {
+      save.put("GameState", GameState.getInstance().serialise());
+      save.put("World", World.getInstance().serialise());
+    } catch (JSONException e) {
+      e.printStackTrace();
     }
   }
 
-  public void flushSave() {
+  public void flushSaveGame() {
     if (!Gdx.files.isLocalStorageAvailable()) return;
     if (save == null) return;
-    Gdx.app.log("flushSave", "FLUSHING TO DISK");
+    Gdx.app.log("flushSaveGame", "FLUSHING TO DISK");
 
     FileHandle handle = Gdx.files.local(Param.SAVE_FILE);
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -169,9 +170,17 @@ public class Persistence {
     }
   }
 
+  public void deleteSave() {
+    if (!Gdx.files.isLocalStorageAvailable()) return;
+    FileHandle fh = Gdx.files.local(Param.SAVE_FILE);
+    fh.delete();
+    save = null;
+  }
 
   public void dispose() {
-    flushSave();
+    trySaveSettings();
+    flushSaveGame();
+    ourInstance = null;
   }
 
 }

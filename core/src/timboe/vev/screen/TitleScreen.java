@@ -4,22 +4,16 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.input.GestureDetector;
 
 import timboe.vev.Param;
 import timboe.vev.Util;
-import timboe.vev.entity.Building;
 import timboe.vev.entity.Entity;
-import timboe.vev.entity.Sprite;
-import timboe.vev.entity.Tile;
-import timboe.vev.entity.Warp;
-import timboe.vev.enums.Particle;
-import timboe.vev.input.Gesture;
+import timboe.vev.enums.FSM;
 import timboe.vev.manager.Camera;
 import timboe.vev.manager.GameState;
 import timboe.vev.manager.IntroState;
 import timboe.vev.manager.Sounds;
-import timboe.vev.manager.UI;
+import timboe.vev.manager.StateManager;
 import timboe.vev.manager.UIIntro;
 import timboe.vev.manager.World;
 
@@ -31,21 +25,22 @@ public class TitleScreen implements Screen {
   private final UIIntro ui = UIIntro.getInstance();
   private final ShapeRenderer sr = new ShapeRenderer();
   public float fadeIn = 0;
-  public float[] fadeTimer = new float[3];
+  public float[] transitionOutTimers = new float[3];
 
   public TitleScreen() {
   }
 
   @Override
   public void show() {
-    Gdx.input.setInputProcessor( state.getUIStage() );
     camera.setHelpPos(0, true);
     GameState.getInstance().doRightClick();
     state.addParticles();
-    fadeTimer[0] = fadeTimer[1] = fadeTimer[2] = 0;
+    transitionOutTimers[0] = transitionOutTimers[1] = transitionOutTimers[2] = 0;
   }
 
-
+  public void doInputHandles() {
+    Gdx.input.setInputProcessor( state.getUIStage() );
+  }
 
   @Override
   public void render(float delta) {
@@ -94,20 +89,23 @@ public class TitleScreen implements Screen {
 
     state.getUIStage().draw();
 
-    if (fadeTimer[0] > 0) {
-      final boolean finished = Util.doFade(sr, delta, fadeTimer);
+    if (StateManager.getInstance().fsm == FSM.kTRANSITION_TO_GAME) {
+      final boolean finished = Util.doFade(sr, delta, transitionOutTimers);
       if (finished) {
-        GameState.getInstance().setToGameScreen();
+        StateManager.getInstance().setToGameScreen();
       }
     }
 
-    if (fadeIn > 0) {
+    if (StateManager.getInstance().fsm == FSM.kFADE_TO_INTRO) {
       sr.setProjectionMatrix(Camera.getInstance().getUiCamera().combined);
       sr.begin(ShapeRenderer.ShapeType.Filled);
       sr.setColor(136 / 255f, 57 / 255f, 80 / 255f, fadeIn / 100f);
       sr.rect(0, 0, Param.DISPLAY_X, Param.DISPLAY_Y);
       sr.end();
-      fadeIn -= delta * 70f;
+      fadeIn -= delta * Param.FADE_SPEED_INTRO;
+      if (fadeIn < 0) {
+        StateManager.getInstance().titleScreenFadeComplete();
+      }
     }
   }
 
@@ -128,8 +126,6 @@ public class TitleScreen implements Screen {
 
   @Override
   public void hide() {
-    Gdx.app.log("GameScreen", "Hide " + Gdx.input.getInputProcessor());
-    Gdx.input.setInputProcessor( null );
   }
 
   @Override

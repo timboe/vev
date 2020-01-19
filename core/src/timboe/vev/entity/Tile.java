@@ -144,6 +144,9 @@ public class Tile extends Entity {
   private void removeSprite() {
     Entity s = getMySprite();
     if (s == null) return;
+    if (s.texString.contains("tree")) {
+      ++GameState.getInstance().treesBulldozed;
+    }
     s.remove(); // Foliage (from sprite batch)
     World.getInstance().foliage.remove(s.id);
     mySprite = 0;
@@ -193,6 +196,7 @@ public class Tile extends Entity {
   }
 
   public void setHighlightColour(Color c, Cardinal direction) {
+    if (tileColour == kBLACK) return;
     setColor(c);
     doTint = true;
     tintArrow = direction;

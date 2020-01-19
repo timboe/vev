@@ -15,6 +15,8 @@ import timboe.vev.Param;
 import timboe.vev.Util;
 import timboe.vev.entity.Entity;
 import timboe.vev.entity.Sprite;
+import timboe.vev.enums.FSM;
+import timboe.vev.enums.UIMode;
 
 public class Camera {
 
@@ -118,7 +120,7 @@ public class Camera {
     return true;
   }
 
-  void addShake(float amount) {
+  public void addShake(float amount) {
     shake += amount;
   }
 
@@ -147,6 +149,24 @@ public class Camera {
   }
 
   void pollInputs() {
+
+    if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER) && Gdx.input.isKeyPressed(Input.Keys.ALT_LEFT)) {
+      UIIntro.getInstance().fsListener.toggle();
+    }
+
+    if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE) && StateManager.getInstance().fsm == FSM.kGAME) {
+      if (UI.getInstance().uiMode == UIMode.kNONE) {
+        UI.getInstance().showSettings();
+      } else if (UI.getInstance().uiMode == UIMode.kSETTINGS) {
+        UI.getInstance().showMain();
+      }
+    }
+
+    // Following are only allowed in-game or game over mode
+    if (StateManager.getInstance().fsm != FSM.kGAME && StateManager.getInstance().fsm != FSM.kGAME_OVER) {
+      return;
+    }
+
     if (Gdx.input.isKeyPressed(Input.Keys.W)) {
       modVelocity(0, +2);
     }
@@ -209,8 +229,12 @@ public class Camera {
     shake *= (float)Math.pow(0.9f, frames);
     float shakeAngle = R.nextFloat() * (float) Math.PI * 2f;
 
-    currentPos.x += (desiredPos.x - currentPos.x) * 0.1f;
-    currentPos.y += (desiredPos.y - currentPos.y) * 0.1f;
+    if (StateManager.getInstance().fsm == FSM.kINTRO) {
+      currentPos.x += (desiredPos.x - currentPos.x) * 0.1f;
+      currentPos.y += (desiredPos.y - currentPos.y) * 0.1f;
+    } else {
+      currentPos.set(desiredPos); // Direct control in-game
+    }
 
     currentPos.add(shake * (float)Math.cos(shakeAngle), shake * (float)Math.sin(shakeAngle));
     currentZoom += (desiredZoom - currentZoom) * 0.1f;

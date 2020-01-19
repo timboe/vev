@@ -28,6 +28,7 @@ import timboe.vev.entity.Zone;
 import timboe.vev.enums.Cardinal;
 import timboe.vev.enums.Colour;
 import timboe.vev.enums.Edge;
+import timboe.vev.enums.FSM;
 import timboe.vev.enums.Particle;
 import timboe.vev.enums.TileType;
 import timboe.vev.pathfinding.IVector2;
@@ -191,11 +192,11 @@ public class World {
       IntroState.getInstance().reset();
       introFoliage.clear();
     }
+    GameState.getInstance().reset();
     stage = 0;
     animFrame = 0;
     animTime = 0;
     generated = false;
-    GameState.getInstance().getWarpMap().clear();
     tiberiumPatches.clear();
     tiberiumShards.clear();
     foliage.clear();
@@ -232,6 +233,7 @@ public class World {
 
     if (Param.WORLD_SEED > 0) {
       Util.R.setSeed(Param.WORLD_SEED);
+//      GameState.getInstance().R.setSeed(Param.WORLD_SEED);
       R.setSeed(Param.WORLD_SEED);
     }
   }
@@ -255,7 +257,7 @@ public class World {
     int _x = 37, _y = 27;
     for (int x = _x - Param.WARP_SIZE / 2; x < _x + Param.WARP_SIZE / 2; ++x) {
       for (int y = _y - Param.WARP_SIZE / 2; y < _y + Param.WARP_SIZE / 2; ++y) {
-        if (Param.WARP_SIZE / 2 <= Math.hypot(x - _x, y - _y)) continue;
+        if (Param.WARP_SIZE / 2f <= Math.hypot(x - _x, y - _y)) continue;
         introTiles[x][y].level = 0;
         introTiles[x][y].tileColour = Colour.kBLACK;
       }
@@ -284,13 +286,14 @@ public class World {
     }
     generated = true;
     doLoad = false;
-    Gdx.app.log("DBG", "LOADED. WARPS ACTORS SIZE " + GameState.getInstance().getWarpStage().getActors().size);
-    GameState.getInstance().transitionToGameScreen();
+    //Gdx.app.log("DBG", "LOADED. WARPS ACTORS SIZE " + GameState.getInstance().getWarpStage().getActors().size);
+    StateManager.getInstance().transitionToGameScreen();
   }
 
   public void generate() {
     boolean success = false;
-    if (IntroState.getInstance().theTitleScreen.fadeIn > 0) {
+    if (StateManager.getInstance().fsm == FSM.kFADE_TO_INTRO) {
+      // Only start generating after finishing fading in
       return;
     }
     switch (stage) {
@@ -319,7 +322,7 @@ public class World {
     if (stage == 14) {
       Gdx.app.log("World", "Generation finished");
       generated = true;
-      if (launchAfterGen) GameState.getInstance().transitionToGameScreen();
+      if (launchAfterGen) StateManager.getInstance().transitionToGameScreen();
       launchAfterGen = false;
       for (int y = Param.ZONES_Y - 1; y >= 0; --y)
         Gdx.app.log("", (zones[0][y].tileColour == Colour.kRED ? "R " : "G ") + (zones[1][y].tileColour == Colour.kRED ? "R " : "G ") + (zones[2][y].tileColour == Colour.kRED ? "R " : "G "));
@@ -1194,7 +1197,7 @@ public class World {
     for (int x = 0; x <= X2; ++x) {
       if (x > animFrame) break;
       Color c;
-      switch ((x + animFrame) % 12) {
+      switch (11 - ((x + animFrame) % 12)) {
         case 0: case 1: case 2:
           c = Param.HIGHLIGHT_RED;
           break;
@@ -1229,6 +1232,7 @@ public class World {
         tiles[Param.TILES_X - 1 - xMod][Param.TILES_Y - 1 - y].setHighlightColour(c, Cardinal.kNONE);
 
       }
+//      c.a = 1;
     }
   }
 

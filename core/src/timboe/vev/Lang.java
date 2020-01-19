@@ -4,6 +4,8 @@ import com.badlogic.gdx.Gdx;
 
 import java.util.HashMap;
 
+import timboe.vev.enums.Particle;
+
 public class Lang {
 
   private static Lang ourInstance;
@@ -29,7 +31,7 @@ public class Lang {
     EN_GB.put("standingBlank","Setup Overflow Standing Move Order.\nParticles which COULD be accepted,\nbut are turned away due to a full queue\nwill be sent here. NO cyclic loops.");
     EN_GB.put("select","Toggle selection mode.");
     EN_GB.put("pause","Show the pause menu.");
-    EN_GB.put("particleSelect","Refine selection to just #");
+    EN_GB.put("particleSelect","Left Click: Refine selection to just #\nShift+Left Click: Remove # from selection");
     EN_GB.put("qSimple","Construct a straight queue.");
     EN_GB.put("qSpiral","Construct a spiral queue.");
     EN_GB.put("upgradeBuilding_A","Upgrade building.");
@@ -74,11 +76,77 @@ public class Lang {
     EN_GB.put("UI_GENERATING", "GENERATING");
     EN_GB.put("UI_TIME", "Time");
     EN_GB.put("UI_FINISHED", "FINISHED!");
-    EN_GB.put("UI_FINISHED_BEST", "NEW BEST TIME!");
-    EN_GB.put("UI_END_TIME", "TIME:#s");
-    EN_GB.put("UI_END_BEST_TIME", "BEST:#s");
+    EN_GB.put("UI_END_TIME", "YOUR TIME:#s");
+    EN_GB.put("UI_END_BEST_TIME", "BEST TIME:#s");
+    EN_GB.put("UI_BUILDINGS_PLACED", "BUILDINGS PLACED:#");
+    EN_GB.put("UI_BUILDINGS_DESTROYED", "BUILDINGS DESTROYED:#");
+    EN_GB.put("UI_PARTICLES_DESTROYED", "PARTICLES DECONSTRUCTED:#");
+    EN_GB.put("UI_PARTICLE_BOUNCES", "PARTICLE BOUNCIES:#");
+    EN_GB.put("UI_DIFFICULTY", "GAME LENGTH:#");
+    EN_GB.put("UI_TIBERIUM_MINED", "ORE MINED:#");
+    EN_GB.put("UI_TREES_DEMOLISHED", "TREES BULLDOZED:#");
+    EN_GB.put("UI_TAPS", "CLICKS:#");
+    EN_GB.put("UI_BUILDING_UPGRADES", "BUILDING UPGRADES:#");
 
 
+    EN_GB.put("UI_HELP_00", "A game by Tim Martin");
+    EN_GB.put("UI_HELP_01", "Music by Chris Zabriskie (CC v4)");
+    EN_GB.put("UI_HELP_02", "Is That You Or Are You You? / Divider / CGI Snake");
+    EN_GB.put("UI_HELP_03", "Open Game Art by Buch (CC0 v1)");
+
+    EN_GB.put("UI_HELP_A_00", "CONTROLS");
+    EN_GB.put("UI_HELP_A_01", "LEFT CLICK");
+    EN_GB.put("UI_HELP_A_02", "Select Particle / Building");
+    EN_GB.put("UI_HELP_A_03", "Confirm Particle Move Order");
+    EN_GB.put("UI_HELP_A_04", "Confirm Build New Building");
+    EN_GB.put("UI_HELP_A_05", "Confirm Building Move Destination");
+    EN_GB.put("UI_HELP_A_06", "LEFT CLICK AND DRAG");
+    EN_GB.put("UI_HELP_A_07", "Select Particles Within Box");
+    EN_GB.put("UI_HELP_A_08", "RIGHT CLICK");
+    EN_GB.put("UI_HELP_A_09", "Cancel Particle / Building Selection");
+    EN_GB.put("UI_HELP_A_10", "RIGHT CLICK AND DRAG / W-A-S-D");
+    EN_GB.put("UI_HELP_A_11", "Move Map");
+    EN_GB.put("UI_HELP_A_12", "MOUSE SCROLL / Q-E");
+    EN_GB.put("UI_HELP_A_13", "Zoom Map");
+
+    EN_GB.put("UI_HELP_B_00", "Get energy by harvesting ore and deconstructing particles.");
+    EN_GB.put("UI_HELP_B_01", "Spend energy on creating and upgrading buildings.");
+    EN_GB.put("UI_HELP_B_02", "Deconstruct particles in buildings.");
+    EN_GB.put("UI_HELP_B_03", "Deconstruct all particles to win the game.");
+    EN_GB.put("UI_HELP_B_04", "ORE PATCH");
+    EN_GB.put("UI_HELP_B_05", "(ONLY FOUND IN DESERTS)");
+    EN_GB.put("UI_HELP_B_06", "ORE REFINERY");
+    EN_GB.put("UI_HELP_B_07", "(YOU CAN ONLY BUILD ON GRASS)");
+    EN_GB.put("UI_HELP_B_08", "ORE TRUCK");
+    EN_GB.put("UI_HELP_B_09", "ORE TRUCK'S ROUTE");
+
+    EN_GB.put("UI_HELP_C_00", "Setup standing move orders to route particles from White Holes,");
+    EN_GB.put("UI_HELP_C_01", "and between deconstruction buildings.");
+    EN_GB.put("UI_HELP_C_02", "WHITE HOLE");
+    EN_GB.put("UI_HELP_C_03", "(ONLY FOUND IN DESERTS)");
+    EN_GB.put("UI_HELP_C_04", "(SPAWNS PARTICLES UNTIL EMPTY)");
+    EN_GB.put("UI_HELP_C_05", "<- DECONSTRUCTION");
+    EN_GB.put("UI_HELP_C_06", "BUILDING'S QUEUE");
+    EN_GB.put("UI_HELP_C_07", "<- DECONSTRUCTION");
+    EN_GB.put("UI_HELP_C_08", "BUILDING'S ACCEPTED");
+    EN_GB.put("UI_HELP_C_09", "PARTICLES");
+    EN_GB.put("UI_HELP_C_10", Particle.kH.getString() + " PARTICLES");
+    EN_GB.put("UI_HELP_C_11", "WHITE HOLE'S STANDING MOVE ORDER FOR "+Particle.kH.getString()+" PARTICLES");
+
+    EN_GB.put("UI_HELP_D_00", "A game in LIBGDX by Tim Martin");
+    EN_GB.put("UI_HELP_D_01", "A* implementation by Ben Ruijl");
+    EN_GB.put("UI_HELP_D_02", "GRAPHICS & FONT ASSETS");
+    EN_GB.put("UI_HELP_D_03", "Buch: Colony sim, match 3. Pawel Pastuszak: VisUI");
+    EN_GB.put("UI_HELP_D_04", "SpriteFX: plants, lightning. OniMille: Crystal");
+    EN_GB.put("UI_HELP_D_05", "Steve Matteson: Open Sans. Peter Hull: VT323");
+    EN_GB.put("UI_HELP_D_06", "MUSIC & SOUND EFFECT ASSETS");
+    EN_GB.put("UI_HELP_D_07", "Chris Zabriskie: Is That You Or Are You You?,");
+    EN_GB.put("UI_HELP_D_08", "Divider, CGI Snake.");
+    EN_GB.put("UI_HELP_D_09", "cameronmusic: pulse1. Planman: Poof of Smoke");
+    EN_GB.put("UI_HELP_D_10", "FxKid2: Cute Walk Run 2. tix99: skiffy1-9");
+    EN_GB.put("UI_HELP_D_11", "waveplay_old: Short Click. Raclure: Affirmative");
+    EN_GB.put("UI_HELP_D_12", "MATTIX: Retro Explosion 5. Mark DiAngelo: Blip");
+    EN_GB.put("UI_HELP_D_13", "man: Swoosh 1. ");
   }
 
   private static HashMap<String, String> EN_GB = new HashMap<String, String>();

@@ -6,20 +6,29 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.ui.CheckBox;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 
+import timboe.vev.manager.UIIntro;
+
 public class FullscreenToggle extends ChangeListener {
 
   @Override
   public void changed(ChangeEvent event, Actor actor) {
     CheckBox cb = (CheckBox)actor;
-    set(cb.isChecked());
+    set(cb.isChecked(), true);
   }
 
-  public void set(boolean fs) {
+  public void toggle() {
+    set( !Gdx.graphics.isFullscreen(), false );
+  }
+
+  public void set(boolean fs, boolean fromChanged) {
     Graphics.DisplayMode currentMode = Gdx.graphics.getDisplayMode();
     if (!fs) {
       Gdx.graphics.setWindowedMode(currentMode.width, currentMode.height);
     } else {
       Gdx.graphics.setFullscreenMode(currentMode);
+    }
+    if (!fromChanged && UIIntro.getInstance().fsBox != null) {
+      UIIntro.getInstance().fsBox.setChecked(fs);
     }
   }
 }

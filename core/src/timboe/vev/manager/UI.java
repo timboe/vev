@@ -1,5 +1,6 @@
 package timboe.vev.manager;
 
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.NinePatch;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
@@ -67,7 +68,6 @@ public class UI {
   private Table table;
   public Skin skin;
   public ShaderProgram dfShader;
-//  public ShaderProgram dfShader_small;
   public ShaderProgram dfShader_medium;
   public ShaderProgram dfShader_large;
 
@@ -87,9 +87,17 @@ public class UI {
   private Set<LabelDF> displayPlayerParticleLabelSet = new HashSet<LabelDF>();
   private LabelDF displayWarpParticlesLabel;
   private LabelDF elapsedTime;
+  private LabelDF difficulty;
   private LabelDF finishedTime;
   private LabelDF finishedBest;
-  private LabelDF finishedTitle;
+  private LabelDF buildingsPlaced;
+  private LabelDF buildingsDestroyed;
+  private LabelDF treesBulldozed;
+  private LabelDF tiberiumMined;
+  private LabelDF buildingsUpgrades;
+  private LabelDF taps;
+  private LabelDF particlesDestroyed;
+  private LabelDF particleBounces;
 
   private final YesNoButton yesNoButton = new YesNoButton();
   private final StandingOrderButton standingOrderButton = new StandingOrderButton();
@@ -126,9 +134,6 @@ public class UI {
   private EnumMap<Particle, Button> selectButton;
   private EnumMap<Particle, Label> selectLabel;
   private Button selectCross;
-
-
-
 
   private float perSec = 0; // Do once per second
 
@@ -439,7 +444,8 @@ public class UI {
       @Override
       public void changed(ChangeEvent event, Actor actor) {
 //        UI.getInstance().showSettings();
-        UI.getInstance().showFin();
+        StateManager.getInstance().gameOver();
+
       }
     });
     addToWin(mainWindow, settings, SIZE_L + SIZE_M, SIZE_L, 2);
@@ -613,10 +619,10 @@ public class UI {
     saveAndQuit.addListener(new ChangeListener() {
       @Override
       public void changed(ChangeEvent event, Actor actor) {
-        GameState.getInstance().transitionToTitleScreen();
+        StateManager.getInstance().transitionToTitleScreen();
       }
     });
-    addToWin(settingsWindow, saveAndQuit, SIZE_L*3, SIZE_L+SIZE_M, 2);
+    addToWin(settingsWindow, saveAndQuit, SIZE_L*2 + SIZE_M, SIZE_L+SIZE_M, 2);
     settingsWindow.row();
     separator(settingsWindow, 2);
     //
@@ -627,30 +633,46 @@ public class UI {
         showMain();
       }
     });
-    addToWin(settingsWindow, resume, SIZE_L*3, SIZE_L, 2);
+    addToWin(settingsWindow, resume, SIZE_L*2 + SIZE_M, SIZE_L, 2);
     settingsWindow.row();
 
     // Finish window
     Table finishedWindow = getWindow();
     Button quit = getTextButton(Lang.get("UI_EXIT"),"quitToTitle");
-    saveAndQuit.addListener(new ChangeListener() {
+    quit.addListener(new ChangeListener() {
       @Override
       public void changed(ChangeEvent event, Actor actor) {
-        GameState.getInstance().transitionToTitleScreen();
+        StateManager.getInstance().transitionToTitleScreen();
       }
     });
     addToWin(finishedWindow, quit, SIZE_L*2, SIZE_L, 2);
     finishedTable = new Table();
-    finishedTitle = new LabelDF("", skin, "title", dfShader_large);
+    LabelDF finishedTitle = new LabelDF(Lang.get("UI_FINISHED"), skin, "title", dfShader_large);
     finishedTitle.setFontScale(10f);
-    finishedTime = new LabelDF("", skin, "title", dfShader_large);
-    finishedTime.setFontScale(7f);
-    finishedBest = new LabelDF("", skin, "title", dfShader_large);
-    finishedBest.setFontScale(7f);
-    finishedTable.add(finishedTitle).align(Align.center).row();
-    finishedTable.add(finishedTime).align(Align.center).row();
-    finishedTable.add(finishedBest).align(Align.center).row();
-    finishedTable.add(finishedWindow).align(Align.center);
+    difficulty = new LabelDF("", skin, "wide", UI.getInstance().dfShader_medium);
+    finishedTime = new LabelDF("", skin, "wide", UI.getInstance().dfShader_medium);
+    finishedBest = new LabelDF("", skin, "wide", UI.getInstance().dfShader_medium);
+    buildingsPlaced = new LabelDF("", skin, "wide", UI.getInstance().dfShader_medium);
+    buildingsDestroyed = new LabelDF("", skin, "wide", UI.getInstance().dfShader_medium);
+    treesBulldozed = new LabelDF("", skin, "wide", UI.getInstance().dfShader_medium);
+    tiberiumMined = new LabelDF("", skin, "wide", UI.getInstance().dfShader_medium);
+    buildingsUpgrades = new LabelDF("", skin, "wide", UI.getInstance().dfShader_medium);
+    taps = new LabelDF("", skin, "wide", UI.getInstance().dfShader_medium);
+    particlesDestroyed = new LabelDF("", skin, "wide", UI.getInstance().dfShader_medium);
+    particleBounces = new LabelDF("", skin, "wide", UI.getInstance().dfShader_medium);
+    finishedTable.add(finishedTitle).colspan(2).align(Align.center).row();
+    finishedTable.add(difficulty).colspan(2).align(Align.center).padTop(SIZE_S).row();
+    finishedTable.add(finishedTime).colspan(2).align(Align.center).row();
+    finishedTable.add(finishedBest).colspan(2).align(Align.center).row();
+    finishedTable.add(buildingsPlaced).left().align(Align.left);
+    finishedTable.add(buildingsDestroyed).right().align(Align.right).row();
+    finishedTable.add(treesBulldozed).left().align(Align.left);
+    finishedTable.add(tiberiumMined).right().align(Align.right).row();
+    finishedTable.add(buildingsUpgrades).left().align(Align.left);
+    finishedTable.add(taps).right().align(Align.right).row();
+    finishedTable.add(particlesDestroyed).colspan(2).padTop(SIZE_S).align(Align.center).row();
+    finishedTable.add(particleBounces).colspan(2).align(Align.center).row();
+    finishedTable.add(finishedWindow).align(Align.center).padTop(SIZE_S).colspan(2);
 
     for (LabelDF l : displayPlayerEnergyLabelSet) {
       l.setText(formatter.format(Math.round(displayPlayerEnergy)));
@@ -765,11 +787,26 @@ public class UI {
       best = true;
       Persistence.getInstance().bestTimes.set(GameState.getInstance().difficulty, bestTime);
     }
-    finishedTitle.setText(Lang.get(best ? "UI_FINISHED_BEST" : "UI_FINISHED"));
-    finishedTime.setText(Lang.get("UI_END_TIME#"+gameTime));
-    finishedBest.setText(Lang.get("UI_END_BEST_TIME#"+bestTime));
+    String difStr = "";
+    switch (GameState.getInstance().difficulty) {
+      case 0: difStr = Lang.get("UI_SHORT"); break;
+      case 1: difStr = Lang.get("UI_MED"); break;
+      case 2: difStr = Lang.get("UI_LONG"); break;
+      case 3: difStr = Lang.get("UI_XL"); break;
+    }
+    difficulty.setText(Lang.get("UI_DIFFICULTY#"+difStr));
+    finishedTime.setText(Lang.get("UI_END_TIME#"+formatter.format((gameTime))));
+    finishedBest.setText(Lang.get("UI_END_BEST_TIME#"+formatter.format(bestTime)));
+    buildingsPlaced.setText(Lang.get("UI_BUILDINGS_PLACED#"+formatter.format(GameState.getInstance().buildingsBuilt)));
+    buildingsDestroyed.setText(Lang.get("UI_BUILDINGS_DESTROYED#"+formatter.format(GameState.getInstance().buildingsDemolished)));
+    treesBulldozed.setText(Lang.get("UI_TREES_DEMOLISHED#"+formatter.format(GameState.getInstance().treesBulldozed)));
+    tiberiumMined.setText(Lang.get("UI_TIBERIUM_MINED#"+formatter.format(GameState.getInstance().buildingsDemolished)));
+    buildingsUpgrades.setText(Lang.get("UI_BUILDING_UPGRADES#"+formatter.format(GameState.getInstance().buildingsDemolished)));
+    taps.setText(Lang.get("UI_TAPS#"+formatter.format(GameState.getInstance().taps)));
+    particlesDestroyed.setText(Lang.get("UI_PARTICLES_DESTROYED#"+formatter.format(GameState.getInstance().particlesDeconstructed)));
+    particleBounces.setText(Lang.get("UI_PARTICLE_BOUNCES#"+formatter.format(GameState.getInstance().particleBounces)));
     table.clear();
-    table.add(finishedTable).align(Align.center).expandX();
+    table.align(Align.center).add(finishedTable).expandX();
     uiMode = UIMode.kSETTINGS;
   }
 

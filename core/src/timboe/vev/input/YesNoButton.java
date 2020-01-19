@@ -19,26 +19,34 @@ public class YesNoButton extends ChangeListener {
   public void changed(ChangeEvent event, Actor actor) {
     boolean N = ((Integer) actor.getUserObject() == 0);
 
+    // Special - Intro HELP and CREDITS sections
     if (UI.getInstance().uiMode == UIMode.kHELP) {
       if (N) {
         UIIntro.getInstance().helpLevel -= 1;
       } else {
         UIIntro.getInstance().helpLevel += 1;
       }
-      if ((Integer) actor.getUserObject() == 2
+      if ((Integer) actor.getUserObject() == 2 // "Back" is Obj==2
               || UIIntro.getInstance().helpLevel == 1
-              || UIIntro.getInstance().helpLevel == 5) { // Back is Obj==2
+              || UIIntro.getInstance().helpLevel == 5) {
         UIIntro.getInstance().helpLevel = 0;
-        GameState.getInstance().doRightClick();
+        UIIntro.getInstance().resetTitle("main");
       }
       Camera.getInstance().setHelpPos(UIIntro.getInstance().helpLevel, false);
       return;
     }
 
-    if (N) {
-      if (UI.getInstance().uiMode == UIMode.kSETTINGS) {
+    // Special - Intro SETTINGS
+    if (UI.getInstance().uiMode == UIMode.kSETTINGS) {
+      if (N) {
         UIIntro.getInstance().cancelSettingsChanges();
       }
+      UIIntro.getInstance().resetTitle("main");
+      return;
+    }
+
+    // In game
+    if (N) {
       GameState.getInstance().doRightClick();
     } else { // Y
       switch (UI.getInstance().uiMode) {
@@ -47,9 +55,6 @@ public class YesNoButton extends ChangeListener {
           break;
         case kWITH_BUILDING_SELECTION:
           GameState.getInstance().doConfirmStandingOrder();
-          break;
-        case kSETTINGS:
-          GameState.getInstance().doRightClick();
           break;
         default:
           Gdx.app.error("YesNoButton", "YES is not defined for this ui mode" + UI.getInstance().uiMode.toString());

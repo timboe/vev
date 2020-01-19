@@ -59,6 +59,7 @@ public class Patch extends Entity {
     contained.remove(index); // From patch's shards
     Sprite t = World.getInstance().tiberiumShards.remove(id); // From global list of shards
     t.remove(); // From stage
+    ++GameState.getInstance().tiberiumMined;
     return id;
   }
 

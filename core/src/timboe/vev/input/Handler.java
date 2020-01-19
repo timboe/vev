@@ -34,16 +34,8 @@ public class Handler extends InputAdapter {
     if (keycode == Input.Keys.B) {
       if (++GameState.getInstance().debug == 4) GameState.getInstance().debug = 0;
       GameState.getInstance().getTileStage().setDebugAll( GameState.getInstance().debug > 1 );
-    } else if (keycode == Input.Keys.N) {
-      World.getInstance().reset(false);
-      GameState.getInstance().setGameOn(true);
     } else if (keycode == Input.Keys.G) {
       GameState.getInstance().tryNewParticles(true, null, 1);
-    } else if (keycode == Input.Keys.ENTER) {
-      if (Gdx.input.isKeyPressed(Input.Keys.ALT_LEFT) || Gdx.input.isKeyPressed(Input.Keys.ALT_RIGHT)) {
-        if (!Gdx.graphics.isFullscreen()) Gdx.graphics.setFullscreenMode(Gdx.graphics.getDisplayMode());
-        else Gdx.graphics.setWindowedMode(Param.DISPLAY_X, Param.DISPLAY_Y);
-      }
     } else if (keycode == Input.Keys.ESCAPE) {
       Gdx.app.exit();
     }

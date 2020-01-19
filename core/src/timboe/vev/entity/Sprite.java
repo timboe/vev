@@ -147,7 +147,7 @@ public class Sprite extends Entity {
     time += delta;
     actMovement(delta);
     if (frames == 1 || time < Param.ANIM_TIME) return;
-    time -= Param.ANIM_TIME;
+    time = 0; // No need to catch up if we cannot maintain desired FPS
     if (idleTime > boredTime && Util.R.nextFloat() < Param.PARTICLE_WANDER_CHANCE) {
       bouncedBuildings.clear(); // Another safe place to reset the buildings that I have visited
       int newX = Util.clamp(myTile.x - (Param.PARTICLE_WANDER_R/2) + Util.R.nextInt(Param.PARTICLE_WANDER_R), 1, Param.TILES_X - 2);
@@ -165,6 +165,7 @@ public class Sprite extends Entity {
     if (++frame == frames) {
       frame = 0;
     }
+    ++GameState.getInstance().particleBounces;
   }
 
   public void setNudgeDestination(Tile t, Cardinal D) {

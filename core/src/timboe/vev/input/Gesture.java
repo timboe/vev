@@ -43,6 +43,7 @@ public class Gesture implements GestureDetector.GestureListener {
     UI ui = UI.getInstance();
     v3temp.set(x, y, 0);
     v3temp = Camera.getInstance().unproject(v3temp);
+    ++GameState.getInstance().taps;
 
     if (button == Input.Buttons.RIGHT) {
       state.doRightClick();

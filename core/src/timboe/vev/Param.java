@@ -34,7 +34,7 @@ public class Param {
 
   public static final int TILE_S = 16;
 
-  public static final int WORLD_SEED = 0; // 0 to disable
+  public static final int WORLD_SEED = 7; // 0 to disable
 
   public static final int SPRITE_SCALE = 2;
   public static final float PARTICLE_VELOCITY = 32f*2f;
@@ -69,7 +69,7 @@ public class Param {
   public static final int MAX_FORESTS = 5;
 
   public static final int TIBERIUM_SIZE = 5;
-  public static final int MIN_TIBERIUM_PATCH = 2;
+  public static final int MIN_TIBERIUM_PATCH = 3;
   public static final int MAX_TIBERIUM_PATCH = 3;
 
   public static final int WARP_SIZE = 10;
@@ -132,6 +132,10 @@ public class Param {
   public static final int PARTICLES_XL = 50000;
 
   public static final float ANIM_TIME = 1/20f; // I.e. 12 frames per second
+
+  public static final float FADE_SPEED_GAME = 70f;
+  public static final float FADE_SPEED_INTRO = 200f;
+
 
   public static final Color HIGHLIGHT_GREEN = new Color(0f, 1f, 0f, 1f);
   public static final Color HIGHLIGHT_RED = new Color(1f, 0f, 0f, 1f);
