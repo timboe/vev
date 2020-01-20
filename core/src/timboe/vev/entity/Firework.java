@@ -29,6 +29,7 @@ public class Firework extends Entity {
     Pair<Vector2,ArrayDeque<Vector2>> last = extend();
     last.getKey().set(-80 + Util.R.nextFloat()*160, randomVel());
     last.getValue().addLast(new Vector2(x,0));
+    Sounds.getInstance().woosh();
   }
 
   private float randomVel() {
@@ -90,7 +91,7 @@ public class Firework extends Entity {
   }
 
   private void explode() {
-    Sounds.getInstance().thud();
+    Sounds.getInstance().boom();
     Camera.getInstance().addShake(Param.BUILDING_SHAKE);
     final int N = Util.clamp(50 + (int)Util.R.nextGaussian() * 20, 20, 100);
     float a = Util.R.nextFloat();

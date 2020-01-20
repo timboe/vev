@@ -6,17 +6,18 @@ import com.badlogic.gdx.audio.Sound;
 
 import java.util.Random;
 
-import timboe.vev.Param;
 import timboe.vev.Util;
 
 public class Sounds {
 
   private final Random R = new Random();
 
-  private final int nMove = 6, nSelect = 3, nMusic = 3, nElectric = 3;
+  private final int nMove = 6, nSelect = 3, nMusic = 3, nElectric = 3, nFW = 2, nBoom = 3;
   private final Sound[] move = new Sound[nMove];
   private final Sound[] electric = new Sound[nElectric];
   private final Sound[] select = new Sound[nSelect];
+  private final Sound[] woosh = new Sound[nFW];
+  private final Sound[] boom = new Sound[nBoom];
   private Sound foot;
   private Sound blop;
   private Sound pulse;
@@ -27,10 +28,12 @@ public class Sounds {
   private Sound click;
   private Sound poof;
   private Sound demolish;
+  private Sound fanfare;
   private Music[] theme = new Music[nMusic];
 
   private int track;
   private float sfxMod = 1f;
+  private boolean paused = false;
 
   private static Sounds ourInstance;
   public static Sounds getInstance() {
@@ -49,10 +52,13 @@ public class Sounds {
     click.dispose();
     poof.dispose();
     demolish.dispose();
+    fanfare.dispose();
     for (int i = 0; i < nMusic; ++i) theme[i].dispose();
     for (int i = 0; i < nMove; ++i) move[i].dispose();
     for (int i = 0; i < nSelect; ++i) select[i].dispose();
     for (int i = 0; i < nElectric; ++i) electric[i].dispose();
+    for (int i = 0; i < nFW; ++i) woosh[i].dispose();
+    for (int i = 0; i < nBoom; ++i) boom[i].dispose();
     ourInstance = null;
   }
 
@@ -65,10 +71,13 @@ public class Sounds {
   }
 
   public void pause() {
+    Gdx.app.log("pause","DoPause");
+    paused = true;
     theme[track].pause();
   }
 
   public void resume() {
+    paused = false;
     theme[track].play();
   }
 
@@ -109,6 +118,20 @@ public class Sounds {
 
   public void boop() {
     blop.play(Persistence.getInstance().sfxLevel * sfxMod);
+  }
+
+  public void fanfare() {
+    fanfare.play(Persistence.getInstance().sfxLevel);
+  }
+
+  public void woosh() {
+    if (paused) return;
+    woosh[ R.nextInt(nFW) ].play(Persistence.getInstance().sfxLevel);
+  }
+
+  public void boom() {
+    if (paused) return;
+    boom[ R.nextInt(nBoom) ].play(Persistence.getInstance().sfxLevel);
   }
 
   public void zap() {
@@ -171,6 +194,12 @@ public class Sounds {
     electric[1] = Gdx.audio.newSound(Gdx.files.internal("Electric2-SoundBible.com-742005847.mp3"));
     electric[2] = Gdx.audio.newSound(Gdx.files.internal("Electric3-SoundBible.com-1450168875.mp3"));
     demolish = Gdx.audio.newSound(Gdx.files.internal("441497__mattix__retro-explosion-05.wav"));
+    fanfare = Gdx.audio.newSound(Gdx.files.internal("321937__pel2na__two-kazoo-fanfare.wav"));
+    woosh[0] = Gdx.audio.newSound(Gdx.files.internal("250200__selector__rocket-launch_1.wav"));
+    woosh[1] = Gdx.audio.newSound(Gdx.files.internal("250200__selector__rocket-launch_2.wav"));
+    boom[0] = Gdx.audio.newSound(Gdx.files.internal("250200__selector__rocket-launch_boom1.wav"));
+    boom[1] = Gdx.audio.newSound(Gdx.files.internal("250200__selector__rocket-launch_boom2.wav"));
+    boom[2] = Gdx.audio.newSound(Gdx.files.internal("250200__selector__rocket-launch_boom3.wav"));
   }
 
 }
