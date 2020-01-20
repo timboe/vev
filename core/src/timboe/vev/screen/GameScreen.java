@@ -200,7 +200,7 @@ public class GameScreen implements Screen {
       fadeIn -= delta * Param.FADE_SPEED_GAME;
       if (fadeIn < 0) {
         state.initialZap();
-        state.doRightClick();
+        state.showMainUITable(false);
         StateManager.getInstance().gameScreenFadeComplete();
       }
     }
@@ -230,8 +230,13 @@ public class GameScreen implements Screen {
 
   @Override
   public void pause() {
+//    if (StateManager.getInstance().fsm == FSM.kFADE_TO_INTRO) {
+//      return; // Don't pause music if going to the intro screen
+//    }
     Sounds.getInstance().pause();
-    UI.getInstance().showSettings();
+    if (StateManager.getInstance().fsm == FSM.kGAME) {
+      UI.getInstance().showSettings();
+    }
   }
 
   @Override

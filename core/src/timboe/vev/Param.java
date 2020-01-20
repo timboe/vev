@@ -169,6 +169,7 @@ public class Param {
   public static final int HSB_SHADOW_BRIGHTNESS = 31;
 
   public static final int DEBUG_INITIAL = 0;
+  public static final boolean CHEATS = true;
   private static final boolean FAKE_ANDROID = false;
   public static final boolean IS_ANDROID = FAKE_ANDROID || Gdx.app.getType() == Application.ApplicationType.Android;
 

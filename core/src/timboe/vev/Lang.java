@@ -50,6 +50,12 @@ public class Lang {
     EN_GB.put("fullscreen","Toggles fullscreen mode.");
     EN_GB.put("volume","Changes the volume.");
     EN_GB.put("settingsTime","Current game time.");
+    EN_GB.put("newGameOpeningA","This White Hole has spawned the first # particles into the land.");
+    EN_GB.put("newGameOpeningB","# more particles will follow, then the White Holes will be depleted.");
+    EN_GB.put("newGameOpeningC","Deconstruct every particle in the shortest possible time.");
+    EN_GB.put("ok","OK");
+    EN_GB.put("midGame","The White Holes are empty!\nDeconstruct the remaining # particles in the shortest possible time.");
+
 
     EN_GB.put("UI_NEW", "NEW GAME");
     EN_GB.put("UI_LOAD", "CONTINUE");
@@ -76,17 +82,17 @@ public class Lang {
     EN_GB.put("UI_GENERATING", "GENERATING");
     EN_GB.put("UI_TIME", "Time");
     EN_GB.put("UI_FINISHED", "FINISHED!");
-    EN_GB.put("UI_END_TIME", "YOUR TIME:#s");
-    EN_GB.put("UI_END_BEST_TIME", "BEST TIME:#s");
-    EN_GB.put("UI_BUILDINGS_PLACED", "BUILDINGS PLACED:#");
-    EN_GB.put("UI_BUILDINGS_DESTROYED", "BUILDINGS DESTROYED:#");
-    EN_GB.put("UI_PARTICLES_DESTROYED", "PARTICLES DECONSTRUCTED:#");
-    EN_GB.put("UI_PARTICLE_BOUNCES", "PARTICLE BOUNCIES:#");
-    EN_GB.put("UI_DIFFICULTY", "GAME LENGTH:#");
-    EN_GB.put("UI_TIBERIUM_MINED", "ORE MINED:#");
-    EN_GB.put("UI_TREES_DEMOLISHED", "TREES BULLDOZED:#");
-    EN_GB.put("UI_TAPS", "CLICKS:#");
-    EN_GB.put("UI_BUILDING_UPGRADES", "BUILDING UPGRADES:#");
+    EN_GB.put("UI_END_TIME", "YOUR TIME: #s");
+    EN_GB.put("UI_END_BEST_TIME", "BEST TIME: #s");
+    EN_GB.put("UI_BUILDINGS_PLACED", "BUILDINGS PLACED: #");
+    EN_GB.put("UI_BUILDINGS_DESTROYED", "BUILDINGS DESTROYED: #");
+    EN_GB.put("UI_PARTICLES_DESTROYED", "PARTICLES DECONSTRUCTED: #");
+    EN_GB.put("UI_PARTICLE_BOUNCES", "PARTICLE BOUNCIES: #");
+    EN_GB.put("UI_DIFFICULTY", "GAME LENGTH: #");
+    EN_GB.put("UI_TIBERIUM_MINED", "ORE MINED: #");
+    EN_GB.put("UI_TREES_DEMOLISHED", "TREES BULLDOZED: #");
+    EN_GB.put("UI_TAPS", "CLICKS: #");
+    EN_GB.put("UI_BUILDING_UPGRADES", "BUILDING UPGRADES: #");
 
 
     EN_GB.put("UI_HELP_00", "A game by Tim Martin");
@@ -146,7 +152,9 @@ public class Lang {
     EN_GB.put("UI_HELP_D_10", "FxKid2: Cute Walk Run 2. tix99: skiffy1-9");
     EN_GB.put("UI_HELP_D_11", "waveplay_old: Short Click. Raclure: Affirmative");
     EN_GB.put("UI_HELP_D_12", "MATTIX: Retro Explosion 5. Mark DiAngelo: Blip");
-    EN_GB.put("UI_HELP_D_13", "man: Swoosh 1. ");
+    EN_GB.put("UI_HELP_D_13", "man: Swoosh 1. Selector: rocket launch");
+    EN_GB.put("UI_HELP_D_14", "pel2na: Two Kazoo Fanfare");
+
   }
 
   private static HashMap<String, String> EN_GB = new HashMap<String, String>();

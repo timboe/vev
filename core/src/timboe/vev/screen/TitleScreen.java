@@ -33,7 +33,6 @@ public class TitleScreen implements Screen {
   @Override
   public void show() {
     camera.setHelpPos(0, true);
-    GameState.getInstance().doRightClick();
     state.addParticles();
     transitionOutTimers[0] = transitionOutTimers[1] = transitionOutTimers[2] = 0;
   }
@@ -51,7 +50,6 @@ public class TitleScreen implements Screen {
     world.act(delta);
     camera.update(delta);
     state.act(delta);
-//    ui.act(delta);
 
 //    state.getIntroTileStage().getRoot().setCullingArea( camera.getCullBoxTile() );
 

@@ -5,7 +5,6 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.utils.viewport.FitViewport;
 
 import timboe.vev.Param;
 import timboe.vev.enums.UIMode;
@@ -46,7 +45,7 @@ public class Gesture implements GestureDetector.GestureListener {
     ++GameState.getInstance().taps;
 
     if (button == Input.Buttons.RIGHT) {
-      state.doRightClick();
+      state.showMainUITable(false);
     } else if (!Param.IS_ANDROID && ui.uiMode == UIMode.kPLACE_BUILDING) {
       state.placeBuilding();
     } else if (!Param.IS_ANDROID && ui.uiMode == UIMode.kWITH_BUILDING_SELECTION && GameState.getInstance().doingPlacement) {
@@ -57,7 +56,7 @@ public class Gesture implements GestureDetector.GestureListener {
       boolean selectedJustNow = state.doParticleSelect(false); // rangeBased = false
       if (!selectedJustNow && !state.selectedSet.isEmpty()) {
         state.doParticleMoveOrder((int) v3temp.x, (int) v3temp.y);
-        if (Param.IS_ANDROID) state.doRightClick();
+        if (Param.IS_ANDROID) state.showMainUITable(false);
       }
     }
     return false;

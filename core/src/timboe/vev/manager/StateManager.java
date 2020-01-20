@@ -76,7 +76,6 @@ public class StateManager {
       Persistence.getInstance().flushSaveGame();
     } else {
       World.getInstance().reset(false);
-      Persistence.getInstance().deleteSave();
     }
     UIIntro.getInstance().resetTitle("main");
   }
@@ -113,7 +112,7 @@ public class StateManager {
     }
     fsm = FSM.kGAME;
     theGameScreen.doInputHandles();
-    GameState.getInstance().doRightClick();
+    GameState.getInstance().showMainUITable(false);
   }
 
   public void gameOver() {
@@ -122,6 +121,8 @@ public class StateManager {
     }
     fsm = FSM.kGAME_OVER;
     UI.getInstance().showFin();
+    Persistence.getInstance().deleteSave();
+    Sounds.getInstance().fanfare();
   }
 
   public void dispose() {

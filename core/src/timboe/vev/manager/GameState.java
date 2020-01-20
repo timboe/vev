@@ -80,6 +80,7 @@ public class GameState {
   public int tiberiumMined;
   public int upgradesPurchased;
   public int taps;
+  private boolean shownMidGame;
   //
   public int debug;
   public int entityID;
@@ -115,6 +116,7 @@ public class GameState {
     json.put("treesBulldozed", treesBulldozed);
     json.put("upgradesPurchased", upgradesPurchased);
     json.put("taps", taps);
+    json.put("shownMidGame", shownMidGame);
     json.put("inWorldParticles", inWorldParticles);
     json.put("warpParticles", warpParticles);
     json.put("warpSpawnTime", warpSpawnTime);
@@ -176,6 +178,7 @@ public class GameState {
     particleBounces = json.getInt("particleBounces");
     upgradesPurchased = json.getInt("upgradesPurchased");
     taps = json.getInt("taps");
+    shownMidGame = json.getBoolean("shownMidGame");
     tiberiumMined = json.getInt("tiberiumMined");
     treesBulldozed = json.getInt("treesBulldozed");
     warpParticles = json.getInt("warpParticles");
@@ -308,12 +311,10 @@ public class GameState {
       cursorTile = World.getInstance().getTile(cursor.x, cursor.y, false);
     }
 
-    if (doingPlacement) { // TODO - need this check?
-      if (UI.getInstance().uiMode == UIMode.kPLACE_BUILDING) {
-        hintBuildingPlacement(cursorTile);
-      } else if (UI.getInstance().uiMode == UIMode.kWITH_BUILDING_SELECTION) {
-        hintStandingOrder(cursorTile);
-      }
+    if (UI.getInstance().uiMode == UIMode.kPLACE_BUILDING) {
+      hintBuildingPlacement(cursorTile);
+    } else if (UI.getInstance().uiMode == UIMode.kWITH_BUILDING_SELECTION && doingPlacement) {
+      hintStandingOrder(cursorTile);
     }
 
     if (UI.getInstance().uiMode == UIMode.kWITH_PARTICLE_SELECTION && cursorTile != null) {
@@ -328,7 +329,17 @@ public class GameState {
       }
     }
 
+    if (!shownMidGame && warpParticles == 0) {
+      UI.getInstance().spawnOverDiag(inWorldParticles);
+      shownMidGame = true;
+    }
+
     tickTime += delta;
+    boolean won = (inWorldParticles == 0 && warpParticles == 0 && toFocusOn.holdinPenEmpty());
+    if (won) {
+      StateManager.getInstance().gameOver();
+      return;
+    }
     boolean tooFew = (inWorldParticles < 10 && warpParticles > 0 && toFocusOn.holdinPenEmpty());
     if (!tooFew && tickTime < warpSpawnTime) return;
     if (tooFew) {
@@ -381,11 +392,11 @@ public class GameState {
     }
   }
 
-  public void tryNewParticles(boolean stressTest, Warp from, int floor) {
+  public int tryNewParticles(boolean stressTest, Warp from, int floor) {
     // Add a new sprite
     if (from == null) {
       List<Map.Entry<Integer, Warp>> entries = new ArrayList<Map.Entry<Integer, Warp>>(warpMap.entrySet());
-      if (entries.size() == 0) return;
+      if (entries.size() == 0) return 0;
       Map.Entry<Integer, Warp> rWarp = entries.get(R.nextInt(entries.size()));
       from = rWarp.getValue();
     }
@@ -394,18 +405,19 @@ public class GameState {
         Util.clamp(newParticlesMean + ((float)R.nextGaussian() * newParticlesWidth), 1, Param.NEW_PARTICLE_MAX)
     );
     if (stressTest) toPlace = 1000000;
-    boolean placed = from.newParticles(toPlace, stressTest);
+    int placed = from.newParticles(toPlace, stressTest);
     Gdx.app.debug("GameState:act","Warp: SpawnTime: "+warpSpawnTime + " meanP: "
         + newParticlesMean + " widthP: " + newParticlesWidth
         + " place:" + toPlace + " placed:" + placed);
 
-    if (placed) {
+    if (placed > 0) {
       from.zap.start(); // Lightning
       if (Camera.getInstance().addShake(from, Param.WARP_SHAKE)) {
         // If did shake, then also do zap
         Sounds.getInstance().zap();
       }
     }
+    return placed;
   }
 
   public void boomDustEffect(Tile t) {
@@ -434,7 +446,17 @@ public class GameState {
     s.remove(); // From its renderer
   }
 
-  public void killSelectedBuilding() {
+  // Note: this is a cheat fn
+  public void killSelectedParticles() {
+    Set<Integer> selectedSetCopy = new HashSet<Integer>(selectedSet);
+    for (int p : selectedSetCopy) {
+      Sprite s = particleMap.get(p);
+      killSprite(s);
+    }
+    if (selectedSet.isEmpty()) showMainUITable(false);
+    else UI.getInstance().doSelectParticle(selectedSet);
+  }
+    public void killSelectedBuilding() {
     Building selected = getBuildingMap().remove( selectedBuilding );
     if (selected == null) {
       Gdx.app.error("killSelectedBuilding", "Trying to kill NULL selected building?! selectedBuilding is " + selectedBuilding);
@@ -474,7 +496,7 @@ public class GameState {
       reallocateTrucks();
     }
     // Return to main menu
-    doRightClick();
+    showMainUITable(false);
   }
 
   private void reallocateTrucks() {
@@ -562,14 +584,14 @@ public class GameState {
       reallocateTrucks(); // In case we had any orphaned
     }
     updateBuildingPrices();
-    UI.getInstance().showMain();
+    showMainUITable(false);
   }
 
-  public void doRightClick() {
+  public void showMainUITable(boolean allowDismissSettingsWindow) {
     if (StateManager.getInstance().fsm != FSM.kGAME) {
       return;
     }
-    if (UI.getInstance().uiMode == UIMode.kSETTINGS) {
+    if (UI.getInstance().uiMode == UIMode.kSETTINGS && !allowDismissSettingsWindow) {
       return;
     }
     if (selectedSet.size() > 0 || selectedBuilding != 0) {
@@ -602,7 +624,7 @@ public class GameState {
     }
     selectedSet.remove(s.id);
     s.selected = false;
-    if (selectedSet.isEmpty()) UI.getInstance().showMain();
+    if (selectedSet.isEmpty()) showMainUITable(false);
     else UI.getInstance().doSelectParticle(selectedSet);
   }
 
@@ -618,7 +640,7 @@ public class GameState {
       }
     }
     selectedSet.removeAll(toRemove);
-    if (selectedSet.isEmpty()) UI.getInstance().showMain();
+    if (selectedSet.isEmpty()) showMainUITable(false);
     else UI.getInstance().doSelectParticle(selectedSet);
   }
 
@@ -816,11 +838,17 @@ public class GameState {
   }
 
   public void initialZap() {
+    if (inWorldParticles > 0) {
+      // Only for a new game
+      return;
+    }
     Iterator it = warpMap.values().iterator();
     toFocusOn = (Warp) it.next();
+    int placed = 0;
     for (int i = 0; i < R.nextInt(3)+1; ++i) {
-      tryNewParticles(false, toFocusOn, 20);
+      placed += tryNewParticles(false, toFocusOn, 20);
     }
+    UI.getInstance().newGameDiag(placed, warpParticles);
   }
 
   public Stage getTileStage() {
@@ -890,6 +918,7 @@ public class GameState {
     tiberiumMined = 0;
     upgradesPurchased = 0;
     taps = 0;
+    shownMidGame = false;
     treesBulldozed = 0;
     warpParticles = 0;
     debug = Param.DEBUG_INITIAL;

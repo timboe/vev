@@ -7,8 +7,6 @@ import com.badlogic.gdx.InputAdapter;
 import timboe.vev.Param;
 import timboe.vev.manager.Camera;
 import timboe.vev.manager.GameState;
-import timboe.vev.manager.Sounds;
-import timboe.vev.manager.World;
 
 public class Handler extends InputAdapter {
 
@@ -22,7 +20,7 @@ public class Handler extends InputAdapter {
     if (button == Input.Buttons.LEFT && GameState.getInstance().isSelecting()) {
       Gdx.app.log("touchUp", "End selecting");
       boolean result = GameState.getInstance().doParticleSelect(true);
-      if (!result) GameState.getInstance().doRightClick(); // Cancel
+      if (!result) GameState.getInstance().showMainUITable(false); // Cancel
       return true; // Consume
     }
     return false;

@@ -1232,7 +1232,7 @@ public class World {
         tiles[Param.TILES_X - 1 - xMod][Param.TILES_Y - 1 - y].setHighlightColour(c, Cardinal.kNONE);
 
       }
-//      c.a = 1;
+      c.a = 1;
     }
   }
 

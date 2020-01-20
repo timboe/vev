@@ -2,7 +2,6 @@ package timboe.vev.manager;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
@@ -155,11 +154,15 @@ public class Camera {
     }
 
     if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE) && StateManager.getInstance().fsm == FSM.kGAME) {
-      if (UI.getInstance().uiMode == UIMode.kNONE) {
+      if (UI.getInstance().uiMode == UIMode.kSETTINGS) {
+        GameState.getInstance().showMainUITable(true);
+      } else {
         UI.getInstance().showSettings();
-      } else if (UI.getInstance().uiMode == UIMode.kSETTINGS) {
-        UI.getInstance().showMain();
       }
+    }
+
+    if (Param.CHEATS && Gdx.input.isKeyJustPressed(Input.Keys.BACKSPACE)) {
+      GameState.getInstance().killSelectedParticles();
     }
 
     // Following are only allowed in-game or game over mode

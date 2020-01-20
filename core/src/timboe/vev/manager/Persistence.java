@@ -79,11 +79,17 @@ public class Persistence {
         objectIn.close();
       } catch (IOException e) {
         e.printStackTrace();
+        Gdx.app.log("tryLoadGameSave","IOException!");
       } catch (ClassNotFoundException e) {
         e.printStackTrace();
+        Gdx.app.log("ClassNotFoundException","IOException!");
       } catch (JSONException e) {
         e.printStackTrace();
+        Gdx.app.log("JSONException","IOException!");
       }
+      Gdx.app.log("tryLoadGameSave", "Load save complete");
+    } else {
+      Gdx.app.log("tryLoadGameSave", "No save file");
     }
   }
 
@@ -109,6 +115,7 @@ public class Persistence {
         bestTimes.add(json.getInt("bestTime3"));
       } catch (JSONException e) {
         e.printStackTrace();
+        Gdx.app.log("tryLoadSetting","JSONException! Resetting");
         reset();
       }
     }
@@ -148,6 +155,7 @@ public class Persistence {
       save.put("World", World.getInstance().serialise());
     } catch (JSONException e) {
       e.printStackTrace();
+      Gdx.app.error("trySaveGame","JSONException!");
     }
   }
 
@@ -167,6 +175,7 @@ public class Persistence {
       baos.writeTo(handle.write(false));
     } catch (IOException e) {
       e.printStackTrace();
+      Gdx.app.error("flushSaveGame","IOException!");
     }
   }
 
@@ -175,6 +184,7 @@ public class Persistence {
     FileHandle fh = Gdx.files.local(Param.SAVE_FILE);
     fh.delete();
     save = null;
+    Gdx.app.log("deleteSave","WARNING!!! Deleting save game");
   }
 
   public void dispose() {

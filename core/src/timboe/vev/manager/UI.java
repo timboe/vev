@@ -1,13 +1,14 @@
 package timboe.vev.manager;
 
-import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.g2d.NinePatch;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
+import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.ProgressBar;
@@ -145,9 +146,6 @@ public class UI {
 
     dfShader_medium = new ShaderProgram(Gdx.files.internal("font.vert"), Gdx.files.internal("font_medium.frag"));
     if (!dfShader_medium.isCompiled()) Gdx.app.error("dfShader_medium", "compilation failed:\n" + dfShader_medium.getLog());
-
-//    dfShader_small = new ShaderProgram(Gdx.files.internal("font.vert"), Gdx.files.internal("font_small.frag"));
-//    if (!dfShader_small.isCompiled()) Gdx.app.error("dfShader_small", "compilation failed:\n" + dfShader_small.getLog());
 
     dfShader = new ShaderProgram(Gdx.files.internal("font.vert"), Gdx.files.internal("font.frag"));
     if (!dfShader.isCompiled()) Gdx.app.error("fontShader", "compilation failed:\n" + dfShader.getLog());
@@ -443,9 +441,7 @@ public class UI {
     settings.addListener(new ChangeListener() {
       @Override
       public void changed(ChangeEvent event, Actor actor) {
-//        UI.getInstance().showSettings();
-        StateManager.getInstance().gameOver();
-
+        UI.getInstance().showSettings();
       }
     });
     addToWin(mainWindow, settings, SIZE_L + SIZE_M, SIZE_L, 2);
@@ -630,7 +626,8 @@ public class UI {
     resume.addListener(new ChangeListener() {
       @Override
       public void changed(ChangeEvent event, Actor actor) {
-        showMain();
+        uiMode = uiMode.kNONE;
+        GameState.getInstance().showMainUITable(true);
       }
     });
     addToWin(settingsWindow, resume, SIZE_L*2 + SIZE_M, SIZE_L, 2);
@@ -682,7 +679,7 @@ public class UI {
     }
 
     updateButtonPriceStatus();
-    showMain();
+    GameState.getInstance().showMainUITable(false);
 
   }
 
@@ -781,10 +778,8 @@ public class UI {
   public void showFin() {
     final int gameTime = Math.round(GameState.getInstance().gameTime);
     int bestTime = Persistence.getInstance().bestTimes.get(GameState.getInstance().difficulty);
-    boolean best = false;
     if (gameTime < bestTime || bestTime == 0) {
       bestTime = gameTime;
-      best = true;
       Persistence.getInstance().bestTimes.set(GameState.getInstance().difficulty, bestTime);
     }
     String difStr = "";
@@ -830,24 +825,27 @@ public class UI {
     LabelDF bonus = buildingUpgradeLabelBonus.get(b.getType());
     LabelDF costLabel = buildingUpgradeLabelCost.get(b.getType());
     LabelDF upgradeTime = buildingUpgradeLabelTime.get(b.getType());
-    String usb = "x" + df2.format(1f/b.getAverageNextUpgradeFactor());
+    String usb = "x" + df2.format(b.getAverageNextUpgradeFactor());
     bonus.setText( usb );
     String ugc = String.valueOf(b.getUpgradeCost());
     costLabel.setText( ugc );
-    String ugt = df2.format(b.getUpgradeTime()) + " s";
+    float ugTime = b.getUpgradeTime();
+    if (ugTime > 10) {
+      ugTime = Math.round(ugTime);
+    }
+    String ugt = df2.format(ugTime) + " s";
     upgradeTime.setText( ugt );
-    com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle style = skin.get(com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle.class);
     final boolean canAfford = (cost <= GameState.getInstance().playerEnergy);
     if (!canAfford) {
       upgradeButton.setDisabled(true);
-      bonus.getStyle().fontColor = style.disabledFontColor;
-      costLabel.getStyle().fontColor = style.disabledFontColor;
-      upgradeTime.getStyle().fontColor = style.disabledFontColor;
+      bonus.setStyle( skin.get("disabled", Label.LabelStyle.class));
+      costLabel.setStyle( skin.get("disabled", Label.LabelStyle.class));
+      upgradeTime.setStyle( skin.get("disabled", Label.LabelStyle.class));
     } else {
       upgradeButton.setDisabled(false);
-      bonus.getStyle().fontColor = style.fontColor;
-      costLabel.getStyle().fontColor = style.fontColor;
-      upgradeTime.getStyle().fontColor = style.fontColor;
+      bonus.setStyle( skin.get("default", Label.LabelStyle.class));
+      costLabel.setStyle( skin.get("default", Label.LabelStyle.class));
+      upgradeTime.setStyle( skin.get("default", Label.LabelStyle.class));
     }
     TextTooltipDF ttt = buildingUpgradeToolTip.get(b.getType());
     String s = Lang.get("upgradeBuilding_A")
@@ -893,6 +891,31 @@ public class UI {
     if (GameState.getInstance().debug > 0) table.debugAll();
     uiMode = UIMode.kWITH_PARTICLE_SELECTION;
     Sounds.getInstance().selectOrder();
+  }
+
+  public void newGameDiag(int initialSpawn, int remainingToSpawn) {
+    Dialog d = new Dialog("", skin);
+    d.pad(PAD*4);
+    d.getContentTable().pad(PAD*4);
+    d.getButtonTable().pad(PAD*4);
+    String header = Lang.get("newGameOpeningA#" + formatter.format(initialSpawn)) + "\n";
+    header += Lang.get("newGameOpeningB#" + formatter.format(remainingToSpawn)) + "\n";
+    header += Lang.get("newGameOpeningC");
+    d.key(Input.Keys.ENTER,0).key(Input.Keys.SPACE, 0).key(Input.Keys.ESCAPE, 0);
+    d.text(getLabel(header,""));
+    d.button(getTextButton(Lang.get("ok"),""),0);
+    d.show(GameState.getInstance().getUIStage());
+  }
+
+  public void spawnOverDiag(int remainingInWorld) {
+    Dialog d = new Dialog("", skin);
+    d.pad(PAD*4);
+    d.getContentTable().pad(PAD*4);
+    d.getButtonTable().pad(PAD*4);
+    d.key(Input.Keys.ENTER,0).key(Input.Keys.SPACE, 0).key(Input.Keys.ESCAPE, 0);
+    d.text(getLabel(Lang.get("midGame#" + formatter.format(remainingInWorld)),""));
+    d.button(getTextButton(Lang.get("ok"),""),0);
+    d.show(GameState.getInstance().getUIStage());
   }
 
   public void showMain() {

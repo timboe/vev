@@ -47,7 +47,7 @@ public class YesNoButton extends ChangeListener {
 
     // In game
     if (N) {
-      GameState.getInstance().doRightClick();
+      GameState.getInstance().showMainUITable(false);
     } else { // Y
       switch (UI.getInstance().uiMode) {
         case kPLACE_BUILDING:
