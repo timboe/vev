@@ -31,6 +31,8 @@ import timboe.vev.Param;
 import timboe.vev.enums.Particle;
 import timboe.vev.enums.UIMode;
 import timboe.vev.input.FullscreenToggle;
+import timboe.vev.input.NewGameButton;
+import timboe.vev.input.NewGameDiag;
 
 public class UIIntro {
   private static UIIntro ourInstance = null;
@@ -44,6 +46,8 @@ public class UIIntro {
   private Set<Image> ballImages = new HashSet<Image>();
 
   public FullscreenToggle fsListener = new FullscreenToggle();
+  public NewGameButton newGameButton = new NewGameButton();
+  public NewGameDiag newGameDiag = null;
 
   public int helpLevel = 1;
 
@@ -155,6 +159,7 @@ public class UIIntro {
     addHelpLabel(h4, Lang.get("UI_HELP_D_11"), h1pad+64);
     addHelpLabel(h4, Lang.get("UI_HELP_D_12"), h1pad+64);
     addHelpLabel(h4, Lang.get("UI_HELP_D_13"), h1pad+64);
+    addHelpLabel(h4, Lang.get("UI_HELP_D_14"), h1pad+64);
 
   }
 
@@ -194,16 +199,17 @@ public class UIIntro {
     addHelpLabel(t,s,left, 2);
   }
 
-  private void addHelpLabel(Table t, String s) {
-    addHelpLabel(t,s,32, 2);
-  }
-
   public void resetTitle(String toShow) {
     final UI ui = UI.getInstance();
 
     // We only need to generate this once
     if (tableHelp == null) {
       reset();
+    }
+
+    if (newGameDiag == null) {
+      newGameDiag = new NewGameDiag("", ui.skin);
+      newGameButton.setDiag(newGameDiag);
     }
 
     Table titleWindow = ui.getWindow();
@@ -249,66 +255,12 @@ public class UIIntro {
     ui.uiMode = UIMode.kNONE;
 
     final Button newGame = ui.getTextButton(Lang.get("UI_NEW"), "newGame");
-    newGame.addListener(new ChangeListener() {
-      @Override
-      public void changed(ChangeEvent event, Actor actor) {
-        Dialog newGameDialog = new Dialog("", ui.skin) {
-          protected void result(Object object) {
-            if ((Integer) object >= 0) {
-              GameState.getInstance().difficulty = (Integer) object;
-              switch ((Integer) object) {
-                case 0:
-                  GameState.getInstance().warpParticles = Param.PARTICLES_SMALL;
-                  break;
-                case 1:
-                  GameState.getInstance().warpParticles = Param.PARTICLES_MED;
-                  break;
-                case 2:
-                  GameState.getInstance().warpParticles = Param.PARTICLES_LARGE;
-                  break;
-                case 3:
-                  GameState.getInstance().warpParticles = Param.PARTICLES_XL;
-                  break;
-                default:
-                  Gdx.app.error("NewGame", "Unknown button " + object);
-              }
-              if (!World.getInstance().getGenerated()) World.getInstance().launchAfterGen = true;
-              else StateManager.getInstance().transitionToGameScreen();
-            } else {
-              Gdx.app.log("result","Pressed CANCEL");
-            }
-          }
-        };
-        String header = Lang.get("UI_GAME_LENGTH");
-        header += "\n" + Lang.get("UI_SHORT") + Lang.get("UI_N_PARTICLES#" + Param.PARTICLES_SMALL);
-        header += Lang.get("UI_BEST_TIME#"+ (Persistence.getInstance().bestTimes.get(0) == 0 ? "N/A" : Persistence.getInstance().bestTimes.get(0)) );
-        header += "\n" + Lang.get("UI_MED") + Lang.get("UI_N_PARTICLES#" + Param.PARTICLES_MED);
-        header += Lang.get("UI_BEST_TIME#"+ (Persistence.getInstance().bestTimes.get(1) == 0 ? "N/A" : Persistence.getInstance().bestTimes.get(1)) );
-        header += "\n" + Lang.get("UI_LONG") + Lang.get("UI_N_PARTICLES#" + Param.PARTICLES_LARGE);
-        header += Lang.get("UI_BEST_TIME#"+ (Persistence.getInstance().bestTimes.get(2) == 0 ? "N/A" : Persistence.getInstance().bestTimes.get(2)) );
-        header += "\n" + Lang.get("UI_XL") + Lang.get("UI_N_PARTICLES#" + Param.PARTICLES_XL);
-        header += Lang.get("UI_BEST_TIME#"+ (Persistence.getInstance().bestTimes.get(3) == 0 ? "N/A" : Persistence.getInstance().bestTimes.get(3)) );
-        newGameDialog.pad(ui.PAD * 4);
-        newGameDialog.getContentTable().pad(ui.PAD * 4);
-        newGameDialog.getButtonTable().pad(ui.PAD * 4);
-        newGameDialog.align(Align.center);
-        newGameDialog.text(ui.getLabel(header, ""));
-        newGameDialog.button(ui.getTextButton(Lang.get("UI_SHORT"), ""), 0);
-        newGameDialog.button(ui.getTextButton(Lang.get("UI_MED"), ""), 1);
-        newGameDialog.button(ui.getTextButton(Lang.get("UI_LONG"), ""), 2);
-        newGameDialog.button(ui.getTextButton(Lang.get("UI_XL"), ""), 3);
-        newGameDialog.getButtonTable().row();
-        Button c = ui.getTextButton(Lang.get("UI_CANCEL"), "");
-        newGameDialog.button(c, -1);
-        newGameDialog.getButtonTable().getCell(c).colspan(4);
-        newGameDialog.key(Input.Keys.ENTER, 2).key(Input.Keys.ESCAPE, 0);
-        newGameDialog.show(IntroState.getInstance().getUIStage());
-      }
-    });
+    newGame.addListener(newGameButton);
     titleWindow.add(newGame).pad(ui.SIZE_S/2).colspan(2).fillX();
 
     titleWindow.row();
     ui.separator(titleWindow, 1);
+    Gdx.app.log("DBG","WINDOW MAIN");
     Button loadGame = ui.getTextButton(Lang.get("UI_LOAD"), "loadGame");
     loadGame.addListener(new ChangeListener() {
       @Override
@@ -317,7 +269,11 @@ public class UIIntro {
       }
     });
     if (Persistence.getInstance().save == null) {
+      Gdx.app.log("windowMain","No save game, LOAD disabled");
       loadGame.setDisabled(true);
+    } else {
+      Gdx.app.log("windowMain","Found save game, LOAD enabled");
+      loadGame.setDisabled(false);
     }
     titleWindow.add(loadGame).pad(ui.SIZE_S/2).colspan(1).fillX();
 

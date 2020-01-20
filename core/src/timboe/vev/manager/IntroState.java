@@ -203,6 +203,11 @@ public class IntroState {
   public void act(float delta) {
     introSpriteStage.act(delta);
     introWarpStage.act(delta);
+    introUIStage.act(delta);
+//    introBuildingStage is static
+//    introFoliageStage is static
+//    introHelpStage is static
+//    introTileStage is static
   }
 
   public void retextureSprites() {
