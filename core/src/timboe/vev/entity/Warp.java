@@ -59,7 +59,7 @@ public class Warp extends Building {
       String key = (String) startIt.next();
       IVector2 v = new IVector2( startPointJson.getJSONObject(key));
       pathingStartPointWarp.put( Particle.valueOf(key), v );
-      Gdx.app.log("warp deserialise","Particle "+key+" starts from "+v);
+//      Gdx.app.log("warp deserialise","Particle "+key+" starts from "+v);
     }
 
     int fxX = coordinates.x + (Param.WARP_SIZE/2) - 2;
@@ -131,8 +131,8 @@ public class Warp extends Building {
     return World.getInstance().getTile( pathingStartPointWarp.get(p), isIntro).coordinates;
   }
 
-  public boolean newParticles(int toPlace, boolean stressTest) {
-    boolean placed = false;
+  public int newParticles(int toPlace, boolean stressTest) {
+    int placed = 0;
     float rand = Util.R.nextFloat() + 0.1f; // This extra allows for random
     Particle toPlaceParticle = null;
     for (Particle p : Particle.values()) {
@@ -150,7 +150,7 @@ public class Warp extends Building {
       if (GameState.getInstance().warpParticles > 0) {
         --GameState.getInstance().warpParticles;
         placeParticle(p, false);
-        placed = true;
+        ++placed;
       }
     }
     return placed;

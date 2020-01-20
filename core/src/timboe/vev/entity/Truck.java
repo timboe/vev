@@ -1,6 +1,7 @@
 package timboe.vev.entity;
 
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.google.gwt.thirdparty.json.JSONException;
 import com.google.gwt.thirdparty.json.JSONObject;
@@ -33,6 +34,9 @@ public class Truck extends Sprite {
   public int level = 0;
   public int myBuilding;
   public int extraFrames;
+
+  // Transient
+  float toRemove = 0;
 
   public JSONObject serialise() throws JSONException {
     JSONObject json = super.serialise();
@@ -129,15 +133,19 @@ public class Truck extends Sprite {
       case kOFFLOAD:
         // Was deconstructed?
         if (actionsPaused) return;
-        float toRemove = getSpeed() * delta;
+        this.toRemove += getSpeed() * delta;
         if (toRemove > this.holding) toRemove = this.holding;
-        this.holding -= toRemove;
-        if (Util.R.nextFloat() > 0.8f) {
-          IVector2 v = myB.coordinates;
-          GameState.getInstance().upgradeDustEffect( World.getInstance().getTile( v.x + 1, v.y + 2, isIntro) );
+        int toRemoveInt = Math.round(toRemove);
+        if (toRemoveInt > 0) {
+          this.holding -= toRemoveInt;
+          this.toRemove -= toRemoveInt;
+          if (Util.R.nextFloat() > 0.8f) {
+            IVector2 v = myB.coordinates;
+            GameState.getInstance().upgradeDustEffect(World.getInstance().getTile(v.x + 1, v.y + 2, isIntro));
+          }
+          this.extraFrames = Math.round((this.holding / getCapacity()) * (Param.N_TRUCK_SPRITES - 1));
+          GameState.getInstance().addEnergy(toRemoveInt);
         }
-        this.extraFrames = Math.round((this.holding / getCapacity()) * (Param.N_TRUCK_SPRITES - 1));
-        GameState.getInstance().playerEnergy += toRemove;
         if (holding < 1f) {
           Tile destination = myB.getBuildingDestination(Particle.kBlank);
           if (destination == null) {

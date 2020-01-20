@@ -292,7 +292,7 @@ public class Building extends Entity {
       return (bonus / nTruck);
     }
     // Else
-    return (float)Math.pow(Param.BUILDING_DISASSEMBLE_BONUS, buildingLevel + 1);
+    return 1f/(float)Math.pow(Param.BUILDING_DISASSEMBLE_BONUS, buildingLevel + 1);
   }
 
   public void updatePathingStartPoint() {
@@ -599,7 +599,7 @@ public class Building extends Entity {
   }
 
   public boolean upgradeBuilding() {
-    if (built > 0) return false; // Not built yet
+    if (built > 0 || this.clock == 0) return false; // Not built yet
     final int cost = getUpgradeCost();
     if (GameState.getInstance().playerEnergy < cost) return false; // Cannot afford
     doUpgrade = true;
@@ -607,7 +607,10 @@ public class Building extends Entity {
     GameState.getInstance().playerEnergy -= cost;
     addCost(cost);
     clockVisible = true;
-    GameState.getInstance().getBuildingExtrasMap().get( clock ).setVisible(true);
+    Entity c = GameState.getInstance().getBuildingExtrasMap().get( clock );
+    if (c != null) {
+      c.setVisible(true);
+    }
     Sounds.getInstance().OK();
     ++GameState.getInstance().upgradesPurchased;
     return true;

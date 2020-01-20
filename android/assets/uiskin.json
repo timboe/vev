@@ -69,6 +69,7 @@
 },
   com.badlogic.gdx.scenes.scene2d.ui.Label$LabelStyle: {
   default: {font: default-font, fontColor: white },
+  disabled: {font: default-font, fontColor: grey },
   wide: {font: wide-font, fontColor: white },
   title: {font: fixed-width-font, fontColor: white },
   link-label: {fontColor: link-label, font: default-font },

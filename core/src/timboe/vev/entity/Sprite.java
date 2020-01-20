@@ -101,7 +101,7 @@ public class Sprite extends Entity {
     }
     if (target.getPathFindNeighbours().isEmpty()) target = findPathingLocation(target, true, false, true, isIntro); // Find nearby, reproducible TRUE, require parking FALSE, sameHeight TRUE
     pathingList = (t != null && target != null ? PathFinding.doAStar(t.coordinates, target.coordinates, solutionKnownFrom, doneSet, GameState.getInstance().pathingCache) : null);
-    if (pathingList == null) Gdx.app.error("pathTo", "Warning, pathTo failed for " + this);
+    if (pathingList == null) Gdx.app.error("pathTo", "Warning, pathTo failed for " + this + ", t="+(t != null ? t.coordinates : "!")+ " target="+(target != null ? target.coordinates:"!"));
     if (!isIntro) idleTime = 0;
     Gdx.app.debug("pathTo", "Pathed in " + (pathingList != null ? pathingList.size() : " NULL ") + " steps");
   }
