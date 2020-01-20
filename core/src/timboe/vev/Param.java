@@ -12,9 +12,6 @@ import timboe.vev.enums.QueueType;
 
 public class Param {
 
-
-
-
   public static final int ZONES_X = 3; // Constant... or not to constant
   public static final int ZONES_Y = 3;
   private static final int ZONES_MAX = Math.max(ZONES_X, ZONES_Y);
@@ -96,6 +93,8 @@ public class Param {
   public static final int N_TIBERIUM_SPRITES = 4; // Number of sprites
   public static final int N_BALL_SPRITES = 6; // number of sprites
   public static final int N_TRUCK_SPRITES = 8;
+  public static final int N_BUSH_SPRITES = 4;
+  public static final int N_TREE_SPRITES = 4;
   public static final int MAX_FRAMES = Math.max(N_TIBERIUM_SPRITES, Math.max(N_BALL_SPRITES, N_TRUCK_SPRITES));
 
   public static final float HILL_IN_HILL_PROB = .2f;
@@ -111,10 +110,6 @@ public class Param {
   public static final int N_GRASS_VARIANTS = 13;
   public static final int N_BORDER_VARIANTS = 4;
 
-  public static final int N_BUSH = 4;
-  public static final int N_TREE = 4;
-  public static final int N_BUILDING = 5;
-
   public static final float SCROLL_ZOOM = 0.1f;
   public static final float TRANSLATE_MOD = 2;
   public static final float FLING_MOD = TRANSLATE_MOD * 0.01f;
@@ -122,7 +117,7 @@ public class Param {
   public static final float ZOOM_MIN = 0.1f;
   public static final float ZOOM_MAX = 3.0f;
 
-  public static final float DESIRED_FPS = 60; // FPS ANIM_SPEED is tuned for
+  private static final float DESIRED_FPS = 60; // FPS ANIM_SPEED is tuned for
   public static final float FRAME_TIME = (1f/DESIRED_FPS);
   public static int FRAME = 0;
 
@@ -136,7 +131,6 @@ public class Param {
   public static final float FADE_SPEED_GAME = 70f;
   public static final float FADE_SPEED_INTRO = 200f;
 
-
   public static final Color HIGHLIGHT_GREEN = new Color(0f, 1f, 0f, 1f);
   public static final Color HIGHLIGHT_RED = new Color(1f, 0f, 0f, 1f);
   public static final Color HIGHLIGHT_YELLOW = new Color(1f, 1f, 0f, 1f);
@@ -145,7 +139,7 @@ public class Param {
   public static final int DISPLAY_Y = Math.round(DISPLAY_X * (9f/16f));
   public static final int UI_WIDTH_INTRO = 450;
 
-  public static final int PLAYER_STARTING_ENERGY = 5000 * 10;
+  public static final int PLAYER_STARTING_ENERGY = 8500;
 
   public static final int TRUCK_INITIAL_CAPACITY = 15000;
   public static final int TRUCK_LOAD_SPEED = 1250;

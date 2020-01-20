@@ -29,7 +29,6 @@ import timboe.vev.enums.Cardinal;
 import timboe.vev.enums.Colour;
 import timboe.vev.enums.Edge;
 import timboe.vev.enums.FSM;
-import timboe.vev.enums.Particle;
 import timboe.vev.enums.TileType;
 import timboe.vev.pathfinding.IVector2;
 
@@ -380,8 +379,8 @@ public class World {
 
   private String randomFoliage(Colour c) {
     if (R.nextFloat() < Param.TREE_PROB)
-      return "tree_" + c.getString() + "_" + R.nextInt(Param.N_TREE);
-    return "bush_" + c.getString() + "_" + R.nextInt(Param.N_BUSH);
+      return "tree_" + c.getString() + "_" + R.nextInt(Param.N_TREE_SPRITES);
+    return "bush_" + c.getString() + "_" + R.nextInt(Param.N_BUSH_SPRITES);
   }
 
   private Sprite newSprite(int x, int y, String name, boolean isFoliage, boolean isIntro) {
@@ -480,7 +479,7 @@ public class World {
   public void genPatch(final int _x, final int _y, final boolean isForest, final int patchSize, final boolean isIntro, Patch patch) {
     final double maxD = Math.sqrt(2 * Math.pow(patchSize, 2));
     Tile t1 = getTile(_x, _y, isIntro);
-    final String forestTexture = "tree_" + t1.tileColour.getString() + "_" + R.nextInt(Param.N_TREE);
+    final String forestTexture = "tree_" + t1.tileColour.getString() + "_" + R.nextInt(Param.N_TREE_SPRITES);
     for (int x = _x - patchSize; x < _x + patchSize; ++x) {
       for (int y = _y + patchSize - 1; y >= _y - patchSize; --y) {
         Tile t2 = getTile(x, y, isIntro);

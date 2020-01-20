@@ -99,12 +99,12 @@ public enum Particle {
   // TODO tweak
   public int getCreateEnergy() {
     switch (this) {
-      case kH: return 125 + 150;
-      case kW: return 80 + 20;
-      case kZ: return 90 + 20;
-      case kE: return 1 + 10;
-      case kM: return 1 + 10;
-      case kQ: return 1 + 5;
+      case kH: return 305;
+      case kW: return 105;
+      case kZ: return 115;
+      case kE: return 10;
+      case kM: return 15;
+      case kQ: return 5;
       case kBlank:
       default: return 0;
     }
@@ -112,38 +112,46 @@ public enum Particle {
 
   public float getSpeedMod() {
     switch (this) {
-      case kH: return 0.6f;
-      case kW: return 0.8f;
-      case kZ: return 0.8f;
-      case kE: return 1f;
-      case kM: return 1f;
-      case kQ: return 1.2f;
+      case kH:
+        return 0.8f;
+      case kW:
+      case kZ:
+        return 0.9f;
+      case kQ:
+        return 1.1f;
       case kBlank:
+      case kE:
+      case kM:
       default: return 1f;
     }
   }
 
   public float getCreateChance() {
     switch (this) {
-      case kH: return 0.05f;
-      case kW: return 0.15f;
-      case kZ: return 0.15f;
-      case kE: return 0.2f;
-      case kM: return 0.2f;
-      case kQ: return 0.25f;
+      case kH:
+        return 0.05f;
+      case kW:
+      case kZ:
+        return 0.15f;
+      case kE:
+      case kM:
+        return 0.2f;
+      case kQ:
+        return 0.25f;
       case kBlank:
-      default: return 0;
+      default:
+        return 0;
     }
   }
 
   public float getDisassembleTime() {
     switch (this) {
-      case kH: return 8f;
-      case kW: return 2.5f;
-      case kZ: return 2.5f;
-      case kE: return 1f;
+      case kH: return 1.5f;
+      case kW: return 5.5f;
+      case kZ: return 5.0f;
+      case kE: return .7f;
       case kM: return 1f;
-      case kQ: return 0.5f;
+      case kQ: return 0.4f;
       case kBlank:
       default: return 0;
     }

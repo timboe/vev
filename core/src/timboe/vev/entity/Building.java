@@ -246,7 +246,7 @@ public class Building extends Entity {
   private float getDisassembleTime(Particle p) {
     return p.getDisassembleTime()
         * getUpgradeFactor()
-        * type.getDisassembleBonus(p);
+        * type.getDisassembleMod(p);
   }
 
   public float getDisassembleTime(int mode) {

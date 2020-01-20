@@ -62,7 +62,7 @@ public enum BuildingType {
       case kHWM: return 10000;
       case kWEQ: return 10000;
       case kZMQ: return 10000;
-      case kMINE: return 2000;
+      case kMINE: return 3000;
       default: return 10000;
     }
   }
@@ -128,16 +128,19 @@ public enum BuildingType {
     }
   }
 
-  public float getDisassembleBonus(Particle p) {
+  public float getDisassembleMod(Particle p) {
     switch (this) {
       case kHZE:
-        if (p == Particle.kH) return 0.75f; // Z, e
+        if (p == Particle.kH) return 2f;
+        if (p == Particle.kZ) return .9f;
       case kHWM:
-        if (p == Particle.kW) return 0.8f; // H, m
+        if (p == Particle.kH) return .6f;
+        if (p == Particle.kM) return .9f;
       case kWEQ:
-        if (p == Particle.kQ) return 0.85f; // W, e
+        if (p == Particle.kW) return .9f;
+        if (p == Particle.kE) return .9f;
       case kZMQ:
-        if (p == Particle.kZ) return 0.8f;
+        if (p == Particle.kQ) return .9f;
       default: return 1f;
     }
   }
