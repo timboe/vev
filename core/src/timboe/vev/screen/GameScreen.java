@@ -12,6 +12,7 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import timboe.vev.Param;
 import timboe.vev.Util;
 import timboe.vev.entity.Building;
+import timboe.vev.entity.Entity;
 import timboe.vev.entity.Sprite;
 import timboe.vev.entity.Tile;
 import timboe.vev.entity.Warp;
@@ -69,7 +70,7 @@ public class GameScreen implements Screen {
     Util.renderClear();
     final boolean paused = (ui.uiMode == UIMode.kSETTINGS);
     final float fxDelta = (paused ? 0 : delta);
-    if (!paused) ++Param.FRAME;
+    if (!paused) ++Entity.FRAME_COUNTER;
 
     world.act(delta);
     camera.update(delta);

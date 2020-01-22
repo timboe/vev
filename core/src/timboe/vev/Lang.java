@@ -27,6 +27,9 @@ public class Lang {
     EN_GB.put("newGame", "Start a new game.\nWill overwrite any existing save.");
     EN_GB.put("loadGame", "Load from the single save slot.");
     EN_GB.put("settings", "Change sound volume\nand particle colours.");
+    EN_GB.put("howToPlay", "Controls and game instructions.");
+    EN_GB.put("credits", "Asset credits.");
+    EN_GB.put("exit", "Exit to desktop.");
     EN_GB.put("standingOrder","Setup Standing Move Order.\nSpawned # will be sent to this location.");
     EN_GB.put("standingBlank","Setup Overflow Standing Move Order.\nParticles which COULD be accepted,\nbut are turned away due to a full queue\nwill be sent here. NO cyclic loops.");
     EN_GB.put("select","Toggle selection mode.");

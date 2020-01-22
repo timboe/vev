@@ -230,18 +230,25 @@ public class UIIntro {
       tableIntro.debugAll();
     }
 
-    generating = ui.getWindow();
-    generating.add(ui.getLabel(Lang.get("UI_GENERATING"),"")).width(ui.SIZE_L*2).height(ui.SIZE_M);
-
     tableIntro.pad(Param.TILE_S*2);
-    tableIntro.top().left();
-    tableIntro.add(generating).align(Align.top);
-    tableIntro.add(new Table()).expandX();
+    tableIntro.top().right();
     tableIntro.add(titleWindow);
 
     Stage uiStage = IntroState.getInstance().getUIStage();
     uiStage.clear();
     uiStage.addActor(tableIntro);
+
+    Table gParent = new Table();
+    gParent.setFillParent(true);
+    gParent.pad(Param.TILE_S*2);
+    gParent.top().left();
+    generating = ui.getWindow();
+    generating.add(ui.getLabel(Lang.get("UI_GENERATING"),"")).width(ui.SIZE_L*2).height(ui.SIZE_M);
+    gParent.add(generating);
+
+    Stage genStage = IntroState.getInstance().getIntroGeneratingStage();
+    genStage.clear();
+    genStage.addActor(gParent);
 
     Stage helpStage = IntroState.getInstance().getIntroHelpStage();
     helpStage.clear();
@@ -290,7 +297,7 @@ public class UIIntro {
 
     titleWindow.row();
     ui.separator(titleWindow, 1);
-    Button howToPlayButton = ui.getTextButton(Lang.get("UI_HOW"), "");
+    Button howToPlayButton = ui.getTextButton(Lang.get("UI_HOW"), "howToPlay");
     howToPlayButton.addListener(new ChangeListener() {
       @Override
       public void changed(ChangeEvent event, Actor actor) {
@@ -301,7 +308,7 @@ public class UIIntro {
 
     titleWindow.row();
     ui.separator(titleWindow, 1);
-    Button credit = ui.getTextButton(Lang.get("UI_CREDITS"), "");
+    Button credit = ui.getTextButton(Lang.get("UI_CREDITS"), "credits");
     credit.addListener(new ChangeListener() {
       @Override
       public void changed(ChangeEvent event, Actor actor) {
@@ -312,7 +319,7 @@ public class UIIntro {
 
     titleWindow.row();
     ui.separator(titleWindow, 1);
-    Button exitGame = ui.getTextButton(Lang.get("UI_EXIT"), "");
+    Button exitGame = ui.getTextButton(Lang.get("UI_EXIT"), "exit");
     exitGame.addListener(new ChangeListener() {
       @Override
       public void changed(ChangeEvent event, Actor actor) {

@@ -44,6 +44,7 @@ public class IntroState {
   private Stage introHelpStage;
   private Stage introUIStage;
   private Stage introWarpStage;
+  private Stage introGeneratingStage;
 
   public HashSet<Entity> demoBuildings = new HashSet<Entity>();
   public Warp demoWarp;
@@ -60,6 +61,7 @@ public class IntroState {
     if (introSpriteStage != null) introSpriteStage.dispose();
     if (introUIStage != null) introUIStage.dispose();
     if (introWarpStage != null) introWarpStage.dispose();
+    if (introGeneratingStage != null) introGeneratingStage.dispose();
     introTileStage = new Stage(Camera.getInstance().getTileViewport());
     introSpriteStage = new Stage(Camera.getInstance().getSpriteViewport());
     introFoliageStage = new Stage(Camera.getInstance().getSpriteViewport());
@@ -67,6 +69,7 @@ public class IntroState {
     introHelpStage = new Stage(Camera.getInstance().getTileViewport());
     introUIStage = new Stage(Camera.getInstance().getUiViewport());
     introWarpStage = new Stage(Camera.getInstance().getTileViewport());
+    introGeneratingStage = new Stage(Camera.getInstance().getUiViewport());
     Color warpStageC = introWarpStage.getBatch().getColor();
     warpStageC.a = Param.WARP_TRANSPARENCY;
     introWarpStage.getBatch().setColor(warpStageC);
@@ -197,6 +200,7 @@ public class IntroState {
     introHelpStage.dispose();
     introUIStage.dispose();
     introWarpStage.dispose();
+    introGeneratingStage.dispose();
     ourInstance = null;
   }
 
@@ -204,6 +208,7 @@ public class IntroState {
     introSpriteStage.act(delta);
     introWarpStage.act(delta);
     introUIStage.act(delta);
+    introGeneratingStage.act(delta);
 //    introBuildingStage is static
 //    introFoliageStage is static
 //    introHelpStage is static
@@ -239,5 +244,7 @@ public class IntroState {
   public Stage getIntroWarpStage() { return introWarpStage; }
 
   public Stage getIntroBuildingStage() { return introBuildingStage; }
+
+  public Stage getIntroGeneratingStage() { return introGeneratingStage; }
 
 }

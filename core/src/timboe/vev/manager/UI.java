@@ -5,6 +5,8 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.g2d.NinePatch;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
@@ -378,7 +380,7 @@ public class UI {
     buildBuildingButtonsDisabled = new EnumMap<BuildingType, Button>(BuildingType.class);
     buildBuildingTooltips = new EnumMap<BuildingType, TextTooltipDF>(BuildingType.class);
     buildingBuildTable = new Table();
-    for (BuildingType bt : BuildingType.values()) {
+    for (final BuildingType bt : BuildingType.values()) {
       if (bt == BuildingType.kWARP) continue;
 
       Image ibEnabled = new Image( Textures.getInstance().getTexture("building_" + bt.ordinal(), false) );

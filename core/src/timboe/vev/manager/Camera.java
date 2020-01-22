@@ -161,8 +161,19 @@ public class Camera {
       }
     }
 
-    if (Param.CHEATS && Gdx.input.isKeyJustPressed(Input.Keys.BACKSPACE)) {
-      GameState.getInstance().killSelectedParticles();
+    if (Param.CHEATS) {
+      if (Gdx.input.isKeyJustPressed(Input.Keys.BACKSPACE)) {
+        GameState.getInstance().killSelectedParticles();
+      }
+      if (Gdx.input.isKeyJustPressed(Input.Keys.C)) {
+        GameState.getInstance().playerEnergy += Param.PLAYER_STARTING_ENERGY;
+      }
+      if (Gdx.input.isKeyJustPressed(Input.Keys.B)) {
+        if (++GameState.getInstance().debug == 4) GameState.getInstance().debug = 0;
+      }
+      if (Gdx.input.isKeyJustPressed(Input.Keys.G)) {
+        GameState.getInstance().tryNewParticles(true, null, 1);
+      }
     }
 
     // Following are only allowed in-game or game over mode

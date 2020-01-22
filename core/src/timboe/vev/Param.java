@@ -31,7 +31,7 @@ public class Param {
 
   public static final int TILE_S = 16;
 
-  public static final int WORLD_SEED = 7; // 0 to disable
+  public static final int WORLD_SEED = 0; // 0 to disable
 
   public static final int SPRITE_SCALE = 2;
   public static final float PARTICLE_VELOCITY = 32f*2f;
@@ -119,7 +119,6 @@ public class Param {
 
   private static final float DESIRED_FPS = 60; // FPS ANIM_SPEED is tuned for
   public static final float FRAME_TIME = (1f/DESIRED_FPS);
-  public static int FRAME = 0;
 
   public static final int PARTICLES_SMALL = 1000;
   public static final int PARTICLES_MED = 5000;

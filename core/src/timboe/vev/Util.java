@@ -90,6 +90,14 @@ public class Util {
 
 
   public static boolean doFade(ShapeRenderer sr, float delta, float[] fadeTimer) {
+    final int finalTime = 1300;
+    if (fadeTimer[2] > finalTime) {
+      sr.begin(ShapeRenderer.ShapeType.Filled);
+      sr.setColor(136/255f, 57/255f, 80/255f, 1f);
+      strokeRect(sr, fadeTimer[2], fadeTimer[2]/4f);
+      sr.end();
+      return true;
+    }
     sr.setProjectionMatrix(Camera.getInstance().getUiCamera().combined);
     sr.setColor(206f/255f, 101f/255f, 80f/255f, 1f);
     sr.begin(ShapeRenderer.ShapeType.Filled);
@@ -118,7 +126,7 @@ public class Util {
       fadeTimer[2] += (delta * 10);
       fadeTimer[2] *= 1.1;
     }
-    return (fadeTimer[2] > 1300);
+    return (fadeTimer[2] > finalTime);
   }
 
   private static void strokeRect(ShapeRenderer sr, float width, float angle) {

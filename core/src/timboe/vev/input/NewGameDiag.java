@@ -20,25 +20,21 @@ public class NewGameDiag extends Dialog {
       GameState.getInstance().difficulty = (Integer) object;
       switch ((Integer) object) {
         case 0:
-          GameState.getInstance().warpParticles = Param.PARTICLES_SMALL;
+          World.getInstance().warpParticlesCached = Param.PARTICLES_SMALL;
           break;
         case 1:
-          GameState.getInstance().warpParticles = Param.PARTICLES_MED;
+          World.getInstance().warpParticlesCached = Param.PARTICLES_MED;
           break;
         case 2:
-          GameState.getInstance().warpParticles = Param.PARTICLES_LARGE;
+          World.getInstance().warpParticlesCached = Param.PARTICLES_LARGE;
           break;
         case 3:
-          GameState.getInstance().warpParticles = Param.PARTICLES_XL;
+          World.getInstance().warpParticlesCached = Param.PARTICLES_XL;
           break;
         default:
           Gdx.app.error("NewGame", "Unknown button " + object);
       }
-      if (!World.getInstance().getGenerated()) {
-        World.getInstance().launchAfterGen = true;
-      } else {
-        StateManager.getInstance().transitionToGameScreen();
-      }
+      StateManager.getInstance().transitionToGameScreen();
     } else {
       Gdx.app.log("result","Pressed CANCEL");
     }

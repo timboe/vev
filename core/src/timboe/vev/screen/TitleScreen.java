@@ -43,7 +43,7 @@ public class TitleScreen implements Screen {
 
   @Override
   public void render(float delta) {
-    ++Param.FRAME;
+    ++Entity.FRAME_COUNTER;
     delta = Math.min(delta, Param.FRAME_TIME * 10); // Do not let this get too extreme
     Util.renderClear();
 
@@ -83,14 +83,16 @@ public class TitleScreen implements Screen {
 
     state.getIntroHelpStage().draw();
 
-    UIIntro.getInstance().generating.setVisible( !World.getInstance().getGenerated() );
 
     state.getUIStage().draw();
 
     if (StateManager.getInstance().fsm == FSM.kTRANSITION_TO_GAME) {
       final boolean finished = Util.doFade(sr, delta, transitionOutTimers);
       if (finished) {
-        StateManager.getInstance().setToGameScreen();
+        if (World.getInstance().getGenerated()) {
+          GameState.getInstance().warpParticles = World.getInstance().warpParticlesCached;
+          StateManager.getInstance().setToGameScreen();
+        }
       }
     }
 
@@ -105,6 +107,9 @@ public class TitleScreen implements Screen {
         StateManager.getInstance().titleScreenFadeComplete();
       }
     }
+
+    UIIntro.getInstance().generating.setVisible( !World.getInstance().getGenerated() );
+    state.getIntroGeneratingStage().draw();
   }
 
   @Override

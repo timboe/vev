@@ -54,8 +54,7 @@ public class Textures {
   public void updateParticleHues() {
     for (Particle p : Particle.values()) {
       final int hue = Persistence.getInstance().particleHues.get(p);
-      java.awt.Color awtColor = java.awt.Color.getHSBColor(hue / 360f, Param.HSB_BASE_SATURATION / 100f, Param.HSB_BASE_BRIGHTNESS / 100f);
-      particleBaseColours.put(p, new Color(awtColor.getRed() / 255f, awtColor.getGreen() / 255f, awtColor.getBlue() / 255f, 1f));
+      particleBaseColours.put(p, convertHSBtoRGB(hue / 360f, Param.HSB_BASE_SATURATION / 100f, Param.HSB_BASE_BRIGHTNESS / 100f));
     }
     loadMultiColouredBall();
   }
@@ -76,8 +75,55 @@ public class Textures {
     if (hue > 360) hue -= 360;
     s = Util.clamp(s, 0, 100);
     b = Util.clamp(b, 0, 100);
-    java.awt.Color awtColor = java.awt.Color.getHSBColor(hue / 360f, s / 100f, b / 100f);
-    return new Color(awtColor.getRed() / 255f, awtColor.getGreen() / 255f, awtColor.getBlue() / 255f, 1f);
+    return convertHSBtoRGB(hue / 360f, s / 100f, b / 100f);
+  }
+
+  public static Color convertHSBtoRGB(float h, float s, float b) {
+    int R = 0;
+    int G = 0;
+    int B = 0;
+    if (s == 0.f) {
+      R = G = B = (int)(b * 255.f + .5f);
+    } else {
+      float hm6h_A = (h - (float)Math.floor((double)h)) * 6f;
+      float hm6h = hm6h_A - (float)Math.floor((double)hm6h_A);
+      float bX1ms = b * (1f - s);
+      float bX1msXhm6 = b * (1f - s * hm6h);
+      float bX1msX1mhm6 = b * (1f - s * (1f - hm6h));
+      switch((int)hm6h_A) {
+        case 0:
+          R = (int)(b * 255f + .5f);
+          G = (int)(bX1msX1mhm6 * 255f + .5f);
+          B = (int)(bX1ms * 255f + .5f);
+          break;
+        case 1:
+          R = (int)(bX1msXhm6 * 255f + .5f);
+          G = (int)(b * 255f + .5f);
+          B = (int)(bX1ms * 255f + .5f);
+          break;
+        case 2:
+          R = (int)(bX1ms * 255f + .5f);
+          G = (int)(b * 255f + .5f);
+          B = (int)(bX1msX1mhm6 * 255f + .5f);
+          break;
+        case 3:
+          R = (int)(bX1ms * 255f + .5f);
+          G = (int)(bX1msXhm6 * 255f + .5f);
+          B = (int)(b * 255f + .5f);
+          break;
+        case 4:
+          R = (int)(bX1msX1mhm6 * 255f + .5f);
+          G = (int)(bX1ms * 255f + .5f);
+          B = (int)(b * 255f + .5f);
+          break;
+        case 5:
+          R = (int)(b * 255f + .5f);
+          G = (int)(bX1ms * 255f + .5f);
+          B = (int)(bX1msXhm6 * 255f + .5f);
+      }
+    }
+
+    return new Color(R / 255f, G / 255f, B / 255f, 1f);
   }
 
   private Textures() {
@@ -185,4 +231,5 @@ public class Textures {
   }
 
 }
+
 

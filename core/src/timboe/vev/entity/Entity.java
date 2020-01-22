@@ -53,6 +53,7 @@ public class Entity extends Actor implements Serializable {
   transient final TextureRegion[] textureRegion = new TextureRegion[Param.MAX_FRAMES];
   public boolean doTint = false;
   protected Cardinal tintArrow = Cardinal.kNONE;
+  public static int FRAME_COUNTER = 0;
 
   public JSONObject serialise(boolean isTile) throws JSONException {
     JSONObject json = new JSONObject();
@@ -315,7 +316,7 @@ public class Entity extends Actor implements Serializable {
 
     if (selected) {
       sr.setColor(1, 0, 0, 1);
-      float off = Param.FRAME * 0.25f / (float)Math.PI;
+      float off = FRAME_COUNTER * 0.25f / (float)Math.PI;
       final float xC = getX() + getWidth()/2f, yC = getY() + getHeight()/2f;
       for (float a = (float)-Math.PI; a < Math.PI; a += 2f*Math.PI/3f) {
         sr.rectLine(xC + getWidth() / 2f * ((float) Math.cos(a + off)),
@@ -346,7 +347,7 @@ public class Entity extends Actor implements Serializable {
 
   private void drawList(List<IVector2> l, ShapeRenderer sr, int standingOrderOffset) {
     if (l == null || l.size() == 0) return;
-    final int off = ((Param.FRAME / 2) + standingOrderOffset) % Param.TILE_S;
+    final int off = ((FRAME_COUNTER / 2) + standingOrderOffset) % Param.TILE_S;
     Tile fin = coordinateToTile( l.get( l.size() - 1 ) );
     Tile start = coordinateToTile( l.get( 0 ) );
     for (int i = 0; i < l.size(); ++i) {

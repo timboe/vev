@@ -50,9 +50,9 @@ public class World {
 
   private final Random R = new Random();
   private boolean generated = false;
+  public int warpParticlesCached = 0;
   private final Vector<Zone> allZones = new Vector<Zone>();
   private Vector<IVector2> worldEdges = new Vector<IVector2>();
-  public boolean launchAfterGen = false;
   public boolean doLoad = false;
   private int stage;
   private Tile[][] introTiles;
@@ -321,8 +321,6 @@ public class World {
     if (stage == 14) {
       Gdx.app.log("World", "Generation finished");
       generated = true;
-      if (launchAfterGen) StateManager.getInstance().transitionToGameScreen();
-      launchAfterGen = false;
       for (int y = Param.ZONES_Y - 1; y >= 0; --y)
         Gdx.app.log("", (zones[0][y].tileColour == Colour.kRED ? "R " : "G ") + (zones[1][y].tileColour == Colour.kRED ? "R " : "G ") + (zones[2][y].tileColour == Colour.kRED ? "R " : "G "));
       for (int y = Param.ZONES_Y - 1; y >= 0; --y)
