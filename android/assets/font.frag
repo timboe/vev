@@ -8,7 +8,7 @@ varying vec4 v_color;
 varying vec2 v_texCoord;
 
 // 0.25f / (spread * scale)
-const float smoothing = 0.25/(4 * 1);
+const float smoothing = 0.25/(4.0 * 1.0);
 
 void main() {
     float distance = texture2D(u_texture, v_texCoord).a;

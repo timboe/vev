@@ -8,10 +8,10 @@ varying vec4 v_color;
 varying vec2 v_texCoord;
 
 // 0.25f / (spread * scale)
-const float smoothing = 0.25/(4 * 1);
+const float smoothing = 0.25/(4.0 * 1.0);
 
 const float outlineDistance = 0.2; // Between 0 and 0.5, 0 = thick outline, 0.5 = no outline
-const vec4 outlineColor = {39./255., 32./255., 49./255., 1.};
+const vec4 outlineColor = vec4(39./255., 32./255., 49./255., 1.);
 
 // Main with outline
 void main() {
