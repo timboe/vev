@@ -4,6 +4,7 @@ import android.os.Bundle;
 
 import com.badlogic.gdx.backends.android.AndroidApplication;
 import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
+import com.badlogic.gdx.backends.android.surfaceview.ResolutionStrategy;
 
 public class AndroidLauncher extends AndroidApplication {
 	@Override
@@ -11,12 +12,12 @@ public class AndroidLauncher extends AndroidApplication {
 		super.onCreate(savedInstanceState);
 		AndroidApplicationConfiguration config = new AndroidApplicationConfiguration();
     config.numSamples = 2;
-//    config.resolutionStrategy = new ResolutionStrategy() {
-//      @Override
-//      public MeasuredDimension calcMeasures(int widthMeasureSpec, int heightMeasureSpec) {
-//        return new MeasuredDimension(1920, 1080);
-//      }
-//    };
+    config.resolutionStrategy = new ResolutionStrategy() {
+      @Override
+      public ResolutionStrategy.MeasuredDimension calcMeasures(int widthMeasureSpec, int heightMeasureSpec) {
+        return new MeasuredDimension(1920, 1080);
+      }
+    };
 		initialize(new VEVGame(), config);
 	}
 }
