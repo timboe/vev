@@ -120,10 +120,16 @@ public class Param {
   private static final float DESIRED_FPS = 60; // FPS ANIM_SPEED is tuned for
   public static final float FRAME_TIME = (1f/DESIRED_FPS);
 
-  public static final int PARTICLES_SMALL = 1000;
-  public static final int PARTICLES_MED = 5000;
-  public static final int PARTICLES_LARGE = 20000;
-  public static final int PARTICLES_XL = 50000;
+  public static final int DEBUG_INITIAL = 0;
+  public static final boolean CHEATS = true;
+  private static final boolean FAKE_ANDROID = false;
+  public static final boolean IS_ANDROID = FAKE_ANDROID || Gdx.app.getType() == Application.ApplicationType.Android;
+
+  public static final float ANDROID_PARTICLE_MOD = (IS_ANDROID ? 0.1f : 1f);
+  public static final int PARTICLES_SMALL = Math.round(1000 * ANDROID_PARTICLE_MOD);
+  public static final int PARTICLES_MED = Math.round(5000 * ANDROID_PARTICLE_MOD);
+  public static final int PARTICLES_LARGE = Math.round(20000 * ANDROID_PARTICLE_MOD);
+  public static final int PARTICLES_XL = Math.round(50000 * ANDROID_PARTICLE_MOD);
 
   public static final float ANIM_TIME = 1/20f; // I.e. 12 frames per second
 
@@ -160,11 +166,6 @@ public class Param {
   public static final int HSB_SHADOW_HUE_MOD = 276;
   public static final int HSB_SHADOW_SATURATION = 46;
   public static final int HSB_SHADOW_BRIGHTNESS = 31;
-
-  public static final int DEBUG_INITIAL = 0;
-  public static final boolean CHEATS = true;
-  private static final boolean FAKE_ANDROID = false;
-  public static final boolean IS_ANDROID = FAKE_ANDROID || Gdx.app.getType() == Application.ApplicationType.Android;
 
   public static final int QUEUE_INITIAL_SIZE = 9;
   public static final QueueType QUEUE_INITIAL_TYPE = QueueType.kSIMPLE;

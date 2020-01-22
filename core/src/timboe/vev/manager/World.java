@@ -232,9 +232,10 @@ public class World {
 
     if (Param.WORLD_SEED > 0) {
       Util.R.setSeed(Param.WORLD_SEED);
-//      GameState.getInstance().R.setSeed(Param.WORLD_SEED);
       R.setSeed(Param.WORLD_SEED);
     }
+
+    // Do NOT reset warpParticlesCached, this needs to persist over generation attempts
   }
 
   private void generateIntro() {
@@ -285,6 +286,7 @@ public class World {
     }
     generated = true;
     doLoad = false;
+    warpParticlesCached = -1;
     //Gdx.app.log("DBG", "LOADED. WARPS ACTORS SIZE " + GameState.getInstance().getWarpStage().getActors().size);
     StateManager.getInstance().transitionToGameScreen();
   }

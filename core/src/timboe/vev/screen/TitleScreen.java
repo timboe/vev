@@ -90,7 +90,9 @@ public class TitleScreen implements Screen {
       final boolean finished = Util.doFade(sr, delta, transitionOutTimers);
       if (finished) {
         if (World.getInstance().getGenerated()) {
-          GameState.getInstance().warpParticles = World.getInstance().warpParticlesCached;
+          if (GameState.getInstance().warpParticles != -1) {
+            GameState.getInstance().warpParticles = World.getInstance().warpParticlesCached;
+          }
           StateManager.getInstance().setToGameScreen();
         }
       }

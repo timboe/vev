@@ -12,12 +12,6 @@ public class AndroidLauncher extends AndroidApplication {
 		super.onCreate(savedInstanceState);
 		AndroidApplicationConfiguration config = new AndroidApplicationConfiguration();
     config.numSamples = 2;
-    config.resolutionStrategy = new ResolutionStrategy() {
-      @Override
-      public ResolutionStrategy.MeasuredDimension calcMeasures(int widthMeasureSpec, int heightMeasureSpec) {
-        return new MeasuredDimension(1920, 1080);
-      }
-    };
 		initialize(new VEVGame(), config);
 	}
 }

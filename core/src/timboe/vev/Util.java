@@ -116,12 +116,16 @@ public class Util {
     sr.end();
     fadeTimer[0] += (delta * 5);
     fadeTimer[0] *= 1.1;
-    if (fadeTimer[0] > 2.5 && fadeTimer[1] == 0) fadeTimer[1] = fadeTimer[0] - 2.5f;
+    if (fadeTimer[0] > 2.5 && fadeTimer[1] == 0) {
+      ++fadeTimer[1];
+    }
     if (fadeTimer[1] > 0) {
       fadeTimer[1] += (delta * 10);
       fadeTimer[1] *= 1.1;
     }
-    if (fadeTimer[1] > 2.5 && fadeTimer[2] == 0) fadeTimer[2] = fadeTimer[1] - 2.5f;
+    if (fadeTimer[1] > 2.5 && fadeTimer[2] == 0) {
+      ++fadeTimer[2];
+    }
     if (fadeTimer[2] > 0) {
       fadeTimer[2] += (delta * 10);
       fadeTimer[2] *= 1.1;

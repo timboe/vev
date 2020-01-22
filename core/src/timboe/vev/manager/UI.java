@@ -598,7 +598,7 @@ public class UI {
 //      addToWin(bw, getImageButton("cross", ""), SIZE_L, SIZE_L, 3);
       if (bt != BuildingType.kWARP) {
         String percent = Float.toString(Param.BUILDING_REFUND_AMOUND * 100f);
-        addToWin(bw, getImageButton("wrecking", "default", SIZE_M, "wrecking#" + percent), SIZE_L + SIZE_M, SIZE_M + SIZE_S, 6);
+        addToWin(bw, getImageButton("wrecking", "default", SIZE_L, "wrecking#" + percent), SIZE_L + SIZE_M, SIZE_M + SIZE_S, 6);
       }
     }
 
