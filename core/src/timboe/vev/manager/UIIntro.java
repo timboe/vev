@@ -278,6 +278,7 @@ public class UIIntro {
     if (Persistence.getInstance().save == null) {
       Gdx.app.log("windowMain","No save game, LOAD disabled");
       loadGame.setDisabled(true);
+      World.getInstance().doGenerate = true;
     } else {
       Gdx.app.log("windowMain","Found save game, LOAD enabled");
       loadGame.setDisabled(false);
@@ -367,15 +368,17 @@ public class UIIntro {
 
     titleWindow.row();
     titleWindow.left();
-    ui.addToWin(titleWindow, ui.getLabel(Lang.get("UI_FULLSCREEN"), ""), ui.SIZE_L, ui.SIZE_S, 7);
     fsBox = new CheckBox("", ui.skin);
     fsBox.setChecked( Gdx.graphics.isFullscreen() );
     fsBox.addListener(fsListener);
     fsBox.getImage().setScaling(Scaling.fill);
     fsBox.getImageCell().size(ui.SIZE_S);
-    ui.addToWin(titleWindow, fsBox, ui.SIZE_S, ui.SIZE_S, 3);
+    if (!Param.IS_ANDROID) {
+      ui.addToWin(titleWindow, ui.getLabel(Lang.get("UI_FULLSCREEN"), ""), ui.SIZE_L, ui.SIZE_S, 7);
+      ui.addToWin(titleWindow, fsBox, ui.SIZE_S, ui.SIZE_S, 3);
+      titleWindow.row();
+    }
 
-    titleWindow.row();
     ui.separator(titleWindow, 10, Param.UI_WIDTH_INTRO);
 
     ballImages.clear();

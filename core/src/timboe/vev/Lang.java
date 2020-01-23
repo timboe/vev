@@ -58,6 +58,7 @@ public class Lang {
     EN_GB.put("newGameOpeningC","Deconstruct every particle in the shortest possible time.");
     EN_GB.put("ok","OK");
     EN_GB.put("midGame","The White Holes are empty!\nDeconstruct the remaining # particles in the shortest possible time.");
+    EN_GB.put("demolish", "Demolish Building?\nRecover # Energy");
 
 
     EN_GB.put("UI_NEW", "NEW GAME");
@@ -68,6 +69,9 @@ public class Lang {
     EN_GB.put("UI_ENERGY", "Energy");
     EN_GB.put("UI_PARTICLES", "Particles");
     EN_GB.put("UI_GAME_LENGTH", "CHOOSE GAME LENGTH");
+    EN_GB.put("UI_LENGTH", "LENGTH");
+    EN_GB.put("UI_PARTICLES_", "PARTICLES");
+    EN_GB.put("UI_BEST", "BEST TIME");
     EN_GB.put("UI_SHORT", "SHORT");
     EN_GB.put("UI_MED", "MEDIUM");
     EN_GB.put("UI_LONG", "LONG");
@@ -83,6 +87,7 @@ public class Lang {
     EN_GB.put("UI_RESUME", "RESUME");
     EN_GB.put("UI_FULLSCREEN", "FULLSCREEN");
     EN_GB.put("UI_GENERATING", "GENERATING");
+    EN_GB.put("UI_SAVING", "SAVING");
     EN_GB.put("UI_TIME", "Time");
     EN_GB.put("UI_FINISHED", "FINISHED!");
     EN_GB.put("UI_END_TIME", "YOUR TIME: #s");
@@ -96,6 +101,8 @@ public class Lang {
     EN_GB.put("UI_TREES_DEMOLISHED", "TREES BULLDOZED: #");
     EN_GB.put("UI_TAPS", "CLICKS: #");
     EN_GB.put("UI_BUILDING_UPGRADES", "BUILDING UPGRADES: #");
+    EN_GB.put("UI_YES", "YES");
+    EN_GB.put("UI_NO", "NO");
 
 
     EN_GB.put("UI_HELP_00", "A game by Tim Martin");

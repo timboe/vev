@@ -45,7 +45,7 @@ public class StateManager {
     }
     fsm = FSM.kTRANSITION_TO_GAME;
     Gdx.input.setInputProcessor(null);
-    theTitleScreen.transitionOutTimers[0] = 1f;
+    theTitleScreen.transitionOutTimers[0] = 0f;
     Sounds.getInstance().pulse();
   }
 
@@ -54,9 +54,12 @@ public class StateManager {
       Gdx.app.error("transitionToTitleScreen","Unexpected called from "+fsm);
     }
     fsm = (fsm == FSM.kGAME ? FSM.kTRANSITION_TO_INTRO_SAVE : FSM.kTRANSITION_TO_INTRO_NOSAVE);
+    if (fsm == FSM.kTRANSITION_TO_INTRO_SAVE) {
+      UI.getInstance().saving.setVisible(true);
+    }
     Gdx.app.log("transitionToTitleScreen","State now "+fsm);
     Gdx.input.setInputProcessor(null);
-    theGameScreen.transitionOutTimers[0] = 1f;
+    theGameScreen.transitionOutTimers[0] = 0f;
     Sounds.getInstance().pulse();
   }
 

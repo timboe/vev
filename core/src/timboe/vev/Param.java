@@ -122,7 +122,7 @@ public class Param {
 
   public static final int DEBUG_INITIAL = 0;
   public static final boolean CHEATS = true;
-  private static final boolean FAKE_ANDROID = false;
+  private static final boolean FAKE_ANDROID = true;
   public static final boolean IS_ANDROID = FAKE_ANDROID || Gdx.app.getType() == Application.ApplicationType.Android;
 
   public static final float ANDROID_PARTICLE_MOD = (IS_ANDROID ? 0.1f : 1f);

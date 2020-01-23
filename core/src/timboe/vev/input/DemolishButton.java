@@ -1,18 +1,14 @@
 package timboe.vev.input;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
 
-import timboe.vev.Param;
+import timboe.vev.Lang;
 import timboe.vev.entity.Building;
-import timboe.vev.enums.BuildingType;
 import timboe.vev.manager.GameState;
-import timboe.vev.manager.IntroState;
 import timboe.vev.manager.UI;
-import timboe.vev.manager.World;
 
 public class DemolishButton extends ChangeListener {
   @Override
@@ -25,11 +21,13 @@ public class DemolishButton extends ChangeListener {
         GameState.getInstance().killSelectedBuilding();
       }
     };
+    Building sb = GameState.getInstance().getSelectedBuilding();
+    final int refundAmount = (sb == null ? 0 : sb.refund);
     destroyDialog.align(Align.center);
-    destroyDialog.text(UI.getInstance().getLabel("Demolish Building?",""));
+    destroyDialog.text(UI.getInstance().getLabel(Lang.get("demolish#"+refundAmount),""));
     destroyDialog.row();
-    destroyDialog.button(UI.getInstance().getTextButton("YES",""), 1);
-    destroyDialog.button(UI.getInstance().getTextButton("NO",""), 0);
+    destroyDialog.button(UI.getInstance().getTextButton(Lang.get("UI_YES"),""), 1);
+    destroyDialog.button(UI.getInstance().getTextButton(Lang.get("UI_NO"),""), 0);
     destroyDialog.show(GameState.getInstance().getUIStage());
   }
 }

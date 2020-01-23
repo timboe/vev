@@ -8,6 +8,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 
+import java.security.Key;
 import java.util.Random;
 
 import timboe.vev.Param;
@@ -173,6 +174,9 @@ public class Camera {
       }
       if (Gdx.input.isKeyJustPressed(Input.Keys.G)) {
         GameState.getInstance().tryNewParticles(true, null, 1);
+      }
+      if (Gdx.input.isKeyJustPressed(Input.Keys.F)) {
+        StateManager.getInstance().gameOver();
       }
     }
 

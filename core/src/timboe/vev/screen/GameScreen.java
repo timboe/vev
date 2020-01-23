@@ -25,6 +25,7 @@ import timboe.vev.manager.GameState;
 import timboe.vev.manager.Sounds;
 import timboe.vev.manager.StateManager;
 import timboe.vev.manager.UI;
+import timboe.vev.manager.UIIntro;
 import timboe.vev.manager.World;
 
 public class GameScreen implements Screen {
@@ -72,7 +73,7 @@ public class GameScreen implements Screen {
     final float fxDelta = (paused ? 0 : delta);
     if (!paused) ++Entity.FRAME_COUNTER;
 
-    world.act(delta);
+//    world.act(delta); // No need when the game is running
     camera.update(delta);
     ui.act(delta);
     state.act(delta);
@@ -222,6 +223,8 @@ public class GameScreen implements Screen {
         StateManager.getInstance().setToTitleScreen();
       }
     }
+
+    state.getSaveStage().draw();
   }
 
   @Override

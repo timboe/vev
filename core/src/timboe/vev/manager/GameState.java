@@ -258,6 +258,7 @@ public class GameState {
   private Stage buildingStage;
   private Stage uiStage;
   private Stage fireworkStage;
+  private Stage saveStage;
 
 
   private static GameState ourInstance = null;
@@ -877,6 +878,8 @@ public class GameState {
     return buildingStage;
   }
 
+  public Stage getSaveStage() { return saveStage; }
+
   public void reset() {
     if (tileStage != null) tileStage.dispose();
     if (spriteStage != null) spriteStage.dispose();
@@ -885,6 +888,7 @@ public class GameState {
     if (buildingStage != null) buildingStage.dispose();
     if (uiStage != null) uiStage.dispose();
     if (fireworkStage != null) fireworkStage.dispose();
+    if (saveStage != null) saveStage.dispose();
     tileStage = new Stage(Camera.getInstance().getTileViewport());
     spriteStage = new Stage(Camera.getInstance().getSpriteViewport());
     foliageStage = new Stage(Camera.getInstance().getSpriteViewport());
@@ -892,6 +896,7 @@ public class GameState {
     buildingStage = new Stage(Camera.getInstance().getTileViewport());
     uiStage = new Stage(Camera.getInstance().getUiViewport());
     fireworkStage = new Stage(Camera.getInstance().getUiViewport());
+    saveStage = new Stage(Camera.getInstance().getUiViewport());
     Color warpStageC = warpStage.getBatch().getColor();
     warpStageC.a = Param.WARP_TRANSPARENCY;
     warpStage.getBatch().setColor(warpStageC);
@@ -962,6 +967,7 @@ public class GameState {
     buildingStage.dispose();
     uiStage.dispose();
     fireworkStage.dispose();
+    saveStage.dispose();
     ourInstance = null;
   }
 

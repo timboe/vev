@@ -3,6 +3,7 @@ package timboe.vev.input;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
 
@@ -20,20 +21,32 @@ public class NewGameButton extends ChangeListener {
     newGameDialog = d;
 
     final UI ui = UI.getInstance();
-    String header = Lang.get("UI_GAME_LENGTH");
-    header += "\n" + Lang.get("UI_SHORT") + Lang.get("UI_N_PARTICLES#" + Param.PARTICLES_SMALL);
-    header += Lang.get("UI_BEST_TIME#"+ (Persistence.getInstance().bestTimes.get(0) == 0 ? "N/A" : Persistence.getInstance().bestTimes.get(0)) );
-    header += "\n" + Lang.get("UI_MED") + Lang.get("UI_N_PARTICLES#" + Param.PARTICLES_MED);
-    header += Lang.get("UI_BEST_TIME#"+ (Persistence.getInstance().bestTimes.get(1) == 0 ? "N/A" : Persistence.getInstance().bestTimes.get(1)) );
-    header += "\n" + Lang.get("UI_LONG") + Lang.get("UI_N_PARTICLES#" + Param.PARTICLES_LARGE);
-    header += Lang.get("UI_BEST_TIME#"+ (Persistence.getInstance().bestTimes.get(2) == 0 ? "N/A" : Persistence.getInstance().bestTimes.get(2)) );
-    header += "\n" + Lang.get("UI_XL") + Lang.get("UI_N_PARTICLES#" + Param.PARTICLES_XL);
-    header += Lang.get("UI_BEST_TIME#"+ (Persistence.getInstance().bestTimes.get(3) == 0 ? "N/A" : Persistence.getInstance().bestTimes.get(3)) );
+    Table head = newGameDialog.getContentTable();
+    head.pad(ui.PAD * 4);
+    head.add(ui.getLabel(Lang.get("UI_GAME_LENGTH"), "")).colspan(3).row();
+    head.add(ui.getLabel(Lang.get("UI_LENGTH"), "")).pad(ui.PAD * 4);
+    head.add(ui.getLabel(Lang.get("UI_PARTICLES_"), "")).pad(ui.PAD * 4);
+    head.add(ui.getLabel(Lang.get("UI_BEST"), "")).pad(ui.PAD * 4).row();
+    //
+    head.add(ui.getLabel(Lang.get("UI_SHORT"), "")).pad(ui.PAD * 4);
+    head.add(ui.getLabel(Integer.toString(Param.PARTICLES_SMALL), "")).pad(ui.PAD * 4);
+    head.add(ui.getLabel((Persistence.getInstance().bestTimes.get(0) == 0 ? "N/A" : Persistence.getInstance().bestTimes.get(0) + "s"), "") ).pad(ui.PAD * 4).row();
+//
+    head.add(ui.getLabel(Lang.get("UI_MED"), "")).pad(ui.PAD * 4);
+    head.add(ui.getLabel(Integer.toString(Param.PARTICLES_MED), "")).pad(ui.PAD * 4);
+    head.add(ui.getLabel((Persistence.getInstance().bestTimes.get(1) == 0 ? "N/A" : Persistence.getInstance().bestTimes.get(1) + "s"), "") ).pad(ui.PAD * 4).row();
+    //
+    head.add(ui.getLabel(Lang.get("UI_LONG"), "")).pad(ui.PAD * 4);
+    head.add(ui.getLabel(Integer.toString(Param.PARTICLES_LARGE), "")).pad(ui.PAD * 4);
+    head.add(ui.getLabel((Persistence.getInstance().bestTimes.get(2) == 0 ? "N/A" : Persistence.getInstance().bestTimes.get(2) + "s"), "") ).pad(ui.PAD * 4).row();
+    //
+    head.add(ui.getLabel(Lang.get("UI_XL"), "")).pad(ui.PAD * 4);
+    head.add(ui.getLabel(Integer.toString(Param.PARTICLES_XL), "")).pad(ui.PAD * 4);
+    head.add(ui.getLabel((Persistence.getInstance().bestTimes.get(3) == 0 ? "N/A" : Persistence.getInstance().bestTimes.get(3) + "s"), "") ).pad(ui.PAD * 4).row();
+    //
     newGameDialog.pad(ui.PAD * 4);
-    newGameDialog.getContentTable().pad(ui.PAD * 4);
     newGameDialog.getButtonTable().pad(ui.PAD * 4);
     newGameDialog.align(Align.center);
-    newGameDialog.text(ui.getLabel(header, ""));
     newGameDialog.button(ui.getTextButton(Lang.get("UI_SHORT"), ""), 0);
     newGameDialog.button(ui.getTextButton(Lang.get("UI_MED"), ""), 1);
     newGameDialog.button(ui.getTextButton(Lang.get("UI_LONG"), ""), 2);

@@ -54,6 +54,7 @@ public class World {
   private final Vector<Zone> allZones = new Vector<Zone>();
   private Vector<IVector2> worldEdges = new Vector<IVector2>();
   public boolean doLoad = false;
+  public boolean doGenerate = false;
   private int stage;
   private Tile[][] introTiles;
   private Zone[][] zones;
@@ -235,7 +236,7 @@ public class World {
       R.setSeed(Param.WORLD_SEED);
     }
 
-    // Do NOT reset warpParticlesCached, this needs to persist over generation attempts
+    // Do NOT reset warpParticlesCached, doGenerate, doLoad, these needs to persist over generation attempts
   }
 
   private void generateIntro() {
@@ -272,7 +273,7 @@ public class World {
   public void act(float delta) {
     if (doLoad) {
       load();
-    } else if (!generated) {
+    } else if (doGenerate) {
       generate();
     }
   }
@@ -281,20 +282,21 @@ public class World {
     try {
       deserialise( Persistence.getInstance().save.getJSONObject("World") );
       GameState.getInstance().deserialise( Persistence.getInstance().save.getJSONObject("GameState") );
+      generated = true;
+      doLoad = false;
+      doGenerate = false;
+      warpParticlesCached = -1;
+      //Gdx.app.log("DBG", "LOADED. WARPS ACTORS SIZE " + GameState.getInstance().getWarpStage().getActors().size);
+      StateManager.getInstance().transitionToGameScreen();
     } catch (JSONException e) {
       e.printStackTrace();
     }
-    generated = true;
-    doLoad = false;
-    warpParticlesCached = -1;
-    //Gdx.app.log("DBG", "LOADED. WARPS ACTORS SIZE " + GameState.getInstance().getWarpStage().getActors().size);
-    StateManager.getInstance().transitionToGameScreen();
   }
 
   public void generate() {
     boolean success = false;
     if (StateManager.getInstance().fsm == FSM.kFADE_TO_INTRO) {
-      // Only start generating after finishing fading in
+      // Don't generate while fading
       return;
     }
     switch (stage) {
@@ -323,6 +325,7 @@ public class World {
     if (stage == 14) {
       Gdx.app.log("World", "Generation finished");
       generated = true;
+      doGenerate = false;
       for (int y = Param.ZONES_Y - 1; y >= 0; --y)
         Gdx.app.log("", (zones[0][y].tileColour == Colour.kRED ? "R " : "G ") + (zones[1][y].tileColour == Colour.kRED ? "R " : "G ") + (zones[2][y].tileColour == Colour.kRED ? "R " : "G "));
       for (int y = Param.ZONES_Y - 1; y >= 0; --y)

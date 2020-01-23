@@ -77,7 +77,11 @@ public class UI {
   private Table mainWindow;
   private Table settingsWindow;
   private Table selectWindow;
+  private Table androidWindow;
   private Table finishedTable;
+  public Table saving;
+
+  private Container<Actor> spacer = new Container<Actor>();
 
   private float displayPlayerEnergy = Param.PLAYER_STARTING_ENERGY;
   private float displayInWorldParticles = 0;
@@ -108,7 +112,9 @@ public class UI {
   private final DemolishButton demolishButton = new DemolishButton();
   private final ButtonHover buttonHover = new ButtonHover();
 
-//  public Button selectParticlesButton;
+  public Button selectParticlesButton;
+  private Button selectCross;
+  private Button selectTick;
 
   private EnumMap<BuildingType, Button> buildBuildingButtonsEnabled = null;
   private EnumMap<BuildingType, Button> buildBuildingButtonsDisabled = null;
@@ -136,7 +142,6 @@ public class UI {
 
   private EnumMap<Particle, Button> selectButton;
   private EnumMap<Particle, Label> selectLabel;
-  private Button selectCross;
 
   private float perSec = 0; // Do once per second
 
@@ -345,6 +350,19 @@ public class UI {
   protected void resetGame() {
     Gdx.app.log("resetGame", "made game UI");
 
+    Table sParent = new Table();
+    sParent.setFillParent(true);
+    sParent.pad(Param.TILE_S*2);
+    sParent.top().left();
+    saving = getWindow();
+    saving.add(getLabel(Lang.get("UI_SAVING"),"")).width(SIZE_L*2).height(SIZE_M);
+    sParent.add(saving);
+    //
+    Stage saveStage = GameState.getInstance().getSaveStage();
+    saveStage.clear();
+    saveStage.addActor(sParent);
+    saving.setVisible(false);
+
     table = new Table();
     table.setFillParent(true);
     table.row().fillY();
@@ -363,6 +381,7 @@ public class UI {
 
     mainWindow = getWindow();
     selectWindow = getWindow();
+    androidWindow = getWindow();
 
     displayPlayerEnergyLabelSet.clear();
     displayPlayerParticleLabelSet.clear();
@@ -437,7 +456,7 @@ public class UI {
     mainWindow.add(buildingBuildTable).colspan(2);
     mainWindow.row();
     separator(mainWindow, 2);
-
+    //
     mainWindow.row();
     Button settings = getImageButton("settings", "default", SIZE_L, "pause");
     settings.addListener(new ChangeListener() {
@@ -447,6 +466,17 @@ public class UI {
       }
     });
     addToWin(mainWindow, settings, SIZE_L + SIZE_M, SIZE_L, 2);
+
+
+    selectParticlesButton = getImageButton("select", "toggle", SIZE_M, "");
+    selectParticlesButton.addListener(new ChangeListener() {
+      @Override
+      public void changed(ChangeEvent event, Actor actor) {
+        if (((Button)actor).isChecked()) GameState.getInstance().startSelectingAndroid();
+      }
+    });
+    selectTick =  getImageButton("tick", "");
+    selectCross =  getImageButton("cross", "");
 
     // Selected window
     selectButton = new EnumMap<Particle, Button>(Particle.class);
@@ -514,12 +544,6 @@ public class UI {
       LabelDF buildingCost = getLabel( "", "buildingPrice" );
       buildingWindowQPrice.put(bt, buildingCost);
       addToWin(bw, buildingCost, SIZE_L, SIZE_S, colspan-1);
-      bw.row();
-      ///////////////////////
-      // TODO android mode
-//      separator(bw, colspan);
-//      addToWin(bw, getImageButton("tick", ""), SIZE_L, SIZE_L, colspan/2);
-//      addToWin(bw, getImageButton("cross", ""), SIZE_L, SIZE_L, colspan/2);
     }
 
     // Building info windows
@@ -555,11 +579,11 @@ public class UI {
             Particle p = bt.getOutputs(i).getKey(); // Key and value are always the same
             if (p == null) continue;
             Button b = getAndAddStandingOrderButton(bt, p);
-            addToWin(bw, b, SIZE_L + SIZE_M, SIZE_L, 6);
+            addToWin(bw, b, 2*SIZE_L, SIZE_L, 6);
             bw.row();
           }
           Button bBlank = getAndAddStandingOrderButton(bt, Particle.kBlank);
-          addToWin(bw, bBlank, SIZE_L + SIZE_M, SIZE_M + SIZE_S, 6);
+          addToWin(bw, bBlank, 2*SIZE_L, SIZE_M + SIZE_S, 6);
           bw.row();
 //          separator(bw, 6);
         }
@@ -592,13 +616,9 @@ public class UI {
         buildingWindowUpgradeButton.put(bt, ib);
       }
       bw.row();
-      //TODO android
-//      separator(bw, 6, Param.UI_WIDTH_GAME);
-//      addToWin(bw, getImageButton("tick", ""), SIZE_L, SIZE_L, 3);
-//      addToWin(bw, getImageButton("cross", ""), SIZE_L, SIZE_L, 3);
       if (bt != BuildingType.kWARP) {
         String percent = Float.toString(Param.BUILDING_REFUND_AMOUND * 100f);
-        addToWin(bw, getImageButton("wrecking", "default", SIZE_L, "wrecking#" + percent), SIZE_L + SIZE_M, SIZE_M + SIZE_S, 6);
+        addToWin(bw, getImageButton("wrecking", "default", SIZE_L, "wrecking#" + percent), 2*SIZE_L, SIZE_M + SIZE_S, 6);
       }
     }
 
@@ -733,7 +753,6 @@ public class UI {
   }
 
   public void showBuildBuilding(BuildingType bt) {
-    table.clear();
     GameState.getInstance().buildingBeingPlaced = bt;
     if (bt != BuildingType.kMINE) {
       buildingWindowQSimple.get(bt).setChecked(GameState.getInstance().queueType == QueueType.kSIMPLE);
@@ -751,6 +770,11 @@ public class UI {
       buildingWindowTimeLabelB.get(bt).setText("");
       buildingWindowTimeLabelC.get(bt).setText("");
     }
+    table.clear();
+    androidWindow.clear();
+    addToWin(androidWindow, selectTick, SIZE_L, SIZE_L, 1);
+    addToWin(androidWindow, selectCross, SIZE_L, SIZE_L, 1);
+    addAndroid();
     table.add(buildingWindow.get(bt));
     if (GameState.getInstance().debug > 0) table.debugAll();
     uiMode = UIMode.kPLACE_BUILDING;
@@ -759,6 +783,12 @@ public class UI {
 
   public void showBuildingInfo(Building b) {
     table.clear();
+    androidWindow.clear();
+    if (b.getType() != BuildingType.kMINE) {
+      addToWin(androidWindow, selectTick, SIZE_L, SIZE_L, 1);
+    }
+    addToWin(androidWindow, selectCross, SIZE_L, SIZE_L, 1);
+    addAndroid();
     GameState.getInstance().selectedBuilding = b.id;
     table.add(buildingSelectWindow.get(b.getType()));
     for (Particle p : Particle.values()) {
@@ -772,6 +802,7 @@ public class UI {
 
   public void showSettings() {
     table.clear();
+    androidWindow.clear();
     table.add(settingsWindow);
     elapsedTime.setText(formatter.format(GameState.getInstance().gameTime)+"s");
     uiMode = UIMode.kSETTINGS;
@@ -803,6 +834,7 @@ public class UI {
     particlesDestroyed.setText(Lang.get("UI_PARTICLES_DESTROYED#"+formatter.format(GameState.getInstance().particlesDeconstructed)));
     particleBounces.setText(Lang.get("UI_PARTICLE_BOUNCES#"+formatter.format(GameState.getInstance().particleBounces)));
     table.clear();
+    androidWindow.clear();
     table.align(Align.center).add(finishedTable).expandX();
     uiMode = UIMode.kSETTINGS;
   }
@@ -886,16 +918,18 @@ public class UI {
       addToWin(selectWindow, selectButton.get(p), SIZE_L+SIZE_M, SIZE_L, 2);
       selectWindow.row();
     }
-    // TODO android
-//    addToWin(selectWindow, selectCross, SIZE_L+SIZE_M, SIZE_L, 2);
     table.clear();
+    androidWindow.clear();
+//    addToWin(androidWindow, selectCross, SIZE_L, SIZE_L, 1);
+    addToWin(androidWindow, selectCross, SIZE_L, SIZE_L, 1);
+    addAndroid();
     table.add(selectWindow);
     if (GameState.getInstance().debug > 0) table.debugAll();
     uiMode = UIMode.kWITH_PARTICLE_SELECTION;
     Sounds.getInstance().selectOrder();
   }
 
-  public void newGameDiag(int initialSpawn, int remainingToSpawn) {
+  void newGameDiag(int initialSpawn, int remainingToSpawn) {
     Dialog d = new Dialog("", skin);
     d.pad(PAD*4);
     d.getContentTable().pad(PAD*4);
@@ -909,7 +943,7 @@ public class UI {
     d.show(GameState.getInstance().getUIStage());
   }
 
-  public void spawnOverDiag(int remainingInWorld) {
+  void spawnOverDiag(int remainingInWorld) {
     Dialog d = new Dialog("", skin);
     d.pad(PAD*4);
     d.getContentTable().pad(PAD*4);
@@ -920,12 +954,25 @@ public class UI {
     d.show(GameState.getInstance().getUIStage());
   }
 
-  public void showMain() {
+  void showMain() {
     Gdx.app.log("showMain", "Show main In Game UI");
     table.clear();
+    androidWindow.clear();
+    addToWin(androidWindow, selectParticlesButton, SIZE_L, SIZE_L, 1);
+    addAndroid();
     table.add(mainWindow);
     if (GameState.getInstance().debug > 0) table.debugAll();
     uiMode = UIMode.kNONE;
+  }
+
+  private void addAndroid() {
+    if (!Param.IS_ANDROID) {
+      return;
+    }
+    table.left();
+    table.add(androidWindow).align(Align.top);
+    table.add(spacer).expandX();
+    table.right();
   }
 
 }

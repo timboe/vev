@@ -89,8 +89,13 @@ public class Util {
   private static boolean needsClamp(float val, float min, float max) { return !(val == clamp(val,min,max)); }
 
 
+  static float elapsed = 0;
   public static boolean doFade(ShapeRenderer sr, float delta, float[] fadeTimer) {
-    final int finalTime = 1300;
+    final int finalTime = 4000;
+    if (fadeTimer[0] == 0) {
+      elapsed = 0;
+    }
+    elapsed += delta * 3.5;
     if (fadeTimer[2] > finalTime) {
       sr.begin(ShapeRenderer.ShapeType.Filled);
       sr.setColor(136/255f, 57/255f, 80/255f, 1f);
@@ -99,13 +104,13 @@ public class Util {
       return true;
     }
     sr.setProjectionMatrix(Camera.getInstance().getUiCamera().combined);
-    sr.setColor(206f/255f, 101f/255f, 80f/255f, 1f);
     sr.begin(ShapeRenderer.ShapeType.Filled);
-    strokeRect(sr, fadeTimer[0], fadeTimer[0]/4f);
+    sr.setColor(206f/255f, 101f/255f, 80f/255f, 1f);
+    strokeRect(sr, fadeTimer[2], fadeTimer[2]/4f);
     sr.setColor(176/255f, 78/255f, 80/255f, 1f);
     strokeRect(sr, fadeTimer[1], fadeTimer[1]/4f);
     sr.setColor(136/255f, 57/255f, 80/255f, 1f);
-    strokeRect(sr, fadeTimer[2], fadeTimer[2]/4f);
+    strokeRect(sr, fadeTimer[0], fadeTimer[0]/4f);
     sr.end();
     Gdx.gl.glLineWidth(5);
     sr.begin(ShapeRenderer.ShapeType.Line);
@@ -114,21 +119,12 @@ public class Util {
     strokeRect(sr, fadeTimer[1], fadeTimer[1]/4f);
     strokeRect(sr, fadeTimer[2], fadeTimer[2]/4f);
     sr.end();
-    fadeTimer[0] += (delta * 5);
-    fadeTimer[0] *= 1.1;
-    if (fadeTimer[0] > 2.5 && fadeTimer[1] == 0) {
-      ++fadeTimer[1];
+    fadeTimer[0] = (float)Math.exp(elapsed) * 5f;
+    if (fadeTimer[0] > 2.5) {
+      fadeTimer[1] = (float)Math.exp(elapsed) * 10f;
     }
-    if (fadeTimer[1] > 0) {
-      fadeTimer[1] += (delta * 10);
-      fadeTimer[1] *= 1.1;
-    }
-    if (fadeTimer[1] > 2.5 && fadeTimer[2] == 0) {
-      ++fadeTimer[2];
-    }
-    if (fadeTimer[2] > 0) {
-      fadeTimer[2] += (delta * 10);
-      fadeTimer[2] *= 1.1;
+    if (fadeTimer[1] > 2.5) {
+      fadeTimer[2] = (float)Math.exp(elapsed) * 15f;
     }
     return (fadeTimer[2] > finalTime);
   }

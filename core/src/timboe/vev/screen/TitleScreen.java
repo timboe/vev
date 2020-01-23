@@ -94,6 +94,8 @@ public class TitleScreen implements Screen {
             GameState.getInstance().warpParticles = World.getInstance().warpParticlesCached;
           }
           StateManager.getInstance().setToGameScreen();
+        } else {
+          World.getInstance().doGenerate = true;
         }
       }
     }
@@ -110,7 +112,7 @@ public class TitleScreen implements Screen {
       }
     }
 
-    UIIntro.getInstance().generating.setVisible( !World.getInstance().getGenerated() );
+    UIIntro.getInstance().generating.setVisible( World.getInstance().doGenerate && !World.getInstance().getGenerated() );
     state.getIntroGeneratingStage().draw();
   }
 
