@@ -1,5 +1,5 @@
 sprites.png
-size: 504, 470
+size: 506, 454
 format: RGBA8888
 filter: Nearest,Nearest
 repeat: none
@@ -68,7 +68,7 @@ ball_r_5
   index: -1
 board_vertical
   rotate: false
-  xy: 239, 143
+  xy: 241, 143
   size: 16, 48
   orig: 16, 48
   offset: 0, 0
@@ -278,84 +278,84 @@ border_r_SW_NE
   index: -1
 build_3_3
   rotate: false
-  xy: 359, 143
+  xy: 1, 193
   size: 48, 48
   orig: 48, 48
   offset: 0, 0
   index: -1
 building_0
   rotate: false
-  xy: 291, 143
+  xy: 293, 143
   size: 32, 48
   orig: 32, 48
   offset: 0, 0
   index: -1
 building_0_gs
   rotate: false
-  xy: 325, 143
+  xy: 395, 143
   size: 32, 48
   orig: 32, 48
   offset: 0, 0
   index: -1
 building_1
   rotate: false
-  xy: 257, 143
+  xy: 361, 143
   size: 32, 48
   orig: 32, 48
   offset: 0, 0
   index: -1
 building_1_gs
   rotate: false
-  xy: 409, 143
+  xy: 327, 143
   size: 32, 48
   orig: 32, 48
   offset: 0, 0
   index: -1
 building_2
   rotate: false
-  xy: 137, 143
+  xy: 429, 143
   size: 32, 48
   orig: 32, 48
   offset: 0, 0
   index: -1
 building_2_gs
   rotate: false
-  xy: 103, 143
+  xy: 259, 143
   size: 32, 48
   orig: 32, 48
   offset: 0, 0
   index: -1
 building_3
   rotate: false
-  xy: 171, 143
+  xy: 173, 143
   size: 32, 48
   orig: 32, 48
   offset: 0, 0
   index: -1
 building_3_gs
   rotate: false
-  xy: 205, 143
+  xy: 207, 143
   size: 32, 48
   orig: 32, 48
   offset: 0, 0
   index: -1
 building_4
   rotate: false
-  xy: 421, 209
+  xy: 331, 259
   size: 48, 64
   orig: 48, 64
   offset: 0, 0
   index: -1
 building_4_gs
   rotate: false
-  xy: 305, 209
+  xy: 289, 193
   size: 48, 64
   orig: 48, 64
   offset: 0, 0
   index: -1
 bush_g_0
   rotate: false
-  xy: 361, 109
+  xy: 395, 109
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
@@ -369,63 +369,63 @@ bush_g_1
   index: -1
 bush_g_2
   rotate: false
-  xy: 191, 109
+  xy: 157, 109
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 bush_g_3
   rotate: false
-  xy: 327, 109
+  xy: 429, 109
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 bush_g_4
   rotate: false
-  xy: 259, 109
+  xy: 327, 109
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 bush_g_5
   rotate: false
-  xy: 293, 109
+  xy: 259, 109
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 bush_r_0
   rotate: false
-  xy: 1, 143
+  xy: 293, 109
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 bush_r_1
   rotate: false
-  xy: 35, 143
+  xy: 69, 143
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 bush_r_2
   rotate: false
-  xy: 69, 143
+  xy: 103, 143
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 bush_r_3
   rotate: false
-  xy: 463, 109
+  xy: 35, 143
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 clock
   rotate: false
-  xy: 429, 109
+  xy: 1, 143
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
@@ -439,7 +439,7 @@ cloud_sprite
   index: -1
 cross
   rotate: false
-  xy: 55, 109
+  xy: 463, 109
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
@@ -467,217 +467,217 @@ floor_c_g_NW
   index: -1
 floor_c_r_N
   rotate: false
-  xy: 289, 91
+  xy: 253, 91
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 floor_c_r_NE
   rotate: false
-  xy: 397, 91
+  xy: 289, 91
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 floor_c_r_NW
   rotate: false
-  xy: 253, 91
+  xy: 415, 91
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 floor_g_0
   rotate: false
-  xy: 271, 91
+  xy: 307, 91
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 floor_g_1
   rotate: false
-  xy: 217, 91
+  xy: 271, 91
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 floor_g_2
   rotate: false
-  xy: 145, 91
+  xy: 91, 91
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 floor_g_3
   rotate: false
-  xy: 145, 91
+  xy: 91, 91
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 floor_g_4
   rotate: false
-  xy: 145, 91
+  xy: 91, 91
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 floor_g_5
   rotate: false
-  xy: 145, 91
+  xy: 91, 91
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 floor_g_6
   rotate: false
-  xy: 109, 91
+  xy: 145, 91
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 floor_g_7
   rotate: false
-  xy: 307, 91
+  xy: 109, 91
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 floor_g_8
   rotate: false
-  xy: 73, 91
+  xy: 325, 91
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 floor_g_9
   rotate: false
-  xy: 325, 91
+  xy: 73, 91
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 floor_g_10
   rotate: false
-  xy: 163, 91
+  xy: 217, 91
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 floor_g_11
   rotate: false
-  xy: 37, 91
+  xy: 163, 91
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 floor_g_12
   rotate: false
-  xy: 55, 91
+  xy: 37, 91
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 floor_g_13
   rotate: false
-  xy: 91, 91
+  xy: 55, 91
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 floor_r_0
   rotate: false
-  xy: 451, 91
+  xy: 343, 91
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 floor_r_1
   rotate: false
-  xy: 469, 91
+  xy: 1, 109
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 floor_r_2
   rotate: false
-  xy: 37, 109
+  xy: 19, 109
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 floor_r_3
   rotate: false
-  xy: 37, 109
+  xy: 19, 109
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 floor_r_4
   rotate: false
-  xy: 37, 109
+  xy: 19, 109
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 floor_r_5
   rotate: false
-  xy: 37, 109
+  xy: 19, 109
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 floor_r_6
   rotate: false
-  xy: 343, 91
+  xy: 361, 91
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 floor_r_7
   rotate: false
-  xy: 433, 91
+  xy: 451, 91
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 floor_r_8
   rotate: false
-  xy: 361, 91
+  xy: 379, 91
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 floor_r_9
   rotate: false
-  xy: 415, 91
+  xy: 433, 91
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 floor_r_10
   rotate: false
-  xy: 1, 109
+  xy: 37, 109
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 floor_r_11
   rotate: false
-  xy: 487, 91
+  xy: 469, 91
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 floor_r_12
   rotate: false
-  xy: 19, 109
+  xy: 487, 91
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 h2_g_E
   rotate: false
-  xy: 379, 91
+  xy: 397, 91
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
@@ -698,7 +698,7 @@ h2_g_S
   index: -1
 h2_g_W
   rotate: false
-  xy: 379, 91
+  xy: 397, 91
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
@@ -810,14 +810,14 @@ h3_r_S_r
   index: -1
 h3_r_W
   rotate: false
-  xy: 325, 55
+  xy: 451, 19
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
   index: -1
 h4_g
   rotate: false
-  xy: 487, 19
+  xy: 325, 55
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
@@ -1027,7 +1027,7 @@ h_r_W
   index: -1
 lightning_1
   rotate: false
-  xy: 397, 275
+  xy: 373, 193
   size: 32, 64
   orig: 32, 64
   offset: 0, 0
@@ -1055,63 +1055,63 @@ missing3
   index: -1
 pyramid_0
   rotate: false
-  xy: 431, 275
+  xy: 1, 325
   size: 64, 64
   orig: 64, 64
   offset: 0, 0
   index: -1
 pyramid_1
   rotate: false
-  xy: 1, 341
+  xy: 67, 325
   size: 64, 64
   orig: 64, 64
   offset: 0, 0
   index: -1
 pyramid_2
   rotate: false
-  xy: 331, 275
+  xy: 1, 259
   size: 64, 64
   orig: 64, 64
   offset: 0, 0
   index: -1
 pyramid_3
   rotate: false
-  xy: 1, 275
+  xy: 265, 259
   size: 64, 64
   orig: 64, 64
   offset: 0, 0
   index: -1
 pyramid_4
   rotate: false
-  xy: 265, 275
+  xy: 407, 193
   size: 64, 64
   orig: 64, 64
   offset: 0, 0
   index: -1
 pyramid_5
   rotate: false
-  xy: 67, 275
+  xy: 67, 259
   size: 64, 64
   orig: 64, 64
   offset: 0, 0
   index: -1
 pyramid_6
   rotate: false
-  xy: 199, 275
+  xy: 199, 259
   size: 64, 64
   orig: 64, 64
   offset: 0, 0
   index: -1
 pyramid_7
   rotate: false
-  xy: 133, 275
+  xy: 133, 259
   size: 64, 64
   orig: 64, 64
   offset: 0, 0
   index: -1
 queue_full
   rotate: false
-  xy: 395, 109
+  xy: 361, 109
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
@@ -1202,14 +1202,14 @@ queue_g_W_S
   index: -1
 queue_simple
   rotate: false
-  xy: 311, 341
+  xy: 377, 325
   size: 128, 128
   orig: 128, 128
   offset: 0, 0
   index: -1
 queue_spiral
   rotate: false
-  xy: 181, 341
+  xy: 247, 325
   size: 128, 128
   orig: 128, 128
   offset: 0, 0
@@ -1412,7 +1412,7 @@ s_r_W_W
   index: -1
 select
   rotate: false
-  xy: 157, 109
+  xy: 123, 109
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
@@ -1426,14 +1426,14 @@ separator
   index: -1
 settings
   rotate: false
-  xy: 355, 209
+  xy: 381, 259
   size: 64, 64
   orig: 64, 64
   offset: 0, 0
   index: -1
 show_arrows
   rotate: false
-  xy: 123, 109
+  xy: 89, 109
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
@@ -1468,84 +1468,91 @@ tiberium_3
   index: -1
 tick
   rotate: false
-  xy: 89, 109
+  xy: 191, 109
+  size: 32, 32
+  orig: 32, 32
+  offset: 0, 0
+  index: -1
+tick_disabled
+  rotate: false
+  xy: 55, 109
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 tree_g_0
   rotate: false
-  xy: 443, 143
+  xy: 51, 193
   size: 32, 64
   orig: 32, 64
   offset: 0, 0
   index: -1
 tree_g_1
   rotate: false
-  xy: 1, 209
+  xy: 85, 193
   size: 32, 64
   orig: 32, 64
   offset: 0, 0
   index: -1
 tree_g_2
   rotate: false
-  xy: 35, 209
+  xy: 187, 193
   size: 32, 64
   orig: 32, 64
   offset: 0, 0
   index: -1
 tree_g_3
   rotate: false
-  xy: 271, 209
+  xy: 119, 193
   size: 32, 64
   orig: 32, 64
   offset: 0, 0
   index: -1
 tree_r_0
   rotate: false
-  xy: 237, 209
+  xy: 255, 193
   size: 32, 64
   orig: 32, 64
   offset: 0, 0
   index: -1
 tree_r_1
   rotate: false
-  xy: 203, 209
+  xy: 339, 193
   size: 32, 64
   orig: 32, 64
   offset: 0, 0
   index: -1
 tree_r_2
   rotate: false
-  xy: 103, 209
+  xy: 221, 193
   size: 32, 64
   orig: 32, 64
   offset: 0, 0
   index: -1
 tree_r_3
   rotate: false
-  xy: 69, 209
+  xy: 153, 193
   size: 32, 64
   orig: 32, 64
   offset: 0, 0
   index: -1
 void
   rotate: false
-  xy: 67, 341
+  xy: 133, 325
   size: 112, 112
   orig: 112, 112
   offset: 0, 0
   index: -1
 wrecking
   rotate: false
-  xy: 137, 209
-  size: 64, 64
-  orig: 64, 64
+  xy: 137, 143
+  size: 34, 34
+  orig: 34, 34
   offset: 0, 0
   index: -1
 zap
   rotate: false
-  xy: 451, 19
+  xy: 487, 19
   size: 16, 16
   orig: 16, 16
   offset: 0, 0
