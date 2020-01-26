@@ -52,8 +52,14 @@ public class OrderlyQueue {
     isIntro = json.getBoolean("isIntro");
     JSONObject q = json.getJSONObject("queue");
     Iterator qIt = q.keys();
+    int maxKey = -1;
     while (qIt.hasNext()) {
-      queue.add(new IVector2(q.getJSONObject((String) qIt.next())));
+      maxKey = Math.max(maxKey, Integer.valueOf((String) qIt.next()));
+    }
+    if (maxKey >= 0) {
+      for (Integer i = 0; i <= maxKey; ++i) {
+        queue.add(new IVector2(q.getJSONObject(i.toString())));
+      }
     }
     queueStart = new IVector2(json.getJSONObject("queueStart"));
   }

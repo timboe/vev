@@ -118,10 +118,12 @@ public class IntroState {
     getIntroBuildingStage().addActor(demoMine);
     //
     Truck demoTruck = new Truck(World.getInstance().getTile(28,40, true), null);
+    demoTruck.isIntro = true;
     demoTruck.extraFrames = 5;
     getIntroSpriteStage().addActor(demoTruck);
     //
     demoWarp = new Warp(World.getInstance().getTile(37, 27, true));
+    demoWarp.isIntro = true;
     getIntroWarpStage().addActor(demoWarp);
     demoBuildings.add(demoWarp);
     demoWarp.buildingPathingLists = new EnumMap<Particle, List<IVector2>>(Particle.class);
@@ -141,10 +143,12 @@ public class IntroState {
     demoBuildings.add(demoBuilding1);
     getIntroBuildingStage().addActor(demoBuilding1);
     Entity banner1 = new Entity(b1_x + 2, b1_y);
+    banner1.isIntro = true;
     banner1.setTexture("board_vertical", 1, false);
     getIntroBuildingStage().addActor(banner1);
     for (int i = 0; i < BuildingType.N_MODES; ++i) {
       Entity p = new Entity(Param.SPRITE_SCALE*(b1_x), Param.SPRITE_SCALE*(b1_y + 1));
+      p.isIntro = true;
       p.moveBy(73, -5 + (20 * i)); // Fine tune-position of
       p.setTexture("ball_" +  b1_t.getInput(BuildingType.N_MODES - i - 1).getColourFromParticle().getString(), 1, false);
       getIntroSpriteStage().addActor(p);
@@ -171,10 +175,12 @@ public class IntroState {
     demoBuildings.add(demoBuilding2);
     getIntroBuildingStage().addActor(demoBuilding2);
     Entity banner2 = new Entity(b2_x + 2, b2_y);
+    banner2.isIntro = true;
     banner2.setTexture("board_vertical", 1, false);
     getIntroBuildingStage().addActor(banner2);
     for (int i = 0; i < BuildingType.N_MODES; ++i) {
       Entity p = new Entity(Param.SPRITE_SCALE*(b2_x), Param.SPRITE_SCALE*(b2_y + 1));
+      p.isIntro = true;
       p.moveBy(73, -5 + (20 * i)); // Fine tune-position of
       p.setTexture("ball_" +  b2_t.getInput(BuildingType.N_MODES - i - 1).getColourFromParticle().getString(), 1, false);
       getIntroSpriteStage().addActor(p);
@@ -183,6 +189,7 @@ public class IntroState {
     //
     for (int i = 0; i < 4; ++i) {
       Sprite demoSprite = new Sprite(World.getInstance().getTile(31+i, 22, true));
+      demoSprite.isIntro = true;
       demoSprite.setTexture("ball_" + kW.getColourFromParticle().getString(), 6, false);
       demoSprite.setParticle(kW);
       demoSprite.moveBy(Param.TILE_S / 2, Param.TILE_S / 2);

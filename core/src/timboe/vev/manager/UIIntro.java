@@ -103,20 +103,33 @@ public class UIIntro {
 
     Table h1 = helpContainers.get(2).getActor();
     int h1pad = 128;
-    addHelpLabel(h1, Lang.get("UI_HELP_A_00"), h1pad,32);
-    addHelpLabel(h1, Lang.get("UI_HELP_A_01"),h1pad+32);
-    addHelpLabel(h1, Lang.get("UI_HELP_A_02"),h1pad+64);
-    addHelpLabel(h1, Lang.get("UI_HELP_A_03"),h1pad+64);
-    addHelpLabel(h1, Lang.get("UI_HELP_A_04"),h1pad+64);
-    addHelpLabel(h1, Lang.get("UI_HELP_A_05"),h1pad+64);
-    addHelpLabel(h1, Lang.get("UI_HELP_A_06"),h1pad+32);
-    addHelpLabel(h1, Lang.get("UI_HELP_A_07"),h1pad+64);
-    addHelpLabel(h1, Lang.get("UI_HELP_A_08"),h1pad+32);
-    addHelpLabel(h1, Lang.get("UI_HELP_A_09"),h1pad+64);
-    addHelpLabel(h1, Lang.get("UI_HELP_A_10"),h1pad+32);
-    addHelpLabel(h1, Lang.get("UI_HELP_A_11"),h1pad+64);
-    addHelpLabel(h1, Lang.get("UI_HELP_A_12"),h1pad+32);
-    addHelpLabel(h1, Lang.get("UI_HELP_A_13"),h1pad+64);
+    if(Param.IS_ANDROID) {
+      addHelpLabel(h1, Lang.get("UI_ANDROID_A_00"), h1pad, 32);
+      addHelpLabel(h1, Lang.get("UI_ANDROID_A_01"), h1pad + 32);
+      addHelpLabel(h1, Lang.get("UI_ANDROID_A_02"), h1pad + 64);
+      addHelpLabel(h1, Lang.get("UI_ANDROID_A_03"), h1pad + 64);
+      addHelpLabel(h1, Lang.get("UI_ANDROID_A_04"), h1pad + 32);
+      addHelpLabel(h1, Lang.get("UI_ANDROID_A_05"), h1pad + 64);
+      addHelpLabel(h1, Lang.get("UI_ANDROID_A_06"), h1pad + 32);
+      addHelpLabel(h1, Lang.get("UI_ANDROID_A_07"), h1pad + 64);
+      addHelpLabel(h1, Lang.get("UI_ANDROID_A_08"), h1pad + 32);
+      addHelpLabel(h1, Lang.get("UI_ANDROID_A_09"), h1pad + 64);
+    } else {
+      addHelpLabel(h1, Lang.get("UI_HELP_A_00"), h1pad, 32);
+      addHelpLabel(h1, Lang.get("UI_HELP_A_01"), h1pad + 32);
+      addHelpLabel(h1, Lang.get("UI_HELP_A_02"), h1pad + 64);
+      addHelpLabel(h1, Lang.get("UI_HELP_A_03"), h1pad + 64);
+      addHelpLabel(h1, Lang.get("UI_HELP_A_04"), h1pad + 64);
+      addHelpLabel(h1, Lang.get("UI_HELP_A_05"), h1pad + 64);
+      addHelpLabel(h1, Lang.get("UI_HELP_A_06"), h1pad + 32);
+      addHelpLabel(h1, Lang.get("UI_HELP_A_07"), h1pad + 64);
+      addHelpLabel(h1, Lang.get("UI_HELP_A_08"), h1pad + 32);
+      addHelpLabel(h1, Lang.get("UI_HELP_A_09"), h1pad + 64);
+      addHelpLabel(h1, Lang.get("UI_HELP_A_10"), h1pad + 32);
+      addHelpLabel(h1, Lang.get("UI_HELP_A_11"), h1pad + 64);
+      addHelpLabel(h1, Lang.get("UI_HELP_A_12"), h1pad + 32);
+      addHelpLabel(h1, Lang.get("UI_HELP_A_13"), h1pad + 64);
+    }
 
     Table h2 = helpContainers.get(3).getActor();
     addHelpLabel(h2, Lang.get("UI_HELP_B_00"),16,16);
@@ -278,7 +291,7 @@ public class UIIntro {
     if (Persistence.getInstance().save == null) {
       Gdx.app.log("windowMain","No save game, LOAD disabled");
       loadGame.setDisabled(true);
-      World.getInstance().doGenerate = true;
+      World.getInstance().requestGenerate();
     } else {
       Gdx.app.log("windowMain","Found save game, LOAD enabled");
       loadGame.setDisabled(false);

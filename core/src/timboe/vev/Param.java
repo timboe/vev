@@ -111,8 +111,7 @@ public class Param {
   public static final int N_BORDER_VARIANTS = 4;
 
   public static final float SCROLL_ZOOM = 0.1f;
-  public static final float TRANSLATE_MOD = 2;
-  public static final float FLING_MOD = TRANSLATE_MOD * 0.01f;
+  public static final float FLING_MOD = 0.02f;
 
   public static final float ZOOM_MIN = 0.1f;
   public static final float ZOOM_MAX = 3.0f;
@@ -125,11 +124,10 @@ public class Param {
   private static final boolean FAKE_ANDROID = true;
   public static final boolean IS_ANDROID = FAKE_ANDROID || Gdx.app.getType() == Application.ApplicationType.Android;
 
-  public static final float ANDROID_PARTICLE_MOD = (IS_ANDROID ? 0.1f : 1f);
-  public static final int PARTICLES_SMALL = Math.round(1000 * ANDROID_PARTICLE_MOD);
-  public static final int PARTICLES_MED = Math.round(5000 * ANDROID_PARTICLE_MOD);
-  public static final int PARTICLES_LARGE = Math.round(20000 * ANDROID_PARTICLE_MOD);
-  public static final int PARTICLES_XL = Math.round(50000 * ANDROID_PARTICLE_MOD);
+  public static final int PARTICLES_SMALL = IS_ANDROID ? 250 : 1000;
+  public static final int PARTICLES_MED = IS_ANDROID ? 500 : 5000;
+  public static final int PARTICLES_LARGE = IS_ANDROID ? 2500 : 20000;
+  public static final int PARTICLES_XL = IS_ANDROID ? 5000 : 50000;
 
   public static final float ANIM_TIME = 1/20f; // I.e. 12 frames per second
 

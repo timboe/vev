@@ -314,7 +314,7 @@ public class GameState {
 
     if (UI.getInstance().uiMode == UIMode.kPLACE_BUILDING) {
       hintBuildingPlacement(cursorTile);
-    } else if (UI.getInstance().uiMode == UIMode.kWITH_BUILDING_SELECTION && doingPlacement) {
+    } else if (UI.getInstance().uiMode == UIMode.kWITH_BUILDING_SELECTION && doingPlacement && cursorTile != null) {
       hintStandingOrder(cursorTile);
     }
 
@@ -325,7 +325,7 @@ public class GameState {
           cursorTile = b.getQueuePathingTarget();
         }
       }
-      if (cursorTile.coordinates.pathFindNeighbours.size() > 0) {
+      if (cursorTile.coordinates.pathFindNeighbours.size() > 0 && !Param.IS_ANDROID) {
         cursorTile.setHighlightColour(Param.HIGHLIGHT_YELLOW, kNONE);
       }
     }
@@ -388,6 +388,7 @@ public class GameState {
         if (placeLocation != null) {
           Building b = getSelectedBuilding();
           b.updateDemoPathingList(selectedBuildingStandingOrderParticle, t);
+          t.setHighlightColour(Param.HIGHLIGHT_YELLOW, kNONE);
         }
       }
     }
@@ -542,7 +543,7 @@ public class GameState {
 
   public boolean isSelecting() {
     if (Param.IS_ANDROID) {
-      return  false; //UI.getInstance().selectParticlesButton.isChecked();
+      return UI.getInstance().selectParticlesButton.isChecked();
     } else {
       return (!doingPlacement && selectStartWorld.dst(selectEndWorld) > 6);
     }
@@ -550,10 +551,10 @@ public class GameState {
 
   public boolean startSelectingAndroid() {
     if (doingPlacement) {
-//      UI.getInstance().selectParticlesButton.setChecked(false);
+      UI.getInstance().selectParticlesButton.setChecked(false);
       return false; // Cannot do selection
     }
-//    UI.getInstance().selectParticlesButton.setChecked(true);
+    UI.getInstance().selectParticlesButton.setChecked(true);
     selectEndWorld.setZero();
     selectStartWorld.setZero();
     return true;
@@ -611,6 +612,7 @@ public class GameState {
     boolean didSave = b.savePathingList(); // Save the pathing list
     if (!didSave) return;
     doingPlacement = false;
+    UI.getInstance().selectTickIs(false);
     Sounds.getInstance().OK();
     // Set all buttons to false
     for (Particle p : Particle.values()) {
@@ -694,11 +696,10 @@ public class GameState {
         if (s.selected) selectedSet.add(s.id);
       }
       UI.getInstance().uiMode = UIMode.kNONE; // Remove "selecting"
-//      UI.getInstance().selectParticlesButton.setChecked( false );
+      UI.getInstance().selectParticlesButton.setChecked( false );
       if (!selectedSet.isEmpty()) UI.getInstance().doSelectParticle(selectedSet);
       selectStartWorld.setZero();
       selectEndWorld.setZero();
-//      UI.getInstance().selectParticlesButton.setChecked(false);
       return !selectedSet.isEmpty();
 
     } else if (selectedSet.isEmpty()) {
@@ -824,6 +825,7 @@ public class GameState {
     } while (anotherRoundNeeded);
     Gdx.app.log("pathingInternal","Pathing of " + pathed.size() + " sprites took " + rounds + " rounds");
     if (!doRepath && pathed.size() > 0) {
+      Gdx.app.log("MO","MO");
       Sounds.getInstance().moveOrder();
       Sounds.getInstance().OK();
     }
@@ -839,12 +841,11 @@ public class GameState {
   }
 
   public void initialZap() {
+    toFocusOn = warpMap.values().iterator().next();
     if (inWorldParticles > 0) {
       // Only for a new game
       return;
     }
-    Iterator it = warpMap.values().iterator();
-    toFocusOn = (Warp) it.next();
     int placed = 0;
     for (int i = 0; i < R.nextInt(3)+1; ++i) {
       placed += tryNewParticles(false, toFocusOn, 20);
@@ -903,6 +904,9 @@ public class GameState {
     particleMap.clear();
     buildingMap.clear();
     warpMap.clear();
+    buildingPrices.clear();
+    buildingQueuePrices.clear();
+    selectedSet.clear();
     dustEffects = new Array<ParticleEffectPool.PooledEffect>();
     ParticleEffect dustEffect = new ParticleEffect();
     dustEffect.load(Gdx.files.internal("dust_effect.txt"), Textures.getInstance().getAtlas());
@@ -922,6 +926,10 @@ public class GameState {
     particleBounces = 0;
     tiberiumMined = 0;
     upgradesPurchased = 0;
+    selectedBuilding = 0;
+    selectedBuildingStandingOrderParticle = null;
+    buildingBeingPlaced = null;
+    doingPlacement = false;
     taps = 0;
     shownMidGame = false;
     treesBulldozed = 0;

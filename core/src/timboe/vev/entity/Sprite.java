@@ -42,6 +42,7 @@ public class Sprite extends Entity {
     super(t.coordinates.x, t.coordinates.y, Param.TILE_S * Param.SPRITE_SCALE);
     myTile = t.coordinates;
     idleTime = 0;
+    myParticle = null;
     boredTime = 10f + (Param.PARTICLE_BORED_TIME * Util.R.nextFloat()); // Leave at least 10 seconds
     velocity = new Vector2();
     nudgeDestination = new Vector2();

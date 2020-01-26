@@ -35,8 +35,10 @@ public class StandingOrderButton extends ChangeListener {
           Gdx.app.log("StandingOrderButton","Clicked " + data.getKey().toString() + " " + data.getValue().toString());
           GameState.getInstance().doingPlacement = true;
           GameState.getInstance().selectedBuildingStandingOrderParticle = p;
+          UI.getInstance().selectTickIs(true);
         } else { // I was just clicked OFF - save the current pathing
           GameState.getInstance().doConfirmStandingOrder();
+          UI.getInstance().selectTickIs(false);
         }
       } else {
         b.setChecked( false );

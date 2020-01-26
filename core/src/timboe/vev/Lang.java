@@ -16,7 +16,7 @@ public class Lang {
 
   private Lang() {
     EN_GB.put("energy","Get energy from mining and deconstructing.\nSpend it on new buildings, and on upgrading them.");
-    EN_GB.put("particles", "Particles in the world.\nDeconstruct them all to finish the game.\nParticles will be spawned by the Warp Portals,\nuntil they're empty.");
+    EN_GB.put("particles", "Particles in the world.\nDeconstruct them all to finish the game.\nParticles will be spawned by the White Holes,\nuntil they're empty.");
     EN_GB.put("wParticles", "Particles yet to spawn into the world.");
     EN_GB.put("disassembleTime", "Time to deconstruct particle.");
     EN_GB.put("disassembleEnergy", "Energy released by deconstructing particle.");
@@ -59,6 +59,7 @@ public class Lang {
     EN_GB.put("ok","OK");
     EN_GB.put("midGame","The White Holes are empty!\nDeconstruct the remaining # particles in the shortest possible time.");
     EN_GB.put("demolish", "Demolish Building?\nRecover # Energy");
+    EN_GB.put("progressTimer", "Particle deconstruction or\nbuilding upgrade timer.");
 
 
     EN_GB.put("UI_NEW", "NEW GAME");
@@ -125,6 +126,18 @@ public class Lang {
     EN_GB.put("UI_HELP_A_12", "MOUSE SCROLL / Q-E");
     EN_GB.put("UI_HELP_A_13", "Zoom Map");
 
+    EN_GB.put("UI_ANDROID_A_00", "CONTROLS");
+    EN_GB.put("UI_ANDROID_A_01", "TAP");
+    EN_GB.put("UI_ANDROID_A_02", "Select Particle / Building");
+    EN_GB.put("UI_ANDROID_A_03", "Confirm Particle Move Order");
+    EN_GB.put("UI_ANDROID_A_04", "LONG-TAP AND DRAG");
+    EN_GB.put("UI_ANDROID_A_05", "Select Particles Within Box");
+    EN_GB.put("UI_ANDROID_A_06", "DRAG");
+    EN_GB.put("UI_ANDROID_A_07", "Move Map");
+    EN_GB.put("UI_ANDROID_A_08", "PINCH");
+    EN_GB.put("UI_ANDROID_A_09", "Zoom Map");
+
+
     EN_GB.put("UI_HELP_B_00", "Get energy by harvesting ore and deconstructing particles.");
     EN_GB.put("UI_HELP_B_01", "Spend energy on creating and upgrading buildings.");
     EN_GB.put("UI_HELP_B_02", "Deconstruct particles in buildings.");
@@ -136,8 +149,8 @@ public class Lang {
     EN_GB.put("UI_HELP_B_08", "ORE TRUCK");
     EN_GB.put("UI_HELP_B_09", "ORE TRUCK'S ROUTE");
 
-    EN_GB.put("UI_HELP_C_00", "Setup standing move orders to route particles from White Holes,");
-    EN_GB.put("UI_HELP_C_01", "and between deconstruction buildings.");
+    EN_GB.put("UI_HELP_C_00", "Setup standing move orders to route particles from White Holes");
+    EN_GB.put("UI_HELP_C_01", "to (and between) deconstruction buildings.");
     EN_GB.put("UI_HELP_C_02", "WHITE HOLE");
     EN_GB.put("UI_HELP_C_03", "(ONLY FOUND IN DESERTS)");
     EN_GB.put("UI_HELP_C_04", "(SPAWNS PARTICLES UNTIL EMPTY)");

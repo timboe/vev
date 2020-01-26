@@ -153,6 +153,7 @@ public class Persistence {
     try {
       save.put("GameState", GameState.getInstance().serialise());
       save.put("World", World.getInstance().serialise());
+      save.put("Camera", Camera.getInstance().serialise());
     } catch (JSONException e) {
       e.printStackTrace();
       Gdx.app.error("trySaveGame","JSONException!");

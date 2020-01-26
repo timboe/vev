@@ -1,6 +1,7 @@
 package timboe.vev.manager;
 
 import com.badlogic.gdx.Gdx;
+import com.google.gwt.thirdparty.json.JSONException;
 
 import java.util.Iterator;
 
@@ -69,8 +70,6 @@ public class StateManager {
     }
     final boolean doSave = (fsm == FSM.kTRANSITION_TO_INTRO_SAVE);
     fsm = FSM.kFADE_TO_INTRO;
-    game.setScreen(theTitleScreen);
-    theTitleScreen.fadeIn = 100f;
     Gdx.input.setInputProcessor(null);
     GameState.getInstance().clearPathingCache();
     if (doSave) {
@@ -80,6 +79,8 @@ public class StateManager {
     } else {
       World.getInstance().reset(false);
     }
+    game.setScreen(theTitleScreen);
+    theTitleScreen.fadeIn = 100f;
     UIIntro.getInstance().resetTitle("main");
   }
 
@@ -102,11 +103,21 @@ public class StateManager {
     Gdx.input.setInputProcessor(null);
     GameState.getInstance().clearPathingCache();
     UI.getInstance().resetGame();
-    Iterator it = GameState.getInstance().getWarpMap().values().iterator();
-    Warp toFocusOn = (Warp)it.next();
-    Camera.getInstance().setCurrentPos(
-            toFocusOn.getX() + (Param.WARP_SIZE/2f * Param.TILE_S),
-            toFocusOn.getY() + (Param.WARP_SIZE/2f * Param.TILE_S));
+
+    if (World.getInstance().warpParticlesCached != -1) {
+      // Only for a new game
+      GameState.getInstance().warpParticles = World.getInstance().warpParticlesCached;
+      Warp toFocusOn = GameState.getInstance().getWarpMap().values().iterator().next();
+      Camera.getInstance().setCurrentPos(
+              toFocusOn.getX() + (Param.WARP_SIZE/2f * Param.TILE_S),
+              toFocusOn.getY() + (Param.WARP_SIZE/2f * Param.TILE_S));
+    } else {
+      try {
+        Camera.getInstance().deserialise( Persistence.getInstance().save.getJSONObject("Camera") );
+      } catch (JSONException e) {
+        e.printStackTrace();
+      }
+    }
   }
 
   public void gameScreenFadeComplete() {

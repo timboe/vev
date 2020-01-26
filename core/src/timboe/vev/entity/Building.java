@@ -8,6 +8,7 @@ import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 
 import timboe.vev.Pair;
@@ -390,6 +391,16 @@ public class Building extends Entity {
     for (Cardinal D1 : Cardinal.n8) {
       t.n8.get(D1).moveOnSprites();
     }
+  }
+
+  public Vector<Truck> getTrucks() {
+    Vector<Truck> v = new Vector<Truck>();
+    for (Truck truck : GameState.getInstance().getTrucksMap().values()) {
+      if (truck.myBuilding == this.id) {
+        v.add(truck);
+      }
+    }
+    return v;
   }
 
   private void addTruck() {

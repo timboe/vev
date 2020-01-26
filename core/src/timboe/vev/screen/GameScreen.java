@@ -128,9 +128,11 @@ public class GameScreen implements Screen {
     // TODO optimise additive mixed batching
     Batch batch = state.getTileStage().getBatch();
     batch.begin();
-    for (Warp w : state.getWarpMap().values()) {
-      w.warpCloud.draw(batch, fxDelta);
-      if (!w.zap.isComplete()) w.zap.draw(batch, fxDelta);
+    if (GameState.getInstance().warpParticles > 0) {
+      for (Warp w : state.getWarpMap().values()) {
+        w.warpCloud.draw(batch, fxDelta);
+        if (!w.zap.isComplete()) w.zap.draw(batch, fxDelta);
+      }
     }
     for (int i = state.dustEffects.size - 1; i >= 0; i--) {
       ParticleEffectPool.PooledEffect e = state.dustEffects.get(i);
@@ -234,9 +236,6 @@ public class GameScreen implements Screen {
 
   @Override
   public void pause() {
-//    if (StateManager.getInstance().fsm == FSM.kFADE_TO_INTRO) {
-//      return; // Don't pause music if going to the intro screen
-//    }
     Sounds.getInstance().pause();
     if (StateManager.getInstance().fsm == FSM.kGAME) {
       UI.getInstance().showSettings();

@@ -163,6 +163,13 @@ public class World {
     return generated;
   }
 
+  public void requestGenerate() {
+    if (getGenerated()) {
+      return;
+    }
+    doGenerate = true;
+  }
+
   public Tile getTile(float x, float y, boolean isIntro) {
     return getTile((int) x, (int) y, isIntro);
   }

@@ -46,25 +46,34 @@ public class Gesture implements GestureDetector.GestureListener {
 
     if (button == Input.Buttons.RIGHT) {
       state.showMainUITable(false);
-    } else if (!Param.IS_ANDROID && ui.uiMode == UIMode.kPLACE_BUILDING) {
-      state.placeBuilding();
-    } else if (!Param.IS_ANDROID && ui.uiMode == UIMode.kWITH_BUILDING_SELECTION && GameState.getInstance().doingPlacement) {
-      state.doConfirmStandingOrder();
-    } else if (!Param.IS_ANDROID && ui.uiMode == UIMode.kSETTINGS) {
-      return false;
-    } else {
-      boolean selectedJustNow = state.doParticleSelect(false); // rangeBased = false
-      if (!selectedJustNow && !state.selectedSet.isEmpty()) {
-        state.doParticleMoveOrder((int) v3temp.x, (int) v3temp.y);
-        if (Param.IS_ANDROID) state.showMainUITable(false);
+    }
+
+    if (!Param.IS_ANDROID) {
+      if (ui.uiMode == UIMode.kPLACE_BUILDING) {
+        state.placeBuilding();
+      } else if (ui.uiMode == UIMode.kWITH_BUILDING_SELECTION && GameState.getInstance().doingPlacement) {
+        state.doConfirmStandingOrder();
       }
     }
+
+    if (ui.uiMode == UIMode.kSETTINGS) {
+      return false;
+    }
+
+    boolean selectedJustNow = state.doParticleSelect(false); // rangeBased = false
+    if (!selectedJustNow && !state.selectedSet.isEmpty()) {
+      state.doParticleMoveOrder((int) v3temp.x, (int) v3temp.y);
+      if (Param.IS_ANDROID) {
+        state.showMainUITable(false);
+      }
+    }
+
     return false;
   }
 
   @Override
   public boolean longPress(float x, float y) {
-    if (Param.IS_ANDROID) {
+    if (Param.IS_ANDROID && UI.getInstance().uiMode != UIMode.kSETTINGS && !Gdx.input.isButtonPressed(Input.Buttons.RIGHT)) {
       GameState.getInstance().startSelectingAndroid();
       setStartEnd(x,y);
     }
@@ -85,12 +94,14 @@ public class Gesture implements GestureDetector.GestureListener {
   public boolean pan(float x, float y, float deltaX, float deltaY) {
     if (Param.IS_ANDROID) {
       // Update both TODO android mode
-      if (UI.getInstance().selectParticlesButton != null && !UI.getInstance().selectParticlesButton.isChecked()) {
+      if (Gdx.input.isButtonPressed(Input.Buttons.RIGHT) || (UI.getInstance().selectParticlesButton != null && !UI.getInstance().selectParticlesButton.isChecked())) {
         Camera.getInstance().translate(-deltaX, deltaY);
       }
-      GameState.getInstance().selectEndScreen.set(x, y, 0);
-      GameState.getInstance().selectEndWorld.set(GameState.getInstance().selectEndScreen);
-      GameState.getInstance().selectEndWorld = Camera.getInstance().unproject(GameState.getInstance().selectEndWorld);
+      if (UI.getInstance().uiMode != UIMode.kSETTINGS && !Gdx.input.isButtonPressed(Input.Buttons.RIGHT)) {
+        GameState.getInstance().selectEndScreen.set(x, y, 0);
+        GameState.getInstance().selectEndWorld.set(GameState.getInstance().selectEndScreen);
+        GameState.getInstance().selectEndWorld = Camera.getInstance().unproject(GameState.getInstance().selectEndWorld);
+      }
     } else { // Non-android
       // Are we panning the screen or the select box?
       if (Gdx.input.isButtonPressed(Input.Buttons.RIGHT)) { // Screen

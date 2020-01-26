@@ -25,6 +25,7 @@ import java.text.DecimalFormat;
 import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Vector;
 
 import timboe.vev.DistanceField.LabelDF;
 import timboe.vev.DistanceField.TextButtonDF;
@@ -34,6 +35,7 @@ import timboe.vev.Pair;
 import timboe.vev.Param;
 import timboe.vev.entity.Building;
 import timboe.vev.entity.Sprite;
+import timboe.vev.entity.Truck;
 import timboe.vev.enums.BuildingType;
 import timboe.vev.enums.Particle;
 import timboe.vev.enums.QueueType;
@@ -66,7 +68,7 @@ public class UI {
   public final int SIZE_M = 2*SIZE_S;
   public final int SIZE_L = 2*SIZE_M;
 
-  public final int PAD = 4;
+  public final int PAD = 3;
 
   private Table table;
   public Skin skin;
@@ -80,8 +82,6 @@ public class UI {
   private Table androidWindow;
   private Table finishedTable;
   public Table saving;
-
-  private Container<Actor> spacer = new Container<Actor>();
 
   private float displayPlayerEnergy = Param.PLAYER_STARTING_ENERGY;
   private float displayInWorldParticles = 0;
@@ -115,6 +115,8 @@ public class UI {
   public Button selectParticlesButton;
   private Button selectCross;
   private Button selectTick;
+  private Container<Actor> selectTickEnableImage;
+  private Container<Actor> selectTickDisableImage;
 
   private EnumMap<BuildingType, Button> buildBuildingButtonsEnabled = null;
   private EnumMap<BuildingType, Button> buildBuildingButtonsDisabled = null;
@@ -139,6 +141,12 @@ public class UI {
   private EnumMap<BuildingType, LabelDF> buildingUpgradeLabelTime = null;
   private EnumMap<BuildingType, LabelDF> buildingUpgradeLabelBonus = null;
   private EnumMap<BuildingType, TextTooltipDF> buildingUpgradeToolTip = null;
+  //
+  private Vector<Image> mineSelectImages;
+  private Vector<LabelDF> mineSelectText;
+  private Table mineSelectInfo;
+  private final int MAX_TRUCK_INFO = 8;
+
 
   private EnumMap<Particle, Button> selectButton;
   private EnumMap<Particle, Label> selectLabel;
@@ -174,6 +182,7 @@ public class UI {
   private void TT(Actor a, String tt) {
     if (tt.equals("")) return;
     TextTooltipDF ttDF = new TextTooltipDF(Lang.get(tt), skin);
+//    ttDF.getActor(). XXX
     ttDF.setInstant(true);
     ttDF.getActor().setAlignment(Align.center);
     a.addListener(ttDF);
@@ -477,6 +486,12 @@ public class UI {
     });
     selectTick =  getImageButton("tick", "");
     selectCross =  getImageButton("cross", "");
+    selectTickEnableImage = new Container<Actor>();
+    selectTickEnableImage.setActor(new Image( Textures.getInstance().getTexture("tick", false) ));
+    selectTickEnableImage.width( SIZE_L ).height( SIZE_L );
+    selectTickDisableImage = new Container<Actor>();
+    selectTickDisableImage.setActor(new Image( Textures.getInstance().getTexture("tick_disabled", false) ));
+    selectTickDisableImage.width( SIZE_L ).height( SIZE_L );
 
     // Selected window
     selectButton = new EnumMap<Particle, Button>(Particle.class);
@@ -547,6 +562,8 @@ public class UI {
     }
 
     // Building info windows
+    mineSelectInfo = new Table();
+    mineSelectInfo.pad(PAD);
     buildingSelectWindow = new EnumMap<BuildingType, Table>(BuildingType.class);
     buildingSelectProgress = new EnumMap<BuildingType, ProgressBar>(BuildingType.class);
     buildingSelectStandingOrder = new EnumMap<BuildingType, EnumMap<Particle, Button>>(BuildingType.class);
@@ -585,14 +602,18 @@ public class UI {
           Button bBlank = getAndAddStandingOrderButton(bt, Particle.kBlank);
           addToWin(bw, bBlank, 2*SIZE_L, SIZE_M + SIZE_S, 6);
           bw.row();
-//          separator(bw, 6);
         }
         //////////////////////
         ProgressBar progressBar = new ProgressBar(0, 1, 0.01f, false, skin, "default-horizontal");
+        TextTooltipDF progressTtt = new TextTooltipDF(Lang.get("progressTimer"), skin);
+        progressBar.addListener(progressTtt);
         addToWin(bw, progressBar, SIZE_L+SIZE_L, SIZE_M, 6);
         buildingSelectProgress.put(bt, progressBar);
         bw.row();
-//        separator(bw, 6);
+        if (bt == BuildingType.kMINE) {
+          bw.add(mineSelectInfo).colspan(6).padBottom(10);
+          bw.row();
+        }
         //////////////////////////////
         TextTooltipDF ttt = new TextTooltipDF("", skin);
         ttt.setInstant(true);
@@ -620,6 +641,13 @@ public class UI {
         String percent = Float.toString(Param.BUILDING_REFUND_AMOUND * 100f);
         addToWin(bw, getImageButton("wrecking", "default", SIZE_L, "wrecking#" + percent), 2*SIZE_L, SIZE_M + SIZE_S, 6);
       }
+    }
+    // Extra for mine
+    mineSelectImages = new Vector<Image>();
+    mineSelectText = new Vector<LabelDF>();
+    for (int i = 0; i < MAX_TRUCK_INFO; ++i) {
+      mineSelectImages.add( new Image( Textures.getInstance().getTexture("pyramid_0", false)) );
+      mineSelectText.add( getLabel("Text", "") );
     }
 
 
@@ -772,6 +800,7 @@ public class UI {
     }
     table.clear();
     androidWindow.clear();
+    selectTickIs(true);
     addToWin(androidWindow, selectTick, SIZE_L, SIZE_L, 1);
     addToWin(androidWindow, selectCross, SIZE_L, SIZE_L, 1);
     addAndroid();
@@ -786,6 +815,7 @@ public class UI {
     androidWindow.clear();
     if (b.getType() != BuildingType.kMINE) {
       addToWin(androidWindow, selectTick, SIZE_L, SIZE_L, 1);
+      selectTickIs(false);
     }
     addToWin(androidWindow, selectCross, SIZE_L, SIZE_L, 1);
     addAndroid();
@@ -798,6 +828,17 @@ public class UI {
     if (GameState.getInstance().debug > 0) table.debugAll();
     uiMode = UIMode.kWITH_BUILDING_SELECTION;
     refreshBuildingLabels();
+  }
+
+  public void selectTickIs(boolean enabled) {
+    Gdx.app.log("selectTickIs... ",""+enabled);
+    selectTick.setDisabled(!enabled);
+    selectTick.clearChildren();
+    if (enabled) {
+      selectTick.add(selectTickEnableImage);
+    } else {
+      selectTick.add(selectTickDisableImage);
+    }
   }
 
   public void showSettings() {
@@ -828,8 +869,8 @@ public class UI {
     buildingsPlaced.setText(Lang.get("UI_BUILDINGS_PLACED#"+formatter.format(GameState.getInstance().buildingsBuilt)));
     buildingsDestroyed.setText(Lang.get("UI_BUILDINGS_DESTROYED#"+formatter.format(GameState.getInstance().buildingsDemolished)));
     treesBulldozed.setText(Lang.get("UI_TREES_DEMOLISHED#"+formatter.format(GameState.getInstance().treesBulldozed)));
-    tiberiumMined.setText(Lang.get("UI_TIBERIUM_MINED#"+formatter.format(GameState.getInstance().buildingsDemolished)));
-    buildingsUpgrades.setText(Lang.get("UI_BUILDING_UPGRADES#"+formatter.format(GameState.getInstance().buildingsDemolished)));
+    tiberiumMined.setText(Lang.get("UI_TIBERIUM_MINED#"+formatter.format(GameState.getInstance().tiberiumMined)));
+    buildingsUpgrades.setText(Lang.get("UI_BUILDING_UPGRADES#"+formatter.format(GameState.getInstance().upgradesPurchased)));
     taps.setText(Lang.get("UI_TAPS#"+formatter.format(GameState.getInstance().taps)));
     particlesDestroyed.setText(Lang.get("UI_PARTICLES_DESTROYED#"+formatter.format(GameState.getInstance().particlesDeconstructed)));
     particleBounces.setText(Lang.get("UI_PARTICLE_BOUNCES#"+formatter.format(GameState.getInstance().particleBounces)));
@@ -891,6 +932,26 @@ public class UI {
       s += Lang.get("upgradeBuilding_D") + usb;
     }
     ttt.getActor().setText(s);
+    //
+    if (b.getType() == BuildingType.kMINE) {
+      mineSelectInfo.clear();
+      Vector<Truck> v = b.getTrucks();
+      for (int i = 0; i < v.size(); ++i) {
+        Truck t = v.elementAt(i);
+        if (v.size() > 1) {
+          mineSelectText.elementAt(i).setText((i + 1) + ": Level " + (t.level + 1));
+        } else {
+          mineSelectText.elementAt(i).setText("Level "+(t.level+1));
+        }
+        mineSelectInfo.add( mineSelectImages.elementAt(i) ).padRight(6);
+        mineSelectInfo.add( mineSelectText.elementAt(i) );
+        mineSelectInfo.row();
+        if (i == MAX_TRUCK_INFO - 1) {
+          mineSelectText.elementAt(i).setText("...");
+          break;
+        }
+      }
+    }
   }
 
   public void doSelectParticle(final Set<Integer> selected) {
@@ -920,7 +981,6 @@ public class UI {
     }
     table.clear();
     androidWindow.clear();
-//    addToWin(androidWindow, selectCross, SIZE_L, SIZE_L, 1);
     addToWin(androidWindow, selectCross, SIZE_L, SIZE_L, 1);
     addAndroid();
     table.add(selectWindow);
@@ -969,9 +1029,8 @@ public class UI {
     if (!Param.IS_ANDROID) {
       return;
     }
-    table.left();
-    table.add(androidWindow).align(Align.top);
-    table.add(spacer).expandX();
+    table.right();
+    table.add(androidWindow).align(Align.top).padRight(SIZE_S);
     table.right();
   }
 

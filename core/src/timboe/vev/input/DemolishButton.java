@@ -22,12 +22,14 @@ public class DemolishButton extends ChangeListener {
       }
     };
     Building sb = GameState.getInstance().getSelectedBuilding();
+    final UI ui = UI.getInstance();
     final int refundAmount = (sb == null ? 0 : sb.refund);
     destroyDialog.align(Align.center);
-    destroyDialog.text(UI.getInstance().getLabel(Lang.get("demolish#"+refundAmount),""));
+    destroyDialog.pad(ui.PAD * 4);
+    destroyDialog.text(ui.getLabel(Lang.get("demolish#"+ui.formatter.format(refundAmount)),""));
     destroyDialog.row();
-    destroyDialog.button(UI.getInstance().getTextButton(Lang.get("UI_YES"),""), 1);
-    destroyDialog.button(UI.getInstance().getTextButton(Lang.get("UI_NO"),""), 0);
+    destroyDialog.button(ui.getTextButton(Lang.get("UI_YES"),""), 1);
+    destroyDialog.button(ui.getTextButton(Lang.get("UI_NO"),""), 0);
     destroyDialog.show(GameState.getInstance().getUIStage());
   }
 }

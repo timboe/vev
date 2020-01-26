@@ -7,6 +7,8 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.google.gwt.thirdparty.json.JSONException;
+import com.google.gwt.thirdparty.json.JSONObject;
 
 import java.security.Key;
 import java.util.Random;
@@ -21,11 +23,18 @@ import timboe.vev.enums.UIMode;
 public class Camera {
 
   private static Camera ourInstance;
+
   public static Camera getInstance() {
     return ourInstance;
   }
-  public static void create() { ourInstance = new Camera(); }
-  public void dispose() {  ourInstance = null; }
+
+  public static void create() {
+    ourInstance = new Camera();
+  }
+
+  public void dispose() {
+    ourInstance = null;
+  }
 
   private final Rectangle cullBoxTile = new Rectangle(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
   private final Rectangle cullBoxSprite = new Rectangle(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
@@ -33,9 +42,9 @@ public class Camera {
   private float currentZoom = 1f;
   private float desiredZoom = 1f;
 
-  private final Vector2 currentPos = new Vector2(0,0);
-  private final Vector2 desiredPos = new Vector2(0,0);
-  private final Vector2 velocity = new Vector2(0,0);
+  private final Vector2 currentPos = new Vector2(0, 0);
+  private final Vector2 desiredPos = new Vector2(0, 0);
+  private final Vector2 velocity = new Vector2(0, 0);
   private float shake;
 
   private final Random R = new Random();
@@ -50,6 +59,22 @@ public class Camera {
 
   private Camera() {
     reset();
+  }
+
+  public JSONObject serialise() throws JSONException {
+    JSONObject json = new JSONObject();
+    json.put("desiredPos.x",desiredPos.x);
+    json.put("desiredPos.y",desiredPos.y);
+    json.put("desiredZoom",desiredZoom);
+    return json;
+  }
+
+
+  public void deserialise(JSONObject json) throws JSONException {
+    desiredPos.set((float)json.getDouble("desiredPos.x"), (float)json.getDouble("desiredPos.y"));
+    desiredZoom = (float)json.getDouble("desiredZoom");
+    currentPos.set(desiredPos);
+    currentZoom = desiredZoom;
   }
 
   public void setCurrentPos(float x, float y) {
@@ -207,7 +232,9 @@ public class Camera {
   }
 
   public void translate(float x, float y) {
-    desiredPos.add(x * currentZoom * Param.TRANSLATE_MOD, y * currentZoom * Param.TRANSLATE_MOD);
+    final float xMod = Param.DISPLAY_X / getUiViewport().getScreenWidth();
+    final float yMod = Param.DISPLAY_Y / getUiViewport().getScreenHeight();
+    desiredPos.add(xMod * x * currentZoom, yMod * y * currentZoom);
   }
 
   public void velocity(float x, float y) {
@@ -253,6 +280,12 @@ public class Camera {
     } else {
       currentPos.set(desiredPos); // Direct control in-game
     }
+
+    if (desiredPos.x - Param.DISPLAY_X/2 < -1000) modVelocity(10,0);
+    else if (desiredPos.x - Param.DISPLAY_X/2 > (Param.TILES_X * Param.TILE_S) + 1000) modVelocity(-10,0);
+
+    if (desiredPos.y - Param.DISPLAY_Y/2 < -1000) modVelocity(0,10);
+    else if (desiredPos.y - Param.DISPLAY_Y/2 > (Param.TILES_Y * Param.TILE_S) + 1000) modVelocity(0,-10);
 
     currentPos.add(shake * (float)Math.cos(shakeAngle), shake * (float)Math.sin(shakeAngle));
     currentZoom += (desiredZoom - currentZoom) * 0.1f;

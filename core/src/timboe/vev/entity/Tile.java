@@ -60,6 +60,7 @@ public class Tile extends Entity {
     Integer countContained = 0;
     for (int id : containedSprites) {
       jsonContained.put(countContained.toString(), id);
+      ++countContained;
     }
     json.put("containedSprites", jsonContained);
     JSONObject jsonParking = new JSONObject();
