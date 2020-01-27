@@ -8,7 +8,6 @@ import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Vector;
 
 import timboe.vev.Pair;
@@ -55,6 +54,7 @@ public class Building extends Entity {
   private int buildingLevel;
   public boolean doUpgrade;
   public int refund;
+  public int truckWithLock;
 
   public JSONObject serialise() throws JSONException {
     JSONObject json = super.serialise(false);
@@ -90,12 +90,14 @@ public class Building extends Entity {
     json.put("buildingLevel", buildingLevel);
     json.put("doUpgrade", doUpgrade);
     json.put("refund", refund);
+    json.put("truckWithLock", truckWithLock);
 
     return json;
   }
 
   public Building(JSONObject json) throws JSONException {
     super(json);
+    this.truckWithLock = json.getInt("truckWithLock");
     this.refund = json.getInt("refund");
     this.doUpgrade = json.getBoolean("doUpgrade");
     this.buildingLevel = json.getInt("buildingLevel");
@@ -119,7 +121,7 @@ public class Building extends Entity {
     //
     this.spriteProcessing = json.getInt("spriteProcessing");
     this.timeUpgrade = (float) json.getDouble("timeUpgrade");
-    this. nextReleaseTime = (float) json.getDouble("nextReleaseTime");
+    this.nextReleaseTime = (float) json.getDouble("nextReleaseTime");
     this.timeHoldingPen = (float) json.getDouble("timeHoldingPen");
     this.timeBuild = (float) json.getDouble("timeBuild");
     this.timeMove = (float) json.getDouble("timeMove");
@@ -156,6 +158,7 @@ public class Building extends Entity {
     this.built = 0;
     this.buildingLevel = 0;
     this.myPatch = 0;
+    this.truckWithLock = 0;
     if (type == BuildingType.kWARP) return; // Warp does not need anything below
     ////////////////////////////////////////////////////////////////////////////
     setTexture("build_3_3", 1, false);
@@ -227,6 +230,20 @@ public class Building extends Entity {
     savePathingList();
   }
 
+  public boolean tryGetLock(Truck t) {
+    if (this.truckWithLock == 0) {
+      this.truckWithLock = t.id;
+    }
+    return (this.truckWithLock == t.id);
+  }
+
+  public void releaseLock(Truck t) {
+    if (this.truckWithLock != t.id) {
+      Gdx.app.error("releaseLock", "Only truck " + this.truckWithLock + " should be releasing the lock, not " + t.id);
+    }
+    this.truckWithLock = 0;
+  }
+
   public BuildingType getType() {
     return type;
   }
@@ -267,7 +284,7 @@ public class Building extends Entity {
       int totalLevels = 0;
       for (Truck t : GameState.getInstance().getTrucksMap().values()) {
         if (t.myBuilding == this.id) {
-          totalLevels =+ t.level;
+          totalLevels += t.level;
         }
       }
       return (float)Math.pow(Param.BUILDING_DISASSEMBLE_BONUS, totalLevels);
@@ -522,6 +539,17 @@ public class Building extends Entity {
       doRelease();
     }
 
+    // Mines
+    if (type == BuildingType.kMINE && isSelected()) {
+      float progress = 0;
+      if (truckWithLock != 0) {
+        Truck t = GameState.getInstance().getTrucksMap().get(truckWithLock);
+        progress = t.holding / (float)t.getCapacity();
+      }
+      UI.getInstance().buildingSelectProgress.get(BuildingType.kMINE).setValue(progress);
+    }
+
+    // Deconstructors
     if (spriteProcessing == 0) return;
     timeDisassemble -= delta;
     if (isSelected()) UI.getInstance().buildingSelectProgress.get(type).setValue(timeDisassemble / getTimeDisassembleMax);

@@ -81,6 +81,7 @@ public class StateManager {
     }
     game.setScreen(theTitleScreen);
     theTitleScreen.fadeIn = 100f;
+    Sounds.getInstance().processing(false);
     UIIntro.getInstance().resetTitle("main");
   }
 

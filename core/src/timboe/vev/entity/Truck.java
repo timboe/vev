@@ -35,8 +35,8 @@ public class Truck extends Sprite {
   public int myBuilding;
   public int extraFrames;
 
-  // Transient
-  float toRemove = 0;
+  float toRemove = 0, toAdd = 0;  // Transient
+
 
   public JSONObject serialise() throws JSONException {
     JSONObject json = super.serialise();
@@ -65,12 +65,17 @@ public class Truck extends Sprite {
     extraFrames = json.getInt("extraFrames");
   }
 
+  @Override
+  protected float spriteVelocity() {
+    return Param.PARTICLE_VELOCITY * getUpgradeFactor();
+  }
+
   private float getSpeed() {
     return Param.TRUCK_LOAD_SPEED * getUpgradeFactor();
   }
 
-  private float getCapacity() {
-    return Param.TRUCK_INITIAL_CAPACITY * getUpgradeFactor();
+  public int getCapacity() {
+    return Math.round(Param.TRUCK_INITIAL_CAPACITY * getUpgradeFactor());
   }
 
   public Truck(Tile t, Building myBuilding) {
@@ -112,8 +117,6 @@ public class Truck extends Sprite {
 
   @Override
   public void act(float delta) {
-    time += delta;
-    moveBy(0f, .2f * (float)Math.cos(time));
 
     Building myB = getBuilding();
     if (myB == null) {
@@ -126,15 +129,22 @@ public class Truck extends Sprite {
       return;
     }
     final boolean actionsPaused = (myB.doUpgrade || myB.built > 0);
+    final int capacity = getCapacity();
+    this.extraFrames = Math.round((this.holding / (float)capacity) * (Param.N_TRUCK_SPRITES - 1));
 
-    if (!actionsPaused) actMovement(delta);
+    if (!actionsPaused) {
+      actMovement(delta);
+      time += delta;
+      moveBy(0f, .2f * (float)Math.cos(time));
+    }
 
     switch (truckState) {
       case kOFFLOAD:
         // Was deconstructed?
         if (actionsPaused) return;
+        if (!myB.tryGetLock(this)) return; // Only one can unload at a time
         this.toRemove += getSpeed() * delta;
-        if (toRemove > this.holding) toRemove = this.holding;
+        if (this.toRemove > this.holding) this.toRemove = this.holding;
         int toRemoveInt = Math.round(toRemove);
         if (toRemoveInt > 0) {
           this.holding -= toRemoveInt;
@@ -143,11 +153,11 @@ public class Truck extends Sprite {
             IVector2 v = myB.coordinates;
             GameState.getInstance().upgradeDustEffect(World.getInstance().getTile(v.x + 1, v.y + 2, isIntro));
           }
-          this.extraFrames = Math.round((this.holding / getCapacity()) * (Param.N_TRUCK_SPRITES - 1));
           GameState.getInstance().addEnergy(toRemoveInt);
         }
         if (holding < 1f) {
           Tile destination = myB.getBuildingDestination(Particle.kBlank);
+          myB.releaseLock(this);
           if (destination == null) {
             truckState = TruckState.kDORMANT;
           } else {
@@ -158,21 +168,26 @@ public class Truck extends Sprite {
         break;
       case kLOAD:
         if (actionsPaused) return; // Have to wait if building is upgrading
-        this.holding += getSpeed() * delta;
-        int curFrame = this.extraFrames;
-        final float capacity = getCapacity();
-        this.extraFrames = Math.round((this.holding / capacity) * (Param.N_TRUCK_SPRITES - 1));
-        if (curFrame != this.extraFrames) {
-          myPatch.removeRandom();
-        }
-        if (holding >= getCapacity() || myPatch.remaining() == 0) {
-          holding = (int) Math.floor(capacity);
-          Tile t = World.getInstance().getTile( myB.getPathingStartPoint(Particle.kBlank), isIntro);
-          pathTo(t, null, null);
-          truckState = TruckState.kRETURN_FROM_PATCH;
-        }
-        if (myPatch.remaining() == 0) {
-          myB.updateMyPatch();
+        this.toAdd += getSpeed() * delta;
+        int toAddInt = Math.round(this.toAdd);
+        if (toAddInt > 0) {
+          this.holding += toAddInt;
+          this.toAdd -= toAddInt;
+          myPatch.remove(toAddInt);
+          boolean doReturn = false;
+          if (this.holding >= capacity) {
+            doReturn = true;
+            holding = capacity;
+          }
+          if (myPatch.remaining() == 0) {
+            doReturn = true;
+            myB.updateMyPatch();
+          }
+          if (doReturn) {
+            Tile t = World.getInstance().getTile(myB.getPathingStartPoint(Particle.kBlank), isIntro);
+            pathTo(t, null, null);
+            truckState = TruckState.kRETURN_FROM_PATCH;
+          }
         }
         break;
       case kDORMANT:

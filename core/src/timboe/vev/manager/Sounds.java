@@ -25,10 +25,14 @@ public class Sounds {
   private Sound thud;
   private Sound star;
   private Sound OK;
+  private Sound cancel;
   private Sound click;
   private Sound poof;
   private Sound demolish;
   private Sound fanfare;
+  private Sound processing;
+  private long processingID;
+  private Sound dirt;
   private Music[] theme = new Music[nMusic];
 
   private int track;
@@ -49,10 +53,13 @@ public class Sounds {
     thud.dispose();
     star.dispose();
     OK.dispose();
+    cancel.dispose();
     click.dispose();
     poof.dispose();
     demolish.dispose();
     fanfare.dispose();
+    processing.dispose();
+    dirt.dispose();
     for (int i = 0; i < nMusic; ++i) theme[i].dispose();
     for (int i = 0; i < nMove; ++i) move[i].dispose();
     for (int i = 0; i < nSelect; ++i) select[i].dispose();
@@ -108,6 +115,10 @@ public class Sounds {
     OK.play(Persistence.getInstance().sfxLevel);
   }
 
+  public void cancel() {
+    cancel.play(Persistence.getInstance().sfxLevel);
+  }
+
   public void star() {
     star.play(Persistence.getInstance().sfxLevel * sfxMod);
   }
@@ -139,6 +150,7 @@ public class Sounds {
   }
 
   public void moveOrder() {
+    Gdx.app.log("moveOrder","MO");
     move[ R.nextInt(nMove) ].play(Persistence.getInstance().sfxLevel);
   }
 
@@ -150,11 +162,23 @@ public class Sounds {
     foot.play(Persistence.getInstance().sfxLevel * sfxMod);
   }
 
+  public void dirt() {
+    dirt.play(Persistence.getInstance().sfxLevel * sfxMod);
+  }
+
   public void demolish() { demolish.play( Persistence.getInstance().sfxLevel * sfxMod); }
 
   public void pulse() {
     swoosh.play(Persistence.getInstance().sfxLevel);
     pulse.play(Persistence.getInstance().sfxLevel);
+  }
+
+  public void processing(boolean enable) {
+    if (enable) {
+      processing.setVolume(processingID, Persistence.getInstance().sfxLevel * sfxMod);
+    } else {
+      processing.setVolume(processingID, 0);
+    }
   }
 
 
@@ -175,12 +199,16 @@ public class Sounds {
     poof = Gdx.audio.newSound(Gdx.files.internal("208111__planman__poof-of-smoke.wav"));
     click = Gdx.audio.newSound(Gdx.files.internal("399934__waveplay-old__short-click-snap-perc.wav"));
     OK = Gdx.audio.newSound(Gdx.files.internal("405547__raclure__affirmative-decision-chime.wav"));
+    cancel = Gdx.audio.newSound(Gdx.files.internal("405548__raclure__cancel-miss-chime.wav"));
     star = Gdx.audio.newSound(Gdx.files.internal("shooting_star-Mike_Koenig-1132888100.mp3"));
     thud = Gdx.audio.newSound(Gdx.files.internal("Thud-SoundBible.com-395560493.mp3"));
     swoosh = Gdx.audio.newSound(Gdx.files.internal("Swoosh 1-SoundBible.com-231145780.mp3"));
     pulse = Gdx.audio.newSound(Gdx.files.internal("138421__cameronmusic__pulse-1.wav"));
     blop = Gdx.audio.newSound(Gdx.files.internal("Blop-Mark_DiAngelo-79054334.mp3"));
     foot = Gdx.audio.newSound(Gdx.files.internal("365810__fxkid2__cute-walk-run-c.wav"));
+    dirt = Gdx.audio.newSound(Gdx.files.internal("427074__doorajar__dirtshovel.wav"));
+    processing = Gdx.audio.newSound(Gdx.files.internal("28783__voktebef__8bit.wav"));
+    processingID = processing.loop(0);
     move[0] = Gdx.audio.newSound(Gdx.files.internal("379234__westington__skiffy1.wav"));
     move[1] = Gdx.audio.newSound(Gdx.files.internal("379233__westington__skiffy2.wav"));
     move[2] = Gdx.audio.newSound(Gdx.files.internal("379232__westington__skiffy3.wav"));

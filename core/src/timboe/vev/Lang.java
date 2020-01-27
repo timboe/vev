@@ -176,7 +176,8 @@ public class Lang {
     EN_GB.put("UI_HELP_D_11", "waveplay_old: Short Click. Raclure: Affirmative");
     EN_GB.put("UI_HELP_D_12", "MATTIX: Retro Explosion 5. Mark DiAngelo: Blip");
     EN_GB.put("UI_HELP_D_13", "man: Swoosh 1. Selector: rocket launch");
-    EN_GB.put("UI_HELP_D_14", "pel2na: Two Kazoo Fanfare");
+    EN_GB.put("UI_HELP_D_14", "pel2na: Two Kazoo Fanfare. Raclure: miss chime");
+    EN_GB.put("UI_HELP_D_15", "Voktebef: 8bit. doorajar: DirtShovel");
 
   }
 

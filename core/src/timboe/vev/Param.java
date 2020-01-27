@@ -36,8 +36,8 @@ public class Param {
   public static final int SPRITE_SCALE = 2;
   public static final float PARTICLE_VELOCITY = 32f*2f;
   public static final float PARTICLE_AT_TARGET = 2f;
-  public static final float NEW_PARTICLE_MEAN = 5f; // mean number of particles to place
-  public static final float NEW_PARTICLE_WIDTH = 10f; // width of new particles dist
+  public static final float NEW_PARTICLE_MEAN = Param.IS_ANDROID ? 2.5f : 5f; // mean number of particles to place
+  public static final float NEW_PARTICLE_WIDTH = Param.IS_ANDROID ? 5f : 10f; // width of new particles dist
   public static final int NEW_PARTICLE_MAX = 200; // max number of particles to place TODO remove this
   public static final float NEW_PARTICLE_TIME = 0.2f; // max time before new particle is sent into world from holding pen
   public static final float PARTICLE_BORED_TIME = 60f; // max seconds until bored (may wander off)
@@ -68,6 +68,7 @@ public class Param {
   public static final int TIBERIUM_SIZE = 5;
   public static final int MIN_TIBERIUM_PATCH = 3;
   public static final int MAX_TIBERIUM_PATCH = 3;
+  public static final int ENERGY_PER_SHARD = 3000;
 
   public static final int WARP_SIZE = 10;
   public static final int MIN_WARP = 2;
@@ -77,8 +78,8 @@ public class Param {
   public static final float WARP_SHAKE = 5f;
   public static final float WARP_SPAWN_TIME_INITIAL = 5f; // seconds between spawn
   public static final float WARP_SPAWN_TIME_REDUCTION = 0.01f; // time reduced by this every spawn TODO make no higher than .01f
-  public static final float WARP_SPAWN_MEAN_INCREASE = .25f; // increase in mean number of spawned
-  public static final float WARP_SPAWN_WIDTH_INCREASE = 0.1f; // increase in width of mean number
+  public static final float WARP_SPAWN_MEAN_INCREASE = (Param.IS_ANDROID ? .125f : .25f); // increase in mean number of spawned
+  public static final float WARP_SPAWN_WIDTH_INCREASE = (Param.IS_ANDROID ? .05f : .1f); // increase in width of mean number
   public static final float WARP_SPAWN_TIME_MIN = 0.5f; // min time between spawn
 
   public static final float BUILD_TIME = .5f; // Time in seconds between build phases

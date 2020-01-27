@@ -2,6 +2,7 @@ package timboe.vev.manager;
 
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.ParticleEffect;
 import com.badlogic.gdx.graphics.g2d.ParticleEffectPool;
@@ -300,6 +301,15 @@ public class GameState {
     warpStage.act(delta);
     buildingStage.act(delta);
 
+    boolean processingOre = false;
+    for (Building b : getBuildingMap().values()) {
+      if (b.truckWithLock != 0 && Camera.getInstance().onScreen(b)) {
+        processingOre = true;
+        break;
+      }
+    }
+    Sounds.getInstance().processing(processingOre);
+
     if (Param.IS_ANDROID) {
       cursor.set(Gdx.graphics.getWidth()/2f, Gdx.graphics.getHeight()/2f, 0);
     } else {
@@ -362,6 +372,7 @@ public class GameState {
   }
 
   private void hintBuildingPlacement(Tile cursorTile) {
+    buildingLocationGood = false;
     if (cursorTile != null
             && cursorTile.n8 != null
             && cursorTile.n8.get(kSW).n8 != null) {
@@ -376,6 +387,7 @@ public class GameState {
         cursorTile.n8.get(kSW).n8.get(kS).setBuildableHighlight(); // Re-apply green tint here
       }
     }
+    UI.getInstance().selectTickIsEnabled(buildingLocationGood);
   }
 
   private void hintStandingOrder(Tile cursorTile) {
@@ -456,7 +468,7 @@ public class GameState {
       killSprite(s);
     }
     if (selectedSet.isEmpty()) showMainUITable(false);
-    else UI.getInstance().doSelectParticle(selectedSet);
+    else UI.getInstance().doSelectParticle(selectedSet, false);
   }
     public void killSelectedBuilding() {
     Building selected = getBuildingMap().remove( selectedBuilding );
@@ -557,6 +569,7 @@ public class GameState {
     UI.getInstance().selectParticlesButton.setChecked(true);
     selectEndWorld.setZero();
     selectStartWorld.setZero();
+    Sounds.getInstance().foot();
     return true;
   }
 
@@ -612,7 +625,7 @@ public class GameState {
     boolean didSave = b.savePathingList(); // Save the pathing list
     if (!didSave) return;
     doingPlacement = false;
-    UI.getInstance().selectTickIs(false);
+    UI.getInstance().selectTickIsEnabled(false);
     Sounds.getInstance().OK();
     // Set all buttons to false
     for (Particle p : Particle.values()) {
@@ -628,7 +641,7 @@ public class GameState {
     selectedSet.remove(s.id);
     s.selected = false;
     if (selectedSet.isEmpty()) showMainUITable(false);
-    else UI.getInstance().doSelectParticle(selectedSet);
+    else UI.getInstance().doSelectParticle(selectedSet, false);
   }
 
   public void reduceSelectedSet(Particle p, boolean invert) {
@@ -644,7 +657,7 @@ public class GameState {
     }
     selectedSet.removeAll(toRemove);
     if (selectedSet.isEmpty()) showMainUITable(false);
-    else UI.getInstance().doSelectParticle(selectedSet);
+    else UI.getInstance().doSelectParticle(selectedSet, false);
   }
 
   private void clearSelect() {
@@ -672,7 +685,7 @@ public class GameState {
         UI.getInstance().showBuildingInfo(e.getClass() == Building.class ? (Building)e : (Warp)e);
       } else if (e.getClass() == Sprite.class) {
         selectedSet.add(e.id);
-        UI.getInstance().doSelectParticle(selectedSet);
+        UI.getInstance().doSelectParticle(selectedSet, true);
       }
       return true;
     }
@@ -697,7 +710,7 @@ public class GameState {
       }
       UI.getInstance().uiMode = UIMode.kNONE; // Remove "selecting"
       UI.getInstance().selectParticlesButton.setChecked( false );
-      if (!selectedSet.isEmpty()) UI.getInstance().doSelectParticle(selectedSet);
+      if (!selectedSet.isEmpty()) UI.getInstance().doSelectParticle(selectedSet, true);
       selectStartWorld.setZero();
       selectEndWorld.setZero();
       return !selectedSet.isEmpty();

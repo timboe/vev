@@ -3,24 +3,23 @@ package timboe.vev.entity;
 import com.google.gwt.thirdparty.json.JSONException;
 import com.google.gwt.thirdparty.json.JSONObject;
 
-import java.util.EnumMap;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Set;
 import java.util.Vector;
 
+import timboe.vev.Param;
 import timboe.vev.Util;
-import timboe.vev.enums.Particle;
+import timboe.vev.manager.Camera;
 import timboe.vev.manager.GameState;
+import timboe.vev.manager.Sounds;
 import timboe.vev.manager.World;
-import timboe.vev.pathfinding.IVector2;
 
 /**
  * Created by Tim on 21/01/2018.
  */
 
 public class Patch extends Entity {
-  Vector<Integer> contained = new Vector<Integer>();
+  private Vector<Integer> contained = new Vector<Integer>();
+  private int untilNextShardConsumed;
 
   public JSONObject serialise() throws JSONException {
     JSONObject json = super.serialise(false);
@@ -30,11 +29,13 @@ public class Patch extends Entity {
       jsonContained.put(Integer.toString(count++), i);
     }
     json.put("contained", jsonContained);
+    json.put("untilNextShardConsumed", this.untilNextShardConsumed);
     return json;
   }
 
   public Patch(JSONObject json) throws JSONException {
     super(json);
+    this.untilNextShardConsumed = json.getInt("untilNextShardConsumed");
     JSONObject jsonContained = json.getJSONObject("contained");
     Iterator it = jsonContained.keys();
     while (it.hasNext()) {
@@ -50,7 +51,15 @@ public class Patch extends Entity {
     return contained.size();
   }
 
-  public int removeRandom() {
+  public void remove(int energy) {
+    this.untilNextShardConsumed += energy;
+    while (this.untilNextShardConsumed >= Param.ENERGY_PER_SHARD) {
+      this.untilNextShardConsumed -= Param.ENERGY_PER_SHARD;
+      removeRandom();
+    }
+  }
+
+  private int removeRandom() {
     if (contained.size() == 0) {
       return 0;
     }
@@ -60,6 +69,9 @@ public class Patch extends Entity {
     Sprite t = World.getInstance().tiberiumShards.remove(id); // From global list of shards
     t.remove(); // From stage
     ++GameState.getInstance().tiberiumMined;
+    if (Camera.getInstance().onScreen(t)) {
+      Sounds.getInstance().dirt();
+    }
     return id;
   }
 

@@ -107,10 +107,14 @@ public class Sprite extends Entity {
     Gdx.app.debug("pathTo", "Pathed in " + (pathingList != null ? pathingList.size() : " NULL ") + " steps");
   }
 
+  protected float spriteVelocity() {
+    return Param.PARTICLE_VELOCITY * getParticle().getSpeedMod();
+  }
+
   private boolean doMove(float x, float y, float delta) {
     velocity.set(x - (getX() + getWidth()/2), y - (getY() + getWidth()/2));
     boolean atDestination = (velocity.len() < Param.PARTICLE_AT_TARGET);
-    velocity.setLength(Param.PARTICLE_VELOCITY * getParticle().getSpeedMod() );
+    velocity.setLength( spriteVelocity() );
     moveBy(velocity.x * delta, velocity.y * delta);
     return atDestination;
   }

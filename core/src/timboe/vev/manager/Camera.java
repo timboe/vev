@@ -15,6 +15,7 @@ import java.util.Random;
 
 import timboe.vev.Param;
 import timboe.vev.Util;
+import timboe.vev.entity.Building;
 import timboe.vev.entity.Entity;
 import timboe.vev.entity.Sprite;
 import timboe.vev.enums.FSM;
@@ -158,6 +159,11 @@ public class Camera {
     return cullBoxSprite.contains(Rectangle.tmp) || cullBoxSprite.overlaps(Rectangle.tmp);
   }
 
+  public boolean onScreen(Building b) {
+    Rectangle.tmp.set(b.getX(), b.getY(), b.getWidth(), b.getHeight());
+    return cullBoxTile.contains(Rectangle.tmp) || cullBoxSprite.overlaps(Rectangle.tmp);
+  }
+
   public boolean onScreen(Entity t) {
     Rectangle.tmp.set(t.getX(), t.getY(), t.getWidth(), t.getHeight());
     return cullBoxTile.contains(Rectangle.tmp) || cullBoxTile.overlaps(Rectangle.tmp);
@@ -232,8 +238,8 @@ public class Camera {
   }
 
   public void translate(float x, float y) {
-    final float xMod = Param.DISPLAY_X / getUiViewport().getScreenWidth();
-    final float yMod = Param.DISPLAY_Y / getUiViewport().getScreenHeight();
+    final float xMod = (float)Param.DISPLAY_X / (float)getUiViewport().getScreenWidth();
+    final float yMod = (float)Param.DISPLAY_Y / (float)getUiViewport().getScreenHeight();
     desiredPos.add(xMod * x * currentZoom, yMod * y * currentZoom);
   }
 
@@ -284,8 +290,8 @@ public class Camera {
     if (desiredPos.x - Param.DISPLAY_X/2 < -1000) modVelocity(10,0);
     else if (desiredPos.x - Param.DISPLAY_X/2 > (Param.TILES_X * Param.TILE_S) + 1000) modVelocity(-10,0);
 
-    if (desiredPos.y - Param.DISPLAY_Y/2 < -1000) modVelocity(0,10);
-    else if (desiredPos.y - Param.DISPLAY_Y/2 > (Param.TILES_Y * Param.TILE_S) + 1000) modVelocity(0,-10);
+    if (desiredPos.y + Param.DISPLAY_Y/2 < -1000) modVelocity(0,10);
+    else if (desiredPos.y + Param.DISPLAY_Y/2 > (Param.TILES_Y * Param.TILE_S) + 1000) modVelocity(0,-10);
 
     currentPos.add(shake * (float)Math.cos(shakeAngle), shake * (float)Math.sin(shakeAngle));
     currentZoom += (desiredZoom - currentZoom) * 0.1f;
