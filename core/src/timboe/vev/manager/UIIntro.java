@@ -1,24 +1,17 @@
 package timboe.vev.manager;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
-import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.Event;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.CheckBox;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
-import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Slider;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
-import com.badlogic.gdx.scenes.scene2d.utils.FocusListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
-import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Scaling;
-import com.google.gwt.user.client.ui.TabBar;
 
 import java.util.EnumMap;
 import java.util.HashSet;
@@ -173,6 +166,7 @@ public class UIIntro {
     addHelpLabel(h4, Lang.get("UI_HELP_D_12"), h1pad+64);
     addHelpLabel(h4, Lang.get("UI_HELP_D_13"), h1pad+64);
     addHelpLabel(h4, Lang.get("UI_HELP_D_14"), h1pad+64);
+    addHelpLabel(h4, Lang.get("UI_HELP_D_15"), h1pad+64);
 
   }
 
@@ -285,6 +279,7 @@ public class UIIntro {
     loadGame.addListener(new ChangeListener() {
       @Override
       public void changed(ChangeEvent event, Actor actor) {
+        Sounds.getInstance().OK();
         World.getInstance().doLoad = true;
       }
     });
@@ -304,6 +299,7 @@ public class UIIntro {
     settingsButton.addListener(new ChangeListener() {
       @Override
       public void changed(ChangeEvent event, Actor actor) {
+        Sounds.getInstance().OK();
         resetTitle("settings");
       }
     });
@@ -315,6 +311,7 @@ public class UIIntro {
     howToPlayButton.addListener(new ChangeListener() {
       @Override
       public void changed(ChangeEvent event, Actor actor) {
+        Sounds.getInstance().OK();
         resetTitle("help");
       }
     });
@@ -326,6 +323,7 @@ public class UIIntro {
     credit.addListener(new ChangeListener() {
       @Override
       public void changed(ChangeEvent event, Actor actor) {
+        Sounds.getInstance().OK();
         resetTitle("credit");
       }
     });

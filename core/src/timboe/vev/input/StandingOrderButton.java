@@ -11,6 +11,7 @@ import timboe.vev.Pair;
 import timboe.vev.enums.BuildingType;
 import timboe.vev.enums.Particle;
 import timboe.vev.manager.GameState;
+import timboe.vev.manager.Sounds;
 import timboe.vev.manager.UI;
 
 /**
@@ -35,10 +36,12 @@ public class StandingOrderButton extends ChangeListener {
           Gdx.app.log("StandingOrderButton","Clicked " + data.getKey().toString() + " " + data.getValue().toString());
           GameState.getInstance().doingPlacement = true;
           GameState.getInstance().selectedBuildingStandingOrderParticle = p;
-          UI.getInstance().selectTickIs(true);
+          UI.getInstance().selectTickIsEnabled(true);
+          Sounds.getInstance().foot();
         } else { // I was just clicked OFF - save the current pathing
           GameState.getInstance().doConfirmStandingOrder();
-          UI.getInstance().selectTickIs(false);
+          UI.getInstance().selectTickIsEnabled(false);
+          Sounds.getInstance().OK();
         }
       } else {
         b.setChecked( false );

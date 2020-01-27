@@ -7,6 +7,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import timboe.vev.enums.UIMode;
 import timboe.vev.manager.Camera;
 import timboe.vev.manager.GameState;
+import timboe.vev.manager.Sounds;
 import timboe.vev.manager.UIIntro;
 import timboe.vev.manager.UI;
 
@@ -23,13 +24,16 @@ public class YesNoButton extends ChangeListener {
     if (UI.getInstance().uiMode == UIMode.kHELP) {
       if (N) {
         UIIntro.getInstance().helpLevel -= 1;
-      } else {
+        Sounds.getInstance().foot();
+      } else if ((Integer) actor.getUserObject() == 1) {
         UIIntro.getInstance().helpLevel += 1;
+        Sounds.getInstance().foot();
       }
       if ((Integer) actor.getUserObject() == 2 // "Back" is Obj==2
               || UIIntro.getInstance().helpLevel == 1
               || UIIntro.getInstance().helpLevel == 5) {
         UIIntro.getInstance().helpLevel = 0;
+        Sounds.getInstance().cancel();
         UIIntro.getInstance().resetTitle("main");
       }
       Camera.getInstance().setHelpPos(UIIntro.getInstance().helpLevel, false);
@@ -40,6 +44,9 @@ public class YesNoButton extends ChangeListener {
     if (UI.getInstance().uiMode == UIMode.kSETTINGS) {
       if (N) {
         UIIntro.getInstance().cancelSettingsChanges();
+        Sounds.getInstance().cancel();
+      } else {
+        Sounds.getInstance().OK();
       }
       UIIntro.getInstance().resetTitle("main");
       return;
@@ -48,6 +55,7 @@ public class YesNoButton extends ChangeListener {
     // In game
     if (N) {
       GameState.getInstance().showMainUITable(false);
+      Sounds.getInstance().cancel();
     } else { // Y
       switch (UI.getInstance().uiMode) {
         case kPLACE_BUILDING:

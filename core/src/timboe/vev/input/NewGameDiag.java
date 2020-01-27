@@ -6,6 +6,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 
 import timboe.vev.Param;
 import timboe.vev.manager.GameState;
+import timboe.vev.manager.Sounds;
 import timboe.vev.manager.StateManager;
 import timboe.vev.manager.World;
 
@@ -34,8 +35,10 @@ public class NewGameDiag extends Dialog {
         default:
           Gdx.app.error("NewGame", "Unknown button " + object);
       }
+      Sounds.getInstance().OK();
       StateManager.getInstance().transitionToGameScreen();
     } else {
+      Sounds.getInstance().cancel();
       Gdx.app.log("result","Pressed CANCEL");
     }
   }

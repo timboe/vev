@@ -21,6 +21,6 @@ public class QueueButton extends ChangeListener {
     BuildingType bt = GameState.getInstance().buildingBeingPlaced;
     UI.getInstance().buildingWindowQSimple.get(bt).setChecked(GameState.getInstance().queueType == QueueType.kSIMPLE);
     UI.getInstance().buildingWindowQSpiral.get(bt).setChecked(GameState.getInstance().queueType == QueueType.kSPIRAL);
-    Sounds.getInstance().click();
+    Sounds.getInstance().OK();
   }
 }

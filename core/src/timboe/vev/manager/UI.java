@@ -5,8 +5,6 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.g2d.NinePatch;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
@@ -228,7 +226,7 @@ public class UI {
 
   public Button getImageButton(String image, String style, int resize, String tt) {
     Button ib = new Button(skin, style);
-    ib.addListener(buttonHover);
+
     if (image.equals("tick") || image.equals("cross")) {
       ib.setUserObject( image.equals("cross") ? 0 : 1);
       ib.addListener(yesNoButton);
@@ -238,6 +236,8 @@ public class UI {
     if (image.equals("wrecking")) {
       ib.addListener(demolishButton);
     }
+
+    ib.addListener(buttonHover);
 
     Image im = new Image( Textures.getInstance().getTexture(image, false) );
     Container<Actor> cont = new Container<Actor>();
@@ -417,6 +417,7 @@ public class UI {
       contEnabled.width( ibEnabled.getWidth() * 2 ).height( ibEnabled.getHeight() * 2 );
 
       Button bEnabled = new Button(skin, "default");
+      bEnabled.addListener(buttonHover);
       bEnabled.add(contEnabled);
 
       Image ibDisabled = new Image( Textures.getInstance().getTexture("building_" + bt.ordinal() + "_gs", false) );
@@ -471,6 +472,7 @@ public class UI {
     settings.addListener(new ChangeListener() {
       @Override
       public void changed(ChangeEvent event, Actor actor) {
+        Sounds.getInstance().OK();
         UI.getInstance().showSettings();
       }
     });
@@ -665,6 +667,7 @@ public class UI {
     saveAndQuit.addListener(new ChangeListener() {
       @Override
       public void changed(ChangeEvent event, Actor actor) {
+        Sounds.getInstance().OK();
         StateManager.getInstance().transitionToTitleScreen();
       }
     });
@@ -677,6 +680,7 @@ public class UI {
       @Override
       public void changed(ChangeEvent event, Actor actor) {
         uiMode = uiMode.kNONE;
+        Sounds.getInstance().OK();
         GameState.getInstance().showMainUITable(true);
       }
     });
@@ -800,7 +804,7 @@ public class UI {
     }
     table.clear();
     androidWindow.clear();
-    selectTickIs(true);
+    selectTickIsEnabled(true);
     addToWin(androidWindow, selectTick, SIZE_L, SIZE_L, 1);
     addToWin(androidWindow, selectCross, SIZE_L, SIZE_L, 1);
     addAndroid();
@@ -815,7 +819,7 @@ public class UI {
     androidWindow.clear();
     if (b.getType() != BuildingType.kMINE) {
       addToWin(androidWindow, selectTick, SIZE_L, SIZE_L, 1);
-      selectTickIs(false);
+      selectTickIsEnabled(false);
     }
     addToWin(androidWindow, selectCross, SIZE_L, SIZE_L, 1);
     addAndroid();
@@ -830,8 +834,7 @@ public class UI {
     refreshBuildingLabels();
   }
 
-  public void selectTickIs(boolean enabled) {
-    Gdx.app.log("selectTickIs... ",""+enabled);
+  public void selectTickIsEnabled(boolean enabled) {
     selectTick.setDisabled(!enabled);
     selectTick.clearChildren();
     if (enabled) {
@@ -902,7 +905,7 @@ public class UI {
     LabelDF upgradeTime = buildingUpgradeLabelTime.get(b.getType());
     String usb = "x" + df2.format(b.getAverageNextUpgradeFactor());
     bonus.setText( usb );
-    String ugc = String.valueOf(b.getUpgradeCost());
+    String ugc = String.valueOf(cost);
     costLabel.setText( ugc );
     float ugTime = b.getUpgradeTime();
     if (ugTime > 10) {
@@ -954,7 +957,7 @@ public class UI {
     }
   }
 
-  public void doSelectParticle(final Set<Integer> selected) {
+  public void doSelectParticle(final Set<Integer> selected, boolean bark) {
     Set<Particle> selectedParticles = new HashSet<Particle>();
     int counter[] = new int[Particle.values().length];
     for (final int sID : selected) {
@@ -986,11 +989,15 @@ public class UI {
     table.add(selectWindow);
     if (GameState.getInstance().debug > 0) table.debugAll();
     uiMode = UIMode.kWITH_PARTICLE_SELECTION;
-    Sounds.getInstance().selectOrder();
+    if (bark) Sounds.getInstance().selectOrder();
   }
 
   void newGameDiag(int initialSpawn, int remainingToSpawn) {
-    Dialog d = new Dialog("", skin);
+    Dialog d =  new Dialog("", skin) {
+      protected void result(Object object) {
+        Sounds.getInstance().OK();
+      }
+    };
     d.pad(PAD*4);
     d.getContentTable().pad(PAD*4);
     d.getButtonTable().pad(PAD*4);
@@ -1004,7 +1011,11 @@ public class UI {
   }
 
   void spawnOverDiag(int remainingInWorld) {
-    Dialog d = new Dialog("", skin);
+    Dialog d =  new Dialog("", skin) {
+      protected void result(Object object) {
+        Sounds.getInstance().OK();
+      }
+    };
     d.pad(PAD*4);
     d.getContentTable().pad(PAD*4);
     d.getButtonTable().pad(PAD*4);

@@ -13,6 +13,7 @@ import timboe.vev.Lang;
 import timboe.vev.Param;
 import timboe.vev.manager.IntroState;
 import timboe.vev.manager.Persistence;
+import timboe.vev.manager.Sounds;
 import timboe.vev.manager.Textures;
 import timboe.vev.manager.UI;
 
@@ -80,6 +81,7 @@ public class NewGameButton extends ChangeListener {
 
   @Override
   public void changed(ChangeEvent event, Actor actor) {
+    Sounds.getInstance().OK();
     newGameDialog.show(IntroState.getInstance().getUIStage());
   }
 }

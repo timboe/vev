@@ -4,6 +4,7 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 
 import timboe.vev.enums.BuildingType;
+import timboe.vev.manager.Sounds;
 import timboe.vev.manager.UI;
 
 /**
@@ -15,5 +16,6 @@ public class BuildingButton extends ChangeListener {
   public void changed(ChangeEvent event, Actor actor) {
     BuildingType bt = (BuildingType) actor.getUserObject();
     UI.getInstance().showBuildBuilding(bt);
+    Sounds.getInstance().OK();
   }
 }
