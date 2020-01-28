@@ -10,7 +10,7 @@
   black: {a: 1, b: 0, g: 0, r: 0 },
   white: {a: 1, b: 1, g: 1, r: 1 },
   green: {a: 1, b: 0, g: 1, r: 0 },
-  red: {a: 1, b: 0, g: 0, r: 1 },
+  red: {a: 1, b: 0.313, g: 0.396, r: 0.807 },
   blue: {a: 1, b: 1, g: 0, r: 0 },
   grey: {a: 1, b: 0.32, g: 0.32, r: 0.32 },
   vis-blue: {a: 1, b: 0.886, g: 0.631, r: 0.105 },
@@ -69,6 +69,7 @@
 },
   com.badlogic.gdx.scenes.scene2d.ui.Label$LabelStyle: {
   default: {font: default-font, fontColor: white },
+  red: {font: default-font, fontColor: red },
   disabled: {font: default-font, fontColor: grey },
   wide: {font: wide-font, fontColor: white },
   title: {font: fixed-width-font, fontColor: white },

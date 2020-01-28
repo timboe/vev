@@ -214,10 +214,8 @@ public class UIIntro {
       reset();
     }
 
-    if (newGameDiag == null) {
-      newGameDiag = new NewGameDiag("", ui.skin);
-      newGameButton.setDiag(newGameDiag);
-    }
+    newGameDiag = new NewGameDiag("", ui.skin);
+    newGameButton.setDiag(newGameDiag);
 
     Table titleWindow = ui.getWindow();
     if (toShow.equals("main")) {

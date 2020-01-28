@@ -8,6 +8,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
 
+import timboe.vev.DistanceField.LabelDF;
 import timboe.vev.DistanceField.TextButtonDF;
 import timboe.vev.Lang;
 import timboe.vev.Param;
@@ -16,6 +17,7 @@ import timboe.vev.manager.Persistence;
 import timboe.vev.manager.Sounds;
 import timboe.vev.manager.Textures;
 import timboe.vev.manager.UI;
+import timboe.vev.manager.UIIntro;
 
 public class NewGameButton extends ChangeListener {
 
@@ -54,6 +56,15 @@ public class NewGameButton extends ChangeListener {
     head.add(ui.getLabel(Lang.get("UI_XL"), "")).pad(ui.PAD * 4);
     head.add(ui.getLabel(Integer.toString(Param.PARTICLES_XL), "")).pad(ui.PAD * 4);
     head.add(ui.getLabel((Persistence.getInstance().bestTimes.get(3) == 0 ? "N/A" : Persistence.getInstance().bestTimes.get(3) + "s"), "") ).pad(ui.PAD * 4).row();
+    //
+    head.add(new Image( Textures.getInstance().getTexture("separator", false) )).padTop(10).fillX().colspan(3);
+    head.row();
+    //
+    if (Persistence.getInstance().save != null) {
+      head.add(new LabelDF(Lang.get("UI_WARN"), ui.skin, "red", ui.dfShader)).align(Align.center).colspan(3).pad(ui.PAD * 4).row();
+      head.add(new Image( Textures.getInstance().getTexture("separator", false) )).padTop(10).fillX().colspan(3);
+      head.row();
+    }
     //
     newGameDialog.pad(ui.PAD * 4);
     newGameDialog.getButtonTable().pad(ui.PAD * 4);

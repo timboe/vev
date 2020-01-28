@@ -180,7 +180,6 @@ public class UI {
   private void TT(Actor a, String tt) {
     if (tt.equals("")) return;
     TextTooltipDF ttDF = new TextTooltipDF(Lang.get(tt), skin);
-//    ttDF.getActor(). XXX
     ttDF.setInstant(true);
     ttDF.getActor().setAlignment(Align.center);
     a.addListener(ttDF);

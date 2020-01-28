@@ -15,23 +15,23 @@ public class Lang {
   public static void create() { ourInstance = new Lang(); }
 
   private Lang() {
-    EN_GB.put("energy","Get energy from mining and deconstructing.\nSpend it on new buildings, and on upgrading them.");
-    EN_GB.put("particles", "Particles in the world.\nDeconstruct them all to finish the game.\nParticles will be spawned by the White Holes,\nuntil they're empty.");
+    EN_GB.put("energy","Get energy from mining ore and deconstructing particles.\nSpend it on new buildings, and on upgrading them.");
+    EN_GB.put("particles", "Particles in the world.\nDeconstruct them all to finish the game.\nParticles are spawned by white holes.");
     EN_GB.put("wParticles", "Particles yet to spawn into the world.");
     EN_GB.put("disassembleTime", "Time to deconstruct particle.");
     EN_GB.put("disassembleEnergy", "Energy released by deconstructing particle.");
     EN_GB.put("musicVolume", "Music Volume.");
     EN_GB.put("sfxVolume", "Sound Effects Volume.");
-    EN_GB.put("qSize", "Size of building's queue. Longer queues take longer to construct.");
+    EN_GB.put("qSize", "Size of building's queue.\nLonger queues take longer to construct and cost more.");
     EN_GB.put("buildingPrice", "Energy cost of this building.");
     EN_GB.put("newGame", "Start a new game.\nWill overwrite any existing save.");
     EN_GB.put("loadGame", "Load from the single save slot.");
     EN_GB.put("settings", "Change sound volume\nand particle colours.");
-    EN_GB.put("howToPlay", "Controls and game instructions.");
+    EN_GB.put("howToPlay", "Controls, and game instructions.");
     EN_GB.put("credits", "Asset credits.");
     EN_GB.put("exit", "Exit to desktop.");
-    EN_GB.put("standingOrder","Setup Standing Move Order.\nSpawned # will be sent to this location.");
-    EN_GB.put("standingBlank","Setup Overflow Standing Move Order.\nParticles which COULD be accepted,\nbut are turned away due to a full queue\nwill be sent here. NO cyclic loops.");
+    EN_GB.put("standingOrder","Setup standing move order.\nSpawned # will be sent to this location.");
+    EN_GB.put("standingBlank","Setup overflow standing move order.\nParticles which COULD be accepted,\nbut are turned away due to a full queue\nwill be sent here. NO cyclic loops.");
     EN_GB.put("select","Toggle selection mode.");
     EN_GB.put("pause","Show the pause menu.");
     EN_GB.put("particleSelect","Left Click: Refine selection to just #\nShift+Left Click: Remove # from selection");
@@ -53,11 +53,11 @@ public class Lang {
     EN_GB.put("fullscreen","Toggles fullscreen mode.");
     EN_GB.put("volume","Changes the volume.");
     EN_GB.put("settingsTime","Current game time.");
-    EN_GB.put("newGameOpeningA","This White Hole has spawned the first # particles into the land.");
-    EN_GB.put("newGameOpeningB","# more particles will follow, then the White Holes will be depleted.");
+    EN_GB.put("newGameOpeningA","This white hole has spawned the first # particles into the land.");
+    EN_GB.put("newGameOpeningB","# more particles will follow, then the white holes will be depleted.");
     EN_GB.put("newGameOpeningC","Deconstruct every particle in the shortest possible time.");
     EN_GB.put("ok","OK");
-    EN_GB.put("midGame","The White Holes are empty!\nDeconstruct the remaining # particles in the shortest possible time.");
+    EN_GB.put("midGame","The white holes are empty!\nDeconstruct the remaining # particles in the shortest possible time.");
     EN_GB.put("demolish", "Demolish Building?\nRecover # Energy");
     EN_GB.put("progressTimer", "Particle deconstruction or\nbuilding upgrade timer.");
 
@@ -80,7 +80,7 @@ public class Lang {
     EN_GB.put("UI_MUSIC", "MUSIC");
     EN_GB.put("UI_SFX", "SOUND FX");
     EN_GB.put("UI_N_PARTICLES", ": Deconstruct # Particles");
-    EN_GB.put("UI_BEST_TIME", ". Best Time: # s");
+    EN_GB.put("UI_BEST_TIME", ". Best Time: #s");
     EN_GB.put("UI_CANCEL", "CANCEL");
     EN_GB.put("UI_BACK", "BACK");
     EN_GB.put("UI_CREDITS", "CREDITS");
@@ -96,7 +96,7 @@ public class Lang {
     EN_GB.put("UI_BUILDINGS_PLACED", "BUILDINGS PLACED: #");
     EN_GB.put("UI_BUILDINGS_DESTROYED", "BUILDINGS DESTROYED: #");
     EN_GB.put("UI_PARTICLES_DESTROYED", "PARTICLES DECONSTRUCTED: #");
-    EN_GB.put("UI_PARTICLE_BOUNCES", "PARTICLE BOUNCIES: #");
+    EN_GB.put("UI_PARTICLE_BOUNCES", "PARTICLE BOUNCES: #");
     EN_GB.put("UI_DIFFICULTY", "GAME LENGTH: #");
     EN_GB.put("UI_TIBERIUM_MINED", "ORE MINED: #");
     EN_GB.put("UI_TREES_DEMOLISHED", "TREES BULLDOZED: #");
@@ -104,6 +104,7 @@ public class Lang {
     EN_GB.put("UI_BUILDING_UPGRADES", "BUILDING UPGRADES: #");
     EN_GB.put("UI_YES", "YES");
     EN_GB.put("UI_NO", "NO");
+    EN_GB.put("UI_WARN", "WARNING: STARTING A NEW GAME WILL\nOVERWRITE YOUR EXISTING SAVE GAME!!!");
 
 
     EN_GB.put("UI_HELP_00", "A game by Tim Martin");
@@ -149,7 +150,7 @@ public class Lang {
     EN_GB.put("UI_HELP_B_08", "ORE TRUCK");
     EN_GB.put("UI_HELP_B_09", "ORE TRUCK'S ROUTE");
 
-    EN_GB.put("UI_HELP_C_00", "Setup standing move orders to route particles from White Holes");
+    EN_GB.put("UI_HELP_C_00", "Setup standing move orders to route particles from white holes");
     EN_GB.put("UI_HELP_C_01", "to (and between) deconstruction buildings.");
     EN_GB.put("UI_HELP_C_02", "WHITE HOLE");
     EN_GB.put("UI_HELP_C_03", "(ONLY FOUND IN DESERTS)");

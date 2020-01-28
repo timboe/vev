@@ -2,7 +2,6 @@ package timboe.vev.manager;
 
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.ParticleEffect;
 import com.badlogic.gdx.graphics.g2d.ParticleEffectPool;
@@ -50,9 +49,7 @@ import static timboe.vev.enums.Cardinal.kSW;
 public class GameState {
 
 
-  public final Vector3 selectStartScreen = new Vector3();
   public Vector3 selectStartWorld = new Vector3();
-  public final Vector3 selectEndScreen = new Vector3();
   public Vector3 selectEndWorld = new Vector3();
   private Vector3 cursor = new Vector3();
 
