@@ -263,7 +263,7 @@ public class Building extends Entity {
 
   private float getDisassembleTime(Particle p) {
     return p.getDisassembleTime()
-        * getUpgradeFactor()
+        * getUpgradeFactor(buildingLevel)
         * type.getDisassembleMod(p);
   }
 
@@ -272,25 +272,35 @@ public class Building extends Entity {
   }
 
   public int getUpgradeCost() {
-    return Math.round(type.getUpgradeBaseCost() * (1f/getUpgradeFactor()));
+    if (type == BuildingType.kMINE) {
+      int total = 0;
+      for (Truck t : GameState.getInstance().getTrucksMap().values()) {
+        if (t.myBuilding == this.id) {
+          total += Math.round(type.getUpgradeBaseCost() * (1f / getUpgradeFactor(t.level)));
+        }
+      }
+      return total;
+    } else {
+      return Math.round(type.getUpgradeBaseCost() * (1f / getUpgradeFactor(buildingLevel)));
+    }
   }
 
   public float getUpgradeTime() {
-    return type.getUpgradeBaseTime() * (1f/getUpgradeFactor());
-  }
-
-  public float getUpgradeFactor() {
     if (type == BuildingType.kMINE) {
-      int totalLevels = 0;
+      float total = 0f;
       for (Truck t : GameState.getInstance().getTrucksMap().values()) {
         if (t.myBuilding == this.id) {
-          totalLevels += t.level;
+          total += type.getUpgradeBaseTime() * (1f / getUpgradeFactor(t.level));
         }
       }
-      return (float)Math.pow(Param.BUILDING_DISASSEMBLE_BONUS, totalLevels);
+      return total;
+    } else {
+      return type.getUpgradeBaseTime() * (1f / getUpgradeFactor(buildingLevel));
     }
-    // Else
-    return (float)Math.pow(Param.BUILDING_DISASSEMBLE_BONUS, buildingLevel);
+  }
+
+  public float getUpgradeFactor(int level) {
+    return (float)Math.pow(Param.BUILDING_DISASSEMBLE_BONUS, level);
   }
 
   public float getAverageNextUpgradeFactor() {
@@ -314,7 +324,6 @@ public class Building extends Entity {
   }
 
   public void updatePathingStartPoint() {
-//    Gdx.app.log("updatePathingStartPoint", "CALLED myQueue:" + myQueue)
     Tile queueStart = myQueue != null ? tileFromCoordinate( myQueue.getQueuePathingTarget() ) : getCentreTile();
     // TODO graphically, appears to be starting from within the queue?
     Tile pathingStartPointTile = Sprite.findPathingLocation(queueStart, true, false, false, false); //reproducible=True, requireParking=False
@@ -332,14 +341,12 @@ public class Building extends Entity {
     }
     for (Particle p : Particle.values()) {
       if (getBuildingPathingList(p) != null) {
-//        Gdx.app.log("DBG","From " + p.getString() + " " + getPathingStartPoint(p) + " " + getBuildingDestination(p).coordinates + " " + getBuildingDestination(p).coordinates.getNeighbours());
         buildingPathingLists.put(p, PathFinding.doAStar(getPathingStartPoint(p), getBuildingDestination(p).coordinates, null, null, GameState.getInstance().pathingCache) );
       }
     }
   }
 
   protected IVector2 getPathingStartPoint(Particle p) {
-//    Gdx.app.log("getPathingStartPoint BASE","Returning "+pathingStartPoint);
     // Note: p is only used in Warp's override of this function.
     // Note: We fetch the World version as this has the getNeighbours property set.
     return World.getInstance().getTile(pathingStartPoint, isIntro).coordinates;
@@ -347,7 +354,6 @@ public class Building extends Entity {
 
   public void updateDemoPathingList(Particle p, Tile t) {
     if (getDestination() != t) {
-//      Gdx.app.log("DEBUG updateDemoPathingList","Start for "+p+" is "+getPathingStartPoint(p)+" with target t.coordinates " + t.coordinates);
       this.pathingList = PathFinding.doAStar(getPathingStartPoint(p), t.coordinates, null, null, GameState.getInstance().pathingCache);
       Sounds.getInstance().click();
     }
@@ -382,7 +388,6 @@ public class Building extends Entity {
   }
 
   public Pair<Tile, Cardinal> getFreeLocationInQueue(Sprite s) {
-//    Gdx.app.log("getFreeLocationInQueue","Sprite "+s+" is accepted " + type.accepts(s));
     // NOTE: Now expect canJoinQueue to be called independently of this, first
     return myQueue.getFreeLocationInQueue();
   }
@@ -503,7 +508,7 @@ public class Building extends Entity {
           }
         }
       }
-      // TODO update labels
+
       doUpgrade = false;
       clockVisible = false;
       GameState.getInstance().getBuildingExtrasMap().get( clock ).setVisible(false); // clock
