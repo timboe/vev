@@ -8,8 +8,8 @@ import timboe.vev.enums.UIMode;
 import timboe.vev.manager.Camera;
 import timboe.vev.manager.GameState;
 import timboe.vev.manager.Sounds;
-import timboe.vev.manager.UIIntro;
 import timboe.vev.manager.UI;
+import timboe.vev.manager.UIIntro;
 
 /**
  * Created by Tim on 02/01/2018.

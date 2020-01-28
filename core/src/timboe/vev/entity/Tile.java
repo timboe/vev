@@ -68,7 +68,7 @@ public class Tile extends Entity {
       jsonParking.put(entry.getKey().toString(), entry.getValue().name());
     }
     json.put("parkingSpaces", jsonParking);
-    json.put("mySprite",  mySprite);
+    json.put("mySprite", mySprite);
     json.put("queueExit", queueExit.name());
     json.put("queueClockwise", queueClockwise);
     json.put("queueTex", queueTex);
@@ -81,7 +81,7 @@ public class Tile extends Entity {
     super(json);
     this.queueTex = json.getString("queueTex");
     this.queueClockwise = json.getBoolean("queueClockwise");
-    this.queueExit = Cardinal.valueOf( json.getString("queueExit") );
+    this.queueExit = Cardinal.valueOf(json.getString("queueExit"));
     this.queueTexSet = json.getBoolean("queueTexSet");
     this.mySprite = json.getInt("mySprite");
     JSONObject jsonParking = json.getJSONObject("parkingSpaces");
@@ -95,10 +95,10 @@ public class Tile extends Entity {
     while (it.hasNext()) {
       this.containedSprites.add(Integer.parseInt(jsonContained.getString((String) it.next())));
     }
-    this.centreScaleSprite = Util.deserialiseVec3( json.getJSONObject("centreScaleSprite") );
-    this.centreScaleTile = Util.deserialiseVec3( json.getJSONObject("centreScaleTile") );
-    this.direction = Cardinal.valueOf( json.getString("direction") );
-    this.type = TileType.valueOf( json.getString("type") );
+    this.centreScaleSprite = Util.deserialiseVec3(json.getJSONObject("centreScaleSprite"));
+    this.centreScaleTile = Util.deserialiseVec3(json.getJSONObject("centreScaleTile"));
+    this.direction = Cardinal.valueOf(json.getString("direction"));
+    this.type = TileType.valueOf(json.getString("type"));
     if (this.queueTex != "" && this.queueTexSet) { // Delayed rendering was activated
       setQueueTexture();
     }
@@ -108,7 +108,7 @@ public class Tile extends Entity {
     super(x, y);
     setType(TileType.kGROUND, kBLACK, 0);
     this.mask = false;
-    this.centreScaleTile.set(getX() + getHeight()/2, getY() + getHeight()/2, 0); // Tile scale
+    this.centreScaleTile.set(getX() + getHeight() / 2, getY() + getHeight() / 2, 0); // Tile scale
     this.centreScaleSprite.set(centreScaleTile);
     this.centreScaleSprite.scl(Param.SPRITE_SCALE); // Sprite scale
     this.direction = Cardinal.kNONE;
@@ -135,7 +135,7 @@ public class Tile extends Entity {
     if (isIntro && World.getInstance().introFoliage.containsKey(mySprite)) {
       return World.getInstance().introFoliage.get(mySprite);
     }
-    Gdx.app.error("getMySprite", "Cannot resolve "+mySprite+" I am "+coordinates.toString()+" I am intro? " + isIntro);
+    Gdx.app.error("getMySprite", "Cannot resolve " + mySprite + " I am " + coordinates.toString() + " I am intro? " + isIntro);
     return null;
   }
 
@@ -170,7 +170,7 @@ public class Tile extends Entity {
   public void setQueue(Cardinal from, Cardinal to, int buildingID, Cardinal queueExit, boolean queueClockwise) {
     type = TileType.kQUEUE;
     removeSprite();
-    this.queueTex = "queue_"+tileColour.getString()+"_"+from.getString()+"_"+to.getString();
+    this.queueTex = "queue_" + tileColour.getString() + "_" + from.getString() + "_" + to.getString();
     this.queueExit = queueExit;
     this.queueClockwise = queueClockwise;
     this.queueTexSet = false;
@@ -243,10 +243,10 @@ public class Tile extends Entity {
         // Do we have a standing order for overflow? This is the kBlank particle type
         List<IVector2> pList = b.getBuildingPathingList(Particle.kBlank);
         // We don't allow cyclic loops, however
-        final boolean returning = (s.bouncedBuildings.contains( b.id ));
+        final boolean returning = (s.bouncedBuildings.contains(b.id));
         if (pList != null && !returning) { // We have an overflow destination configured
           s.pathingList = new LinkedList<IVector2>(pList); // Off you go little one!
-          s.bouncedBuildings.add( b.id ); // But don't come back!
+          s.bouncedBuildings.add(b.id); // But don't come back!
           return true;
         } else { // You're on your own. Find somewhere nearby to loiter
           s.bouncedBuildings.clear();
@@ -300,7 +300,7 @@ public class Tile extends Entity {
       if (s == null) {
         Truck t = GameState.getInstance().getTrucksMap().get(id);
         if (t == null) {
-          Gdx.app.error("moveOnSprites", "Cannot find hosted sprite "+id);
+          Gdx.app.error("moveOnSprites", "Cannot find hosted sprite " + id);
         }
         continue;
       }
@@ -311,7 +311,7 @@ public class Tile extends Entity {
       }
     }
     for (Sprite s : set) {
-      Tile newDest = s.findPathingLocation(this, true, true, true, false); // Reproducible=True, requiresParking=True, requireSameHeight=True.
+      Tile newDest = Sprite.findPathingLocation(this, true, true, true, false); // Reproducible=True, requiresParking=True, requireSameHeight=True.
       if (newDest != null) s.pathTo(newDest, null, null); // Try path to
       if (s.pathingList == null && newDest != null) newDest.tryRegSprite(s); // Else go straight to
     }
@@ -328,32 +328,58 @@ public class Tile extends Entity {
   }
 
   public void renderDebug(ShapeRenderer sr) {
-    float x1 = getX() + getWidth()/2;
-    float y1 = getY() + getHeight()/2;
+    float x1 = getX() + getWidth() / 2;
+    float y1 = getY() + getHeight() / 2;
     for (Cardinal D : pathFindDebug) {
       float y2 = y1, x2 = x1;
       switch (D) {
-        case kN: y2 += getHeight()/2; break;
-        case kNE: y2 += getHeight()/2; x2 += getHeight()/2; break;
-        case kE: x2 += getWidth()/2; break;
-        case kSE: x2 += getWidth()/2; y2 -= getHeight()/2; break;
-        case kS: y2 -= getHeight()/2; break;
-        case kSW: y2 -= getHeight()/2; x2 -= getWidth()/2; break;
-        case kW: x2 -= getWidth()/2; break;
-        case kNW: x2 -= getWidth()/2; y2 += getHeight()/2; break;
+        case kN:
+          y2 += getHeight() / 2;
+          break;
+        case kNE:
+          y2 += getHeight() / 2;
+          x2 += getHeight() / 2;
+          break;
+        case kE:
+          x2 += getWidth() / 2;
+          break;
+        case kSE:
+          x2 += getWidth() / 2;
+          y2 -= getHeight() / 2;
+          break;
+        case kS:
+          y2 -= getHeight() / 2;
+          break;
+        case kSW:
+          y2 -= getHeight() / 2;
+          x2 -= getWidth() / 2;
+          break;
+        case kW:
+          x2 -= getWidth() / 2;
+          break;
+        case kNW:
+          x2 -= getWidth() / 2;
+          y2 += getHeight() / 2;
+          break;
       }
       sr.line(x1, y1, x2, y2);
     }
     for (Cardinal D : parkingSpaces.values()) {
-      x1 = getX() + getWidth()/8;
-      y1 = getY() + getHeight()/8;
+      x1 = getX() + getWidth() / 8;
+      y1 = getY() + getHeight() / 8;
       switch (D) {
-        case kSW: break;
-        case kSE: x1 += getWidth()/2; break;
-        case kNE: x1 += getWidth()/2; //fallthrough
-        case kNW: y1 += getHeight()/2; break;
+        case kSW:
+          break;
+        case kSE:
+          x1 += getWidth() / 2;
+          break;
+        case kNE:
+          x1 += getWidth() / 2; //fallthrough
+        case kNW:
+          y1 += getHeight() / 2;
+          break;
       }
-      sr.rect(x1, y1, getWidth()/4, getHeight()/4);
+      sr.rect(x1, y1, getWidth() / 4, getHeight() / 4);
     }
   }
 

@@ -16,7 +16,7 @@ public class DemolishButton extends ChangeListener {
   public void changed(ChangeEvent event, Actor actor) {
     Dialog destroyDialog = new Dialog("", UI.getInstance().skin) {
       protected void result(Object object) {
-        if ((Integer)object == 0) {
+        if ((Integer) object == 0) {
           Sounds.getInstance().cancel();
           return;
         }
@@ -29,10 +29,10 @@ public class DemolishButton extends ChangeListener {
     final int refundAmount = (sb == null ? 0 : sb.refund);
     destroyDialog.align(Align.center);
     destroyDialog.pad(ui.PAD * 4);
-    destroyDialog.text(ui.getLabel(Lang.get("demolish#"+ui.formatter.format(refundAmount)),""));
+    destroyDialog.text(ui.getLabel(Lang.get("demolish#" + ui.formatter.format(refundAmount)), ""));
     destroyDialog.row();
-    destroyDialog.button(ui.getTextButton(Lang.get("UI_YES"),""), 1);
-    destroyDialog.button(ui.getTextButton(Lang.get("UI_NO"),""), 0);
+    destroyDialog.button(ui.getTextButton(Lang.get("UI_YES"), ""), 1);
+    destroyDialog.button(ui.getTextButton(Lang.get("UI_NO"), ""), 0);
     destroyDialog.show(GameState.getInstance().getUIStage());
   }
 }

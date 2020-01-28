@@ -12,13 +12,11 @@ import java.util.PriorityQueue;
 import java.util.Set;
 
 import timboe.vev.entity.Sprite;
-import timboe.vev.entity.Tile;
 
 /**
  * Helper class containing pathfinding algorithms.
  *
  * @author Ben Ruijl
- *
  */
 public class PathFinding {
 
@@ -29,14 +27,13 @@ public class PathFinding {
    * {@code h(x) <=
    * d(x, y) + h(y)}.
    *
-   * @param start
-   *            Starting node
-   * @param goal
-   *            Goal node
+   * @param start Starting node
+   * @param goal  Goal node
    * @return Shortest path from start to goal, or null if none found
    */
   public static <T extends Node<T>> LinkedList<T> doAStar(T start, T goal, Set<T> solutionKnownFrom, Set<Sprite> doneSet, PathingCache<T> cache) {
-    if (goal == null || start == null) Gdx.app.error("PathFinding", "Called with goal = " + goal + " start = " + start);
+    if (goal == null || start == null)
+      Gdx.app.error("PathFinding", "Called with goal = " + goal + " start = " + start);
     if (goal.getNeighbours().size() == 0) return null;
 
     //TODO this still isn't working properly :(
@@ -83,13 +80,13 @@ public class PathFinding {
 
         // Add up to
         if (otherSolution == null) {
-          Gdx.app.error("pathFinding","element was in solutionsKnownFrom but not any individual soln?!");
+          Gdx.app.error("pathFinding", "element was in solutionsKnownFrom but not any individual soln?!");
           return null;
         }
 
         for (int i = otherSolution.size() - 1; i >= 0; --i) {
           if (otherSolution.get(i) == current) break;
-          route.add(0, (T)otherSolution.get(i) );
+          route.add(0, (T) otherSolution.get(i));
         }
 
         // Add the remainder - unique to me

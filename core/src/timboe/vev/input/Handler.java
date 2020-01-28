@@ -1,6 +1,5 @@
 package timboe.vev.input;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 
@@ -16,7 +15,7 @@ public class Handler extends InputAdapter {
     return false;
   }
 
-  public boolean touchUp (int screenX, int screenY, int pointer, int button) {
+  public boolean touchUp(int screenX, int screenY, int pointer, int button) {
     if (button == Input.Buttons.LEFT && GameState.getInstance().isSelecting()) {
       boolean result = GameState.getInstance().doParticleSelect(true);
       if (!result) GameState.getInstance().showMainUITable(false); // Cancel
@@ -27,7 +26,7 @@ public class Handler extends InputAdapter {
 
 
   @Override
-  public boolean keyUp (int keycode) {
+  public boolean keyUp(int keycode) {
     return false;
   }
 

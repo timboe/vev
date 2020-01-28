@@ -10,20 +10,20 @@ import timboe.vev.Pair;
  */
 
 public class PathingCache<T> {
-  private HashMap<Pair<T,T>, LinkedList<T>> cache = new HashMap<Pair<T, T>, LinkedList<T>>();
-  private Pair<T,T> tmpPair = new Pair<T, T>();
+  private HashMap<Pair<T, T>, LinkedList<T>> cache = new HashMap<Pair<T, T>, LinkedList<T>>();
+  private Pair<T, T> tmpPair = new Pair<T, T>();
 
   public PathingCache() {
   }
 
   public LinkedList<T> getCacheHit(T from, T to) {
-    LinkedList<T> hit = cache.get( tmpPair.set(from, to) );
+    LinkedList<T> hit = cache.get(tmpPair.set(from, to));
     if (hit == null) return null;
-    return new LinkedList<T>( hit );
+    return new LinkedList<T>(hit);
   }
 
   public void addToCache(T from, T to, LinkedList<T> path) {
-    cache.put( new Pair<T, T>(from,to), path);
+    cache.put(new Pair<T, T>(from, to), path);
     return;
   }
 

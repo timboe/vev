@@ -26,8 +26,8 @@ import static timboe.vev.enums.Cardinal.kSE;
 
 public class Sprite extends Entity {
 
-  private static final List<Integer> walkSearchRandom = Arrays.asList(0,1,2,3);
-  private static final List<Integer> walkSearchReproducible = Arrays.asList(0,1,2,3);
+  private static final List<Integer> walkSearchRandom = Arrays.asList(0, 1, 2, 3);
+  private static final List<Integer> walkSearchReproducible = Arrays.asList(0, 1, 2, 3);
 
   // Persistent
   private final Vector2 velocity;
@@ -73,25 +73,27 @@ public class Sprite extends Entity {
     Iterator bbIt = jsonBB.keys();
     while (bbIt.hasNext()) {
       String key = (String) bbIt.next();
-      bouncedBuildings.add( jsonBB.getInt(key) );
+      bouncedBuildings.add(jsonBB.getInt(key));
     }
     if (json.get("myParticle") == JSONObject.NULL) {
       myParticle = null;
     } else {
-      myParticle = Particle.valueOf( json.getString("myParticle") );
+      myParticle = Particle.valueOf(json.getString("myParticle"));
     }
     boredTime = (float) json.getDouble("boredTime");
     idleTime = (float) json.getDouble("idleTime");
-    myTile = new IVector2( json.getJSONObject("myTile") );
-    nudgeDestination = Util.deserialiseVec2( json.getJSONObject("nudgeDestination") );
-    velocity = Util.deserialiseVec2( json.getJSONObject("velocity") );
+    myTile = new IVector2(json.getJSONObject("myTile"));
+    nudgeDestination = Util.deserialiseVec2(json.getJSONObject("nudgeDestination"));
+    velocity = Util.deserialiseVec2(json.getJSONObject("velocity"));
   }
 
   public Particle getParticle() {
     return myParticle;
   }
 
-  public void setParticle(Particle p) { myParticle = p; }
+  public void setParticle(Particle p) {
+    myParticle = p;
+  }
 
   public void pathTo(Tile target, Set<IVector2> solutionKnownFrom, Set<Sprite> doneSet) {
     if (target == null) return;
@@ -100,9 +102,11 @@ public class Sprite extends Entity {
       Tile jumpTo = findPathingLocation(t, true, false, true, isIntro); // Find nearby, reproducible TRUE, require parking FALSE, sameHeight TRUE
       if (jumpTo != null) jumpTo.tryRegSprite(this);
     }
-    if (target.getPathFindNeighbours().isEmpty()) target = findPathingLocation(target, true, false, true, isIntro); // Find nearby, reproducible TRUE, require parking FALSE, sameHeight TRUE
+    if (target.getPathFindNeighbours().isEmpty())
+      target = findPathingLocation(target, true, false, true, isIntro); // Find nearby, reproducible TRUE, require parking FALSE, sameHeight TRUE
     pathingList = (t != null && target != null ? PathFinding.doAStar(t.coordinates, target.coordinates, solutionKnownFrom, doneSet, GameState.getInstance().pathingCache) : null);
-    if (pathingList == null) Gdx.app.error("pathTo", "Warning, pathTo failed for " + this + ", t="+(t != null ? t.coordinates : "!")+ " target="+(target != null ? target.coordinates:"!"));
+    if (pathingList == null)
+      Gdx.app.error("pathTo", "Warning, pathTo failed for " + this + ", t=" + (t != null ? t.coordinates : "!") + " target=" + (target != null ? target.coordinates : "!"));
     if (!isIntro) idleTime = 0;
     Gdx.app.debug("pathTo", "Pathed in " + (pathingList != null ? pathingList.size() : " NULL ") + " steps");
   }
@@ -112,9 +116,9 @@ public class Sprite extends Entity {
   }
 
   private boolean doMove(float x, float y, float delta) {
-    velocity.set(x - (getX() + getWidth()/2), y - (getY() + getWidth()/2));
+    velocity.set(x - (getX() + getWidth() / 2), y - (getY() + getWidth() / 2));
     boolean atDestination = (velocity.len() < Param.PARTICLE_AT_TARGET);
-    velocity.setLength( spriteVelocity() );
+    velocity.setLength(spriteVelocity());
     moveBy(velocity.x * delta, velocity.y * delta);
     return atDestination;
   }
@@ -133,10 +137,10 @@ public class Sprite extends Entity {
   protected void actMovement(float delta) {
     // Pathing
     if (pathingList != null && !pathingList.isEmpty()) { // We've got some walkin' to do
-      Tile next = coordinateToTile( pathingList.get(0) );
+      Tile next = coordinateToTile(pathingList.get(0));
       boolean atDestination = doMove(next.centreScaleSprite.x, next.centreScaleSprite.y, delta);
       if (atDestination) { // Reached destination
-        boolean wasParked = coordinateToTile( pathingList.remove(0) ).tryRegSprite(this);
+        boolean wasParked = coordinateToTile(pathingList.remove(0)).tryRegSprite(this);
         if (pathingList.isEmpty()) atFinalDestination(next, wasParked);
       }
     } else if (!nudgeDestination.isZero()) { // Nudge
@@ -155,8 +159,8 @@ public class Sprite extends Entity {
     time = 0; // No need to catch up if we cannot maintain desired FPS
     if (idleTime > boredTime && Util.R.nextFloat() < Param.PARTICLE_WANDER_CHANCE) {
       bouncedBuildings.clear(); // Another safe place to reset the buildings that I have visited
-      int newX = Util.clamp(myTile.x - (Param.PARTICLE_WANDER_R/2) + Util.R.nextInt(Param.PARTICLE_WANDER_R), 1, Param.TILES_X - 2);
-      int newY = Util.clamp(myTile.y - (Param.PARTICLE_WANDER_R/2) + Util.R.nextInt(Param.PARTICLE_WANDER_R), 1, Param.TILES_Y - 2);
+      int newX = Util.clamp(myTile.x - (Param.PARTICLE_WANDER_R / 2) + Util.R.nextInt(Param.PARTICLE_WANDER_R), 1, Param.TILES_X - 2);
+      int newY = Util.clamp(myTile.y - (Param.PARTICLE_WANDER_R / 2) + Util.R.nextInt(Param.PARTICLE_WANDER_R), 1, Param.TILES_Y - 2);
       Tile idleWander = null;
       if (Util.inBounds(newX, newY, isIntro)) {
         idleWander = GameState.getInstance().mapPathingDestination(World.getInstance().getTile(newX, newY, isIntro));
@@ -173,8 +177,8 @@ public class Sprite extends Entity {
   }
 
   public void setNudgeDestination(Tile t, Cardinal D) {
-    nudgeDestination.set(t.getX() * Param.SPRITE_SCALE + getWidth()/2, t.getY() * Param.SPRITE_SCALE + getHeight()/2);
-    nudgeDestination.add(D == kSE || D == kNE ? Param.TILE_S : 0, D == kNW || D== kNE ? Param.TILE_S : 0);
+    nudgeDestination.set(t.getX() * Param.SPRITE_SCALE + getWidth() / 2, t.getY() * Param.SPRITE_SCALE + getHeight() / 2);
+    nudgeDestination.add(D == kSE || D == kNE ? Param.TILE_S : 0, D == kNW || D == kNE ? Param.TILE_S : 0);
     if (!isIntro) idleTime = 0;
   }
 
@@ -183,7 +187,7 @@ public class Sprite extends Entity {
     Tile tempTilePtr = World.getInstance().getTile(x, y, isIntroSprite);
     if (tempTilePtr.mySprite != 0) return null; // Building or queue or vegetation
     if (tempTilePtr.getPathFindNeighbours() == null) {
-      Gdx.app.error("tryWanderDest","Tile "+tempTilePtr.coordinates.x+","+tempTilePtr.coordinates.y+" doesn't have p.f. N. Investigate this!");
+      Gdx.app.error("tryWanderDest", "Tile " + tempTilePtr.coordinates.x + "," + tempTilePtr.coordinates.y + " doesn't have p.f. N. Investigate this!");
       return null;
     }
     if (tempTilePtr.getPathFindNeighbours().isEmpty()) return null; // Unpathable
@@ -228,7 +232,7 @@ public class Sprite extends Entity {
         }
       }
     }
-    Gdx.app.error("findPathingLocation","Failed to find anywhere good for " + t.coordinates.toString() + " :(");
+    Gdx.app.error("findPathingLocation", "Failed to find anywhere good for " + t.coordinates.toString() + " :(");
     return null;
   }
 

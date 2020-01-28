@@ -1,8 +1,6 @@
 package timboe.vev.enums;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Texture;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -39,45 +37,67 @@ public enum Particle {
 
   public String getString() {
     switch (this) {
-      case kH: return "Θ";
-      case kW: return "Δ";
-      case kZ: return "Γ";
-      case kE: return "Ψ";
-      case kM: return "Ω";
-      case kQ: return "Σ";
+      case kH:
+        return "Θ";
+      case kW:
+        return "Δ";
+      case kZ:
+        return "Γ";
+      case kE:
+        return "Ψ";
+      case kM:
+        return "Ω";
+      case kQ:
+        return "Σ";
       case kBlank:
-      default: return "?";
+      default:
+        return "?";
     }
   }
 
   public static Particle getParticleFromColour(Colour c) {
     switch (c) {
-      case kBLACK: return kH;
-      case kRED_DARK: return kW;
-      case kGREEN_DARK: return kZ;
-      case kRED: return kE;
-      case kGREEN: return kM;
-      case kBLUE: return kQ;
-      default: return null;
+      case kBLACK:
+        return kH;
+      case kRED_DARK:
+        return kW;
+      case kGREEN_DARK:
+        return kZ;
+      case kRED:
+        return kE;
+      case kGREEN:
+        return kM;
+      case kBLUE:
+        return kQ;
+      default:
+        return null;
     }
   }
 
   public Color getHighlightColour() {
     switch (this) {
-      case kBlank: return Param.PARTICLE_Blank;
-      default: return Textures.getInstance().particleBaseColours.get(this);
+      case kBlank:
+        return Param.PARTICLE_Blank;
+      default:
+        return Textures.getInstance().particleBaseColours.get(this);
     }
   }
 
   // Offset of chevrons so that they don't overlap
   public int getStandingOrderOffset() {
     switch (this) {
-      case kW: return 2;
-      case kZ: return 4;
-      case kE: return 6;
-      case kM: return 8;
-      case kQ: return 10;
-      case kBlank: return 12;
+      case kW:
+        return 2;
+      case kZ:
+        return 4;
+      case kE:
+        return 6;
+      case kM:
+        return 8;
+      case kQ:
+        return 10;
+      case kBlank:
+        return 12;
       case kH:
       default:
         return 0;
@@ -86,27 +106,41 @@ public enum Particle {
 
   public Colour getColourFromParticle() {
     switch (this) {
-      case kH: return Colour.kBLACK;
-      case kW: return Colour.kRED_DARK;
-      case kZ: return Colour.kGREEN_DARK;
-      case kE: return Colour.kRED;
-      case kM: return Colour.kGREEN;
-      case kQ: return Colour.kBLUE;
+      case kH:
+        return Colour.kBLACK;
+      case kW:
+        return Colour.kRED_DARK;
+      case kZ:
+        return Colour.kGREEN_DARK;
+      case kE:
+        return Colour.kRED;
+      case kM:
+        return Colour.kGREEN;
+      case kQ:
+        return Colour.kBLUE;
       case kBlank:
-      default: return null;
+      default:
+        return null;
     }
   }
 
   public int getCreateEnergy() {
     switch (this) {
-      case kH: return 305;
-      case kW: return 105;
-      case kZ: return 115;
-      case kE: return 10;
-      case kM: return 15;
-      case kQ: return 5;
+      case kH:
+        return 305;
+      case kW:
+        return 105;
+      case kZ:
+        return 115;
+      case kE:
+        return 10;
+      case kM:
+        return 15;
+      case kQ:
+        return 5;
       case kBlank:
-      default: return 0;
+      default:
+        return 0;
     }
   }
 
@@ -122,7 +156,8 @@ public enum Particle {
       case kBlank:
       case kE:
       case kM:
-      default: return 1f;
+      default:
+        return 1f;
     }
   }
 
@@ -146,14 +181,21 @@ public enum Particle {
 
   public float getDisassembleTime() {
     switch (this) {
-      case kH: return 1.5f;
-      case kW: return 5.5f;
-      case kZ: return 5.0f;
-      case kE: return .7f;
-      case kM: return 1f;
-      case kQ: return 0.4f;
+      case kH:
+        return 1.5f;
+      case kW:
+        return 5.5f;
+      case kZ:
+        return 5.0f;
+      case kE:
+        return .7f;
+      case kM:
+        return 1f;
+      case kQ:
+        return 0.4f;
       case kBlank:
-      default: return 0;
+      default:
+        return 0;
     }
   }
 

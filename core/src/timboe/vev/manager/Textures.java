@@ -33,7 +33,7 @@ public class Textures {
   private final Color redDark = new Color(72 / 255f, 43 / 255f, 81 / 255f, 1f);
   private final Color redBlack = new Color(39 / 255f, 32 / 255f, 49 / 255f, 1f);
 
-  public final EnumMap<Particle, Color> particleBaseColours = new EnumMap<Particle,Color>(Particle.class);
+  public final EnumMap<Particle, Color> particleBaseColours = new EnumMap<Particle, Color>(Particle.class);
 
   public static Textures getInstance() {
     return ourInstance;
@@ -83,43 +83,43 @@ public class Textures {
     int G = 0;
     int B = 0;
     if (s == 0.f) {
-      R = G = B = (int)(b * 255.f + .5f);
+      R = G = B = (int) (b * 255.f + .5f);
     } else {
-      float hm6h_A = (h - (float)Math.floor((float)h)) * 6f;
-      float hm6h = hm6h_A - (float)Math.floor((float)hm6h_A);
+      float hm6h_A = (h - (float) Math.floor(h)) * 6f;
+      float hm6h = hm6h_A - (float) Math.floor(hm6h_A);
       float bX1ms = b * (1f - s);
       float bX1msXhm6 = b * (1f - s * hm6h);
       float bX1msX1mhm6 = b * (1f - s * (1f - hm6h));
-      switch((int)hm6h_A) {
+      switch ((int) hm6h_A) {
         case 0:
-          R = (int)(b * 255f + .5f);
-          G = (int)(bX1msX1mhm6 * 255f + .5f);
-          B = (int)(bX1ms * 255f + .5f);
+          R = (int) (b * 255f + .5f);
+          G = (int) (bX1msX1mhm6 * 255f + .5f);
+          B = (int) (bX1ms * 255f + .5f);
           break;
         case 1:
-          R = (int)(bX1msXhm6 * 255f + .5f);
-          G = (int)(b * 255f + .5f);
-          B = (int)(bX1ms * 255f + .5f);
+          R = (int) (bX1msXhm6 * 255f + .5f);
+          G = (int) (b * 255f + .5f);
+          B = (int) (bX1ms * 255f + .5f);
           break;
         case 2:
-          R = (int)(bX1ms * 255f + .5f);
-          G = (int)(b * 255f + .5f);
-          B = (int)(bX1msX1mhm6 * 255f + .5f);
+          R = (int) (bX1ms * 255f + .5f);
+          G = (int) (b * 255f + .5f);
+          B = (int) (bX1msX1mhm6 * 255f + .5f);
           break;
         case 3:
-          R = (int)(bX1ms * 255f + .5f);
-          G = (int)(bX1msXhm6 * 255f + .5f);
-          B = (int)(b * 255f + .5f);
+          R = (int) (bX1ms * 255f + .5f);
+          G = (int) (bX1msXhm6 * 255f + .5f);
+          B = (int) (b * 255f + .5f);
           break;
         case 4:
-          R = (int)(bX1msX1mhm6 * 255f + .5f);
-          G = (int)(bX1ms * 255f + .5f);
-          B = (int)(b * 255f + .5f);
+          R = (int) (bX1msX1mhm6 * 255f + .5f);
+          G = (int) (bX1ms * 255f + .5f);
+          B = (int) (b * 255f + .5f);
           break;
         case 5:
-          R = (int)(b * 255f + .5f);
-          G = (int)(bX1ms * 255f + .5f);
-          B = (int)(bX1msXhm6 * 255f + .5f);
+          R = (int) (b * 255f + .5f);
+          G = (int) (bX1ms * 255f + .5f);
+          B = (int) (bX1msXhm6 * 255f + .5f);
       }
     }
 
@@ -187,9 +187,9 @@ public class Textures {
     TextureRegion r = new TextureRegion(atlas.findRegion("ball_r"));
     Pixmap pixmap = new Pixmap(r.getRegionWidth(), r.getRegionHeight(), Pixmap.Format.RGBA8888);
     pixmap.drawPixmap(fullMap, 0, 0, r.getRegionX(), r.getRegionY(), r.getRegionWidth(), r.getRegionHeight());
-    colourReplace(pixmap, redHighlight, new Color(192/255f, 192/255f, 192/255f, 1f));
-    colourReplace(pixmap, redTexture, new Color(128/255f, 128/255f, 128/255f, 1f));
-    colourReplace(pixmap, redOutline, new Color(64/255f, 64/255f, 64/255f, 1f));
+    colourReplace(pixmap, redHighlight, new Color(192 / 255f, 192 / 255f, 192 / 255f, 1f));
+    colourReplace(pixmap, redTexture, new Color(128 / 255f, 128 / 255f, 128 / 255f, 1f));
+    colourReplace(pixmap, redOutline, new Color(64 / 255f, 64 / 255f, 64 / 255f, 1f));
     Texture newTex = new Texture(pixmap);
     TextureRegion newTexRegion = new TextureRegion(newTex);
     retexturedMap.put("ball_grey", newTexRegion);
@@ -210,18 +210,18 @@ public class Textures {
   }
 
   private int[] getColorFromHex(Color c) {
-    int colourInt[] = {(int)(255 * c.r), (int)(255 * c.g), (int)(255 * c.b)};
+    int[] colourInt = {(int) (255 * c.r), (int) (255 * c.g), (int) (255 * c.b)};
     return colourInt;
   }
 
   private void colourReplace(Pixmap pixmap, Color from, Color to) {
     pixmap.setColor(to);
     Color color = new Color();
-    int fromInt[] = getColorFromHex(from);
+    int[] fromInt = getColorFromHex(from);
     for (int y = 0; y < pixmap.getHeight(); y++) {
       for (int x = 0; x < pixmap.getWidth(); x++) {
         Color.rgba8888ToColor(color, pixmap.getPixel(x, y));
-        int colorInt[] = getColorFromHex(color);
+        int[] colorInt = getColorFromHex(color);
         if (fromInt[0] == colorInt[0] && fromInt[1] == colorInt[1] && fromInt[2] == colorInt[2]) {
           pixmap.fillRectangle(x, y, 1, 1);
         }

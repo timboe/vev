@@ -4,7 +4,6 @@ import com.badlogic.gdx.Gdx;
 import com.google.gwt.thirdparty.json.JSONException;
 import com.google.gwt.thirdparty.json.JSONObject;
 
-import java.io.Serializable;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -113,7 +112,7 @@ public class OrderlyQueue {
   public void moveAlongMoveAlong() {
     // Now try and move everyone along
     for (int i = 0; i < queue.size(); ++i) {
-      final Tile tile = tileFromCoordinate( queue.get(i) );
+      final Tile tile = tileFromCoordinate(queue.get(i));
       Sprite toRemove = null;
       assert tile != null;
       for (int id : tile.containedSprites) {
@@ -127,25 +126,27 @@ public class OrderlyQueue {
             // Is the sprite *actually here*
             Building b = getMyBuilding();
             if (b.spriteProcessing == 0 && s.nudgeDestination.isZero()) { // Arrived
-              if (toRemove != null) Gdx.app.error("moveAlongMoveAlong", "should only ever be one toRemove");
+              if (toRemove != null)
+                Gdx.app.error("moveAlongMoveAlong", "should only ever be one toRemove");
               // Goodby - this particle is now DEAD
               toRemove = s; // from its tile
               b.processSprite(s);
             }
           } else { // Not the final tile.
             // Is the entrance of the next tile free?
-            Tile nextTile = tileFromCoordinate( queue.get(i - 1) );
-            Cardinal nextTileEntrance = nextTile.queueExit.next90( nextTile.queueClockwise );
+            Tile nextTile = tileFromCoordinate(queue.get(i - 1));
+            Cardinal nextTileEntrance = nextTile.queueExit.next90(nextTile.queueClockwise);
             if (!nextTile.parkingSpaces.containsValue(nextTileEntrance)) {
               // Move me to here
-              if (toRemove != null) Gdx.app.error("moveAlongMoveAlong", "should only ever be one toRemove");
+              if (toRemove != null)
+                Gdx.app.error("moveAlongMoveAlong", "should only ever be one toRemove");
               toRemove = s;
               // Move on to next tile
               nextTile.parkSprite(s, nextTileEntrance);
             }
           }
         } else { // This is *NOT* the final space on this tile, can we move on?
-          Cardinal nextParking = parking.next90( tile.queueClockwise );
+          Cardinal nextParking = parking.next90(tile.queueClockwise);
           if (!tile.parkingSpaces.containsValue(nextParking)) {
             // Move me to here
             tile.parkSprite(s, nextParking);
@@ -162,11 +163,11 @@ public class OrderlyQueue {
     // Back iterate over the queue
     Tile previousT = null;
     Cardinal previousD = null;
-    ListIterator<IVector2> liTile = queue.listIterator( queue.size() );
+    ListIterator<IVector2> liTile = queue.listIterator(queue.size());
 
-    while(liTile.hasPrevious()) {
-      final Tile t = tileFromCoordinate( liTile.previous() );
-      final Cardinal queueStart = t.queueExit.next90( t.queueClockwise );
+    while (liTile.hasPrevious()) {
+      final Tile t = tileFromCoordinate(liTile.previous());
+      final Cardinal queueStart = t.queueExit.next90(t.queueClockwise);
       Cardinal D = queueStart;
       do {
         if (t.parkingSpaces.containsValue(D)) { // Someone is here - go for the previous place
@@ -176,14 +177,14 @@ public class OrderlyQueue {
           previousT = t;
           previousD = D;
         }
-        D = D.next90( t.queueClockwise ); // Not as we are reverse iterating
+        D = D.next90(t.queueClockwise); // Not as we are reverse iterating
       } while (D != queueStart);
     }
 
     // Check final slot
-    Tile queueFinal = tileFromCoordinate( queue.get(0) );
+    Tile queueFinal = tileFromCoordinate(queue.get(0));
     if (!queueFinal.parkingSpaces.containsValue(queueFinal.queueExit)) {
-      return new Pair<Tile,Cardinal>(queueFinal, queueFinal.queueExit);
+      return new Pair<Tile, Cardinal>(queueFinal, queueFinal.queueExit);
     }
 
     // If we made it to the end - we can also place in the first slot
@@ -191,10 +192,10 @@ public class OrderlyQueue {
     return null;
   }
 
-    // Moves on any sprites under the queue
+  // Moves on any sprites under the queue
   public void moveOn() {
     for (IVector2 v : queue) {
-      tileFromCoordinate( v ).moveOnSprites();
+      tileFromCoordinate(v).moveOnSprites();
     }
   }
 
@@ -203,22 +204,27 @@ public class OrderlyQueue {
     for (IVector2 v : queue) {
       Tile t = tileFromCoordinate(v);
       for (Cardinal D : Cardinal.n8) {
-        World.getInstance().updateTilePathfinding( t.n8.get(D));
+        World.getInstance().updateTilePathfinding(t.n8.get(D));
       }
     }
   }
 
   public static void hintQueue(final Tile start) {
     switch (GameState.getInstance().queueType) {
-      case kSIMPLE: hintSimpleQueue(start); break;
-      case kSPIRAL: hintSpiralQueue(start); break;
-      default: Gdx.app.error("hintQueue","Unknown - " + GameState.getInstance().queueType);
+      case kSIMPLE:
+        hintSimpleQueue(start);
+        break;
+      case kSPIRAL:
+        hintSpiralQueue(start);
+        break;
+      default:
+        Gdx.app.error("hintQueue", "Unknown - " + GameState.getInstance().queueType);
     }
   }
 
   private static void hintSpiralQueue(final Tile start) {
     Tile t = start;
-    int step = 0, move = 3, toAdd =3;
+    int step = 0, move = 3, toAdd = 3;
     boolean inc = true;
     Cardinal D = Cardinal.kE;
     while (step++ < GameState.getInstance().queueSize) {
@@ -239,8 +245,8 @@ public class OrderlyQueue {
     Cardinal D = Cardinal.kE;
     World w = World.getInstance();
     while (step++ < GameState.getInstance().queueSize) {
-      if (!Util.inBounds(x,y,false) || !w.getTile(x,y,false).buildable()) return;
-      w.getTile(x,y,false).setHighlightColour(Param.HIGHLIGHT_YELLOW, D);
+      if (!Util.inBounds(x, y, false) || !w.getTile(x, y, false).buildable()) return;
+      w.getTile(x, y, false).setHighlightColour(Param.HIGHLIGHT_YELLOW, D);
       if (Math.abs(move) > 1) {
         x += 1 * Math.signum(move);
         move -= 1 * Math.signum(move);
@@ -255,16 +261,21 @@ public class OrderlyQueue {
 
   private void doQueue(int xStart, int yStart) {
     switch (GameState.getInstance().queueType) {
-      case kSIMPLE: doSimpleQueue(xStart, yStart); break;
-      case kSPIRAL: doSpiralQueue(xStart, yStart); break;
-      default: Gdx.app.error("hintQueue","Unknown - " + GameState.getInstance().queueType);
+      case kSIMPLE:
+        doSimpleQueue(xStart, yStart);
+        break;
+      case kSPIRAL:
+        doSpiralQueue(xStart, yStart);
+        break;
+      default:
+        Gdx.app.error("hintQueue", "Unknown - " + GameState.getInstance().queueType);
     }
-    tileFromCoordinate( queue.get( queue.size()-1 )).type = TileType.kGROUND; // Re-set to ground to make path-able
+    tileFromCoordinate(queue.get(queue.size() - 1)).type = TileType.kGROUND; // Re-set to ground to make path-able
   }
 
   private void doSpiralQueue(int xStart, int yStart) {
     Tile t = World.getInstance().getTile(xStart, yStart, isIntro);
-    int step = 0, move = 3, toAdd =3;
+    int step = 0, move = 3, toAdd = 3;
     boolean inc = true;
     Cardinal D = Cardinal.kE, previousD = Cardinal.kN;
     while (step++ < GameState.getInstance().queueSize) {
@@ -310,7 +321,7 @@ public class OrderlyQueue {
       Tile t = w.getTile(x, y, isIntro);
       if (!t.buildable()) break;
       t.setQueue(v.get(element).getKey(), v.get(element).getValue(), myBuilding, D, isClockwise);
-      queue.add( w.getTile(x, y, isIntro).coordinates );
+      queue.add(w.getTile(x, y, isIntro).coordinates);
       if (++element == v.size()) element = 0;
       if (Math.abs(move) > 1) {
         x += 1 * Math.signum(move);
@@ -324,23 +335,22 @@ public class OrderlyQueue {
 
   // TODO figure out the pattern!
   private boolean getQueueClockwise(Cardinal from, Cardinal to) {
-    if      (from == Cardinal.kE && to == Cardinal.kN) return true;
-    // E -> S false
-    // E -> W false
+    if (from == Cardinal.kE && to == Cardinal.kN) return true;
+      // E -> S false
+      // E -> W false
 
     else if (from == Cardinal.kW && to == Cardinal.kS) return true;
-    // W -> N fase
-    // W -> E false
+      // W -> N fase
+      // W -> E false
 
     else if (from == Cardinal.kS && to == Cardinal.kE) return true;
-    // S -> W false
+      // S -> W false
     else if (from == Cardinal.kS && to == Cardinal.kN) return true;
 
     else if (from == Cardinal.kN && to == Cardinal.kW) return true;
-    // N -> E false
-    else if (from == Cardinal.kN && to == Cardinal.kS) return true;
+      // N -> E false
+    else return from == Cardinal.kN && to == Cardinal.kS;
 
-    return false;
   }
 
   private Cardinal getExitLocation(Cardinal to) {

@@ -9,7 +9,7 @@ import timboe.vev.manager.Sounds;
 public class ButtonHover extends FocusListener {
   @Override
   public boolean handle(Event event) {
-    Button b = (Button)event.getListenerActor();
+    Button b = (Button) event.getListenerActor();
     if (!b.isDisabled() && event.getListenerActor() == event.getTarget() && event.toString().equals("enter")) {
       Sounds.getInstance().click();
     }

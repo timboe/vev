@@ -10,7 +10,6 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.google.gwt.thirdparty.json.JSONException;
 import com.google.gwt.thirdparty.json.JSONObject;
 
-import java.security.Key;
 import java.util.Random;
 
 import timboe.vev.Param;
@@ -65,22 +64,22 @@ public class Camera {
 
   public JSONObject serialise() throws JSONException {
     JSONObject json = new JSONObject();
-    json.put("desiredPos.x",desiredPos.x);
-    json.put("desiredPos.y",desiredPos.y);
-    json.put("desiredZoom",desiredZoom);
+    json.put("desiredPos.x", desiredPos.x);
+    json.put("desiredPos.y", desiredPos.y);
+    json.put("desiredZoom", desiredZoom);
     return json;
   }
 
   public void deserialise(JSONObject json) throws JSONException {
-    desiredPos.set((float)json.getDouble("desiredPos.x"), (float)json.getDouble("desiredPos.y"));
-    desiredZoom = (float)json.getDouble("desiredZoom");
+    desiredPos.set((float) json.getDouble("desiredPos.x"), (float) json.getDouble("desiredPos.y"));
+    desiredZoom = (float) json.getDouble("desiredZoom");
     currentPos.set(desiredPos);
     currentZoom = desiredZoom;
   }
 
   public void setCurrentPos(float x, float y) {
-    this.currentPos.set(x,y);
-    this.desiredPos.set(x,y);
+    this.currentPos.set(x, y);
+    this.desiredPos.set(x, y);
   }
 
   public void setHelpPos(int level, boolean instant) {
@@ -88,7 +87,7 @@ public class Camera {
             (Param.TILES_INTRO_Y_MID * Param.TILE_S) - (level * Param.DISPLAY_Y * Param.TILES_INTRO_ZOOM)); // TODO another magic number to deduce :(
     setCurrentZoom(Param.TILES_INTRO_ZOOM);
     if (instant) {
-      this.currentPos.set( this.desiredPos );
+      this.currentPos.set(this.desiredPos);
     }
   }
 
@@ -150,7 +149,7 @@ public class Camera {
   }
 
   public float distanceToCamera(int x, int y) {
-    return (float)Math.hypot(x - currentPos.x, y - currentPos.y);
+    return (float) Math.hypot(x - currentPos.x, y - currentPos.y);
   }
 
   public boolean onScreen(Sprite s) {
@@ -194,7 +193,7 @@ public class Camera {
 
     if (Gdx.input.isKeyJustPressed(Input.Keys.F1)) {
       cheats = !cheats;
-      Gdx.app.log("pollInputs","Cheats:"+cheats);
+      Gdx.app.log("pollInputs", "Cheats:" + cheats);
     }
 
     if (cheats) {
@@ -242,8 +241,8 @@ public class Camera {
   }
 
   public void translate(float x, float y) {
-    final float xMod = (float)Param.DISPLAY_X / (float)getUiViewport().getScreenWidth();
-    final float yMod = (float)Param.DISPLAY_Y / (float)getUiViewport().getScreenHeight();
+    final float xMod = (float) Param.DISPLAY_X / (float) getUiViewport().getScreenWidth();
+    final float yMod = (float) Param.DISPLAY_Y / (float) getUiViewport().getScreenHeight();
     desiredPos.add(xMod * x * currentZoom, yMod * y * currentZoom);
   }
 
@@ -256,15 +255,15 @@ public class Camera {
     this.velocity.y += y;
   }
 
-  public void modZoom(float z){
+  public void modZoom(float z) {
     setZoom(desiredZoom + z);
   }
 
   public void setZoom(float z) {
     desiredZoom = z;
     desiredZoom = Util.clamp(desiredZoom, Param.ZOOM_MIN, Param.ZOOM_MAX);
-    float sfx = Util.clamp( 1f / (desiredZoom + 0.75f), 0.2f, 1f);
-    Sounds.getInstance().sfxLevel( sfx );
+    float sfx = Util.clamp(1f / (desiredZoom + 0.75f), 0.2f, 1f);
+    Sounds.getInstance().sfxLevel(sfx);
   }
 
   public float getZoom() {
@@ -276,12 +275,12 @@ public class Camera {
     pollInputs();
 
     float frames = delta / Param.FRAME_TIME;
-    final float scale = (float)Math.pow(0.9f, frames);
+    final float scale = (float) Math.pow(0.9f, frames);
 
     desiredPos.add(velocity);
     velocity.scl(scale);
 
-    shake *= (float)Math.pow(0.9f, frames);
+    shake *= (float) Math.pow(0.9f, frames);
     float shakeAngle = R.nextFloat() * (float) Math.PI * 2f;
 
     if (StateManager.getInstance().fsm == FSM.kINTRO) {
@@ -291,13 +290,15 @@ public class Camera {
       currentPos.set(desiredPos); // Direct control in-game
     }
 
-    if (desiredPos.x - Param.DISPLAY_X/2 < -1000) modVelocity(10,0);
-    else if (desiredPos.x - Param.DISPLAY_X/2 > (Param.TILES_X * Param.TILE_S) + 1000) modVelocity(-10,0);
+    if (desiredPos.x - Param.DISPLAY_X / 2 < -1000) modVelocity(10, 0);
+    else if (desiredPos.x - Param.DISPLAY_X / 2 > (Param.TILES_X * Param.TILE_S) + 1000)
+      modVelocity(-10, 0);
 
-    if (desiredPos.y + Param.DISPLAY_Y/2 < -1000) modVelocity(0,10);
-    else if (desiredPos.y + Param.DISPLAY_Y/2 > (Param.TILES_Y * Param.TILE_S) + 1000) modVelocity(0,-10);
+    if (desiredPos.y + Param.DISPLAY_Y / 2 < -1000) modVelocity(0, 10);
+    else if (desiredPos.y + Param.DISPLAY_Y / 2 > (Param.TILES_Y * Param.TILE_S) + 1000)
+      modVelocity(0, -10);
 
-    currentPos.add(shake * (float)Math.cos(shakeAngle), shake * (float)Math.sin(shakeAngle));
+    currentPos.add(shake * (float) Math.cos(shakeAngle), shake * (float) Math.sin(shakeAngle));
     currentZoom += (desiredZoom - currentZoom) * 0.1f;
 
     tileCamera.position.set(currentPos, 0);
@@ -306,26 +307,26 @@ public class Camera {
 
     spriteCamera.position.set(currentPos, 0);
     spriteCamera.zoom = currentZoom;
-    spriteCamera.zoom *= (float)Param.SPRITE_SCALE;
-    spriteCamera.position.scl((float)Param.SPRITE_SCALE);
+    spriteCamera.zoom *= (float) Param.SPRITE_SCALE;
+    spriteCamera.position.scl((float) Param.SPRITE_SCALE);
     spriteCamera.update();
 
-    uiCamera.position.set(uiViewport.getWorldWidth()/2, uiViewport.getWorldHeight()/2, 0f);
+    uiCamera.position.set(uiViewport.getWorldWidth() / 2, uiViewport.getWorldHeight() / 2, 0f);
     // Note - sin & cos are inverted for the UI vs. the game world
-    uiCamera.position.add(shake * (float)Math.sin(shakeAngle) / currentZoom , shake * (float)Math.cos(shakeAngle) / currentZoom, 0);
+    uiCamera.position.add(shake * (float) Math.sin(shakeAngle) / currentZoom, shake * (float) Math.cos(shakeAngle) / currentZoom, 0);
     uiCamera.update();
 
     cullBoxTile.set(
-        tileCamera.position.x - (tileViewport.getWorldWidth()/2) * currentZoom,
-        tileCamera.position.y - (tileViewport.getWorldHeight()/2) * currentZoom,
-        tileViewport.getWorldWidth() * currentZoom,
-        tileViewport.getWorldHeight() * currentZoom);
+            tileCamera.position.x - (tileViewport.getWorldWidth() / 2) * currentZoom,
+            tileCamera.position.y - (tileViewport.getWorldHeight() / 2) * currentZoom,
+            tileViewport.getWorldWidth() * currentZoom,
+            tileViewport.getWorldHeight() * currentZoom);
 
     cullBoxSprite.set(
-        spriteCamera.position.x - (Param.SPRITE_SCALE*spriteViewport.getWorldWidth()/2) * currentZoom,
-        spriteCamera.position.y - (Param.SPRITE_SCALE*spriteViewport.getWorldHeight()/2) * currentZoom,
-        Param.SPRITE_SCALE * spriteViewport.getWorldWidth() * currentZoom,
-        Param.SPRITE_SCALE * spriteViewport.getWorldHeight() * currentZoom);
+            spriteCamera.position.x - (Param.SPRITE_SCALE * spriteViewport.getWorldWidth() / 2) * currentZoom,
+            spriteCamera.position.y - (Param.SPRITE_SCALE * spriteViewport.getWorldHeight() / 2) * currentZoom,
+            Param.SPRITE_SCALE * spriteViewport.getWorldWidth() * currentZoom,
+            Param.SPRITE_SCALE * spriteViewport.getWorldHeight() * currentZoom);
   }
 
 }

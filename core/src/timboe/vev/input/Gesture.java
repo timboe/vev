@@ -20,7 +20,7 @@ public class Gesture implements GestureDetector.GestureListener {
   @Override
   public boolean touchDown(float x, float y, int pointer, int button) {
     if (button == Input.Buttons.LEFT && UI.getInstance().uiMode != UIMode.kSETTINGS) { // Start a SELECT action
-     setStartEnd(x,y);
+      setStartEnd(x, y);
     }
     return false;
   }
@@ -72,7 +72,7 @@ public class Gesture implements GestureDetector.GestureListener {
   public boolean longPress(float x, float y) {
     if (Param.IS_ANDROID && UI.getInstance().uiMode != UIMode.kSETTINGS && !Gdx.input.isButtonPressed(Input.Buttons.RIGHT)) {
       GameState.getInstance().startSelectingAndroid();
-      setStartEnd(x,y);
+      setStartEnd(x, y);
     }
     return false;
   }
@@ -93,7 +93,7 @@ public class Gesture implements GestureDetector.GestureListener {
       Camera.getInstance().translate(-deltaX, deltaY);
     }
     if (Gdx.input.isButtonPressed(Input.Buttons.LEFT) && UI.getInstance().uiMode != UIMode.kSETTINGS) { // Select box
-      GameState.getInstance().selectEndWorld.set(x,y,0);
+      GameState.getInstance().selectEndWorld.set(x, y, 0);
       GameState.getInstance().selectEndWorld = Camera.getInstance().unproject(GameState.getInstance().selectEndWorld);
     }
     return false;
@@ -106,7 +106,7 @@ public class Gesture implements GestureDetector.GestureListener {
 
   @Override
   public boolean zoom(float initialDistance, float distance) {
-    float fraction = initialDistance/distance;
+    float fraction = initialDistance / distance;
     Camera.getInstance().setZoom(fraction * initialZoom);
     return false;
   }

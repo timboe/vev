@@ -38,17 +38,34 @@ public enum Cardinal {
 
   public void modVec(IVector2 v) {
     switch (this) {
-      case kN: case kNE: case kNW: ++v.x; break;
-      case kS: case kSE: case kSW: --v.x; break;
+      case kN:
+      case kNE:
+      case kNW:
+        ++v.x;
+        break;
+      case kS:
+      case kSE:
+      case kSW:
+        --v.x;
+        break;
     }
     switch (this) {
-      case kE: case kNE: case kSE: ++v.y; break;
-      case kW: case kNW: case kSW: --v.y; break;
+      case kE:
+      case kNE:
+      case kSE:
+        ++v.y;
+        break;
+      case kW:
+      case kNW:
+      case kSW:
+        --v.y;
+        break;
     }
   }
 
   public Cardinal next90(boolean clockwise) {
-    if (this == kNONE) Gdx.app.error("Cardinal", "Called next90(clockwise="+clockwise+") on "+kNONE.getString());
+    if (this == kNONE)
+      Gdx.app.error("Cardinal", "Called next90(clockwise=" + clockwise + ") on " + kNONE.getString());
     if (clockwise) {
       if (this == kW) return kN;
       if (this == kNW) return kNE;
@@ -61,7 +78,8 @@ public enum Cardinal {
   }
 
   public Cardinal next45(boolean clockwise) {
-    if (this == kNONE) Gdx.app.error("Cardinal", "Called next45(clockwise="+clockwise+") on "+kNONE.getString());
+    if (this == kNONE)
+      Gdx.app.error("Cardinal", "Called next45(clockwise=" + clockwise + ") on " + kNONE.getString());
     if (clockwise) {
       if (this == kNW) return kN;
       return values()[ordinal() + 1];
@@ -73,17 +91,26 @@ public enum Cardinal {
 
   public String getString() {
     switch (this) {
-      case kN: return "N";
-      case kNE: return "NE";
-      case kE: return "E";
-      case kSE: return "SE";
-      case kS: return  "S";
-      case kSW: return "SW";
-      case kW: return "W";
-      case kNW: return "NW";
-      case kNONE: return "NONE";
+      case kN:
+        return "N";
+      case kNE:
+        return "NE";
+      case kE:
+        return "E";
+      case kSE:
+        return "SE";
+      case kS:
+        return "S";
+      case kSW:
+        return "SW";
+      case kW:
+        return "W";
+      case kNW:
+        return "NW";
+      case kNONE:
+        return "NONE";
       default:
-        Gdx.app.error("getString","Unknown Cardinal");
+        Gdx.app.error("getString", "Unknown Cardinal");
         return "";
     }
   }

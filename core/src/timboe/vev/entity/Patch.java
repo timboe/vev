@@ -39,7 +39,7 @@ public class Patch extends Entity {
     JSONObject jsonContained = json.getJSONObject("contained");
     Iterator it = jsonContained.keys();
     while (it.hasNext()) {
-      contained.add( jsonContained.getInt((String) it.next()) );
+      contained.add(jsonContained.getInt((String) it.next()));
     }
   }
 
@@ -63,7 +63,7 @@ public class Patch extends Entity {
     if (contained.size() == 0) {
       return 0;
     }
-    int index = Util.R.nextInt( remaining() );
+    int index = Util.R.nextInt(remaining());
     int id = contained.elementAt(index);
     contained.remove(index); // From patch's shards
     Sprite t = World.getInstance().tiberiumShards.remove(id); // From global list of shards
@@ -76,6 +76,6 @@ public class Patch extends Entity {
   }
 
   public Patch(int x, int y) {
-    super(x,y);
+    super(x, y);
   }
 }

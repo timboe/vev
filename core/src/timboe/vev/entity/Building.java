@@ -109,14 +109,14 @@ public class Building extends Entity {
     //
     JSONObject jsonHolding = json.getJSONObject("holdingPen");
     for (Particle p : Particle.values()) {
-      int n = jsonHolding.getInt( p.name() );
+      int n = jsonHolding.getInt(p.name());
       this.holdingPen.put(p, n);
     }
     //
     JSONObject extra = json.getJSONObject("childElements");
     Iterator extraIt = extra.keys();
     while (extraIt.hasNext()) {
-      this.childElements.add( extra.getInt((String) extraIt.next()) );
+      this.childElements.add(extra.getInt((String) extraIt.next()));
     }
     //
     this.spriteProcessing = json.getInt("spriteProcessing");
@@ -135,17 +135,17 @@ public class Building extends Entity {
     if (json.get("myQueue") == JSONObject.NULL) {
       this.myQueue = null;
     } else {
-      this.myQueue = new OrderlyQueue( json.getJSONObject("myQueue") );
+      this.myQueue = new OrderlyQueue(json.getJSONObject("myQueue"));
     }
-    this.centre = new IVector2( json.getJSONObject("centre") );
-    this.type = BuildingType.valueOf( json.getString("type") );
+    this.centre = new IVector2(json.getJSONObject("centre"));
+    this.type = BuildingType.valueOf(json.getString("type"));
     if (this.type != BuildingType.kWARP) doRepath();
     // Warp calls repath after having unpacked its pathing start data
   }
 
   public Building(Tile t, BuildingType type) {
-    super(t.coordinates.x - (type == BuildingType.kWARP ? (Param.WARP_SIZE/2) - 2 : 1),
-          t.coordinates.y - (type == BuildingType.kWARP ? (Param.WARP_SIZE/2) - 2 : 1));
+    super(t.coordinates.x - (type == BuildingType.kWARP ? (Param.WARP_SIZE / 2) - 2 : 1),
+            t.coordinates.y - (type == BuildingType.kWARP ? (Param.WARP_SIZE / 2) - 2 : 1));
     buildingPathingLists = new EnumMap<Particle, List<IVector2>>(Particle.class);
     this.refund = 0;
     this.type = type;
@@ -181,7 +181,7 @@ public class Building extends Entity {
   public void deconstruct() {
     Sounds.getInstance().demolish();
     finishProcessingParticle();
-    Tile t = World.getInstance().getTile( coordinates.x + 1, coordinates.y + 1, isIntro); // Assuming 3x3
+    Tile t = World.getInstance().getTile(coordinates.x + 1, coordinates.y + 1, isIntro); // Assuming 3x3
     t.removeBuilding();
     for (Cardinal D : Cardinal.n8) {
       t.n8.get(D).removeBuilding();
@@ -201,7 +201,7 @@ public class Building extends Entity {
   }
 
   public void addCost(int cost) {
-    this.refund += Math.round( Param.BUILDING_REFUND_AMOUND * cost );
+    this.refund += Math.round(Param.BUILDING_REFUND_AMOUND * cost);
   }
 
   public void updateMyPatch() {
@@ -210,7 +210,7 @@ public class Building extends Entity {
       if (p.remaining() == 0) {
         continue;
       }
-      if ( patch == null || p.coordinates.dst(coordinates) < patch.coordinates.dst(coordinates)) {
+      if (patch == null || p.coordinates.dst(coordinates) < patch.coordinates.dst(coordinates)) {
         patch = p;
       }
     }
@@ -222,8 +222,8 @@ public class Building extends Entity {
     this.myPatch = patch.id;
     // kBLank pathing is used for the truck
     Tile tibTile = World.getInstance().getTile(
-        patch.coordinates.x + (-Param.WARP_SIZE/2) + Util.R.nextInt( Param.WARP_SIZE ),
-        patch.coordinates.y + (-Param.WARP_SIZE/2) + Util.R.nextInt( Param.WARP_SIZE ),
+            patch.coordinates.x + (-Param.WARP_SIZE / 2) + Util.R.nextInt(Param.WARP_SIZE),
+            patch.coordinates.y + (-Param.WARP_SIZE / 2) + Util.R.nextInt(Param.WARP_SIZE),
             isIntro);
     Tile tibGoal = Sprite.findPathingLocation(tibTile, true, false, false, false);
     updateDemoPathingList(Particle.kBlank, tibGoal);
@@ -263,8 +263,8 @@ public class Building extends Entity {
 
   private float getDisassembleTime(Particle p) {
     return p.getDisassembleTime()
-        * getUpgradeFactor(buildingLevel)
-        * type.getDisassembleMod(p);
+            * getUpgradeFactor(buildingLevel)
+            * type.getDisassembleMod(p);
   }
 
   public float getDisassembleTime(int mode) {
@@ -300,7 +300,7 @@ public class Building extends Entity {
   }
 
   public float getUpgradeFactor(int level) {
-    return (float)Math.pow(Param.BUILDING_DISASSEMBLE_BONUS, level);
+    return (float) Math.pow(Param.BUILDING_DISASSEMBLE_BONUS, level);
   }
 
   public float getAverageNextUpgradeFactor() {
@@ -320,11 +320,11 @@ public class Building extends Entity {
       return (bonus / nTruck);
     }
     // Else
-    return 1f/(float)Math.pow(Param.BUILDING_DISASSEMBLE_BONUS, buildingLevel + 1);
+    return 1f / (float) Math.pow(Param.BUILDING_DISASSEMBLE_BONUS, buildingLevel + 1);
   }
 
   public void updatePathingStartPoint() {
-    Tile queueStart = myQueue != null ? tileFromCoordinate( myQueue.getQueuePathingTarget() ) : getCentreTile();
+    Tile queueStart = myQueue != null ? tileFromCoordinate(myQueue.getQueuePathingTarget()) : getCentreTile();
     // TODO graphically, appears to be starting from within the queue?
     Tile pathingStartPointTile = Sprite.findPathingLocation(queueStart, true, false, false, false); //reproducible=True, requireParking=False
     if (pathingStartPointTile == null) {
@@ -341,7 +341,7 @@ public class Building extends Entity {
     }
     for (Particle p : Particle.values()) {
       if (getBuildingPathingList(p) != null) {
-        buildingPathingLists.put(p, PathFinding.doAStar(getPathingStartPoint(p), getBuildingDestination(p).coordinates, null, null, GameState.getInstance().pathingCache) );
+        buildingPathingLists.put(p, PathFinding.doAStar(getPathingStartPoint(p), getBuildingDestination(p).coordinates, null, null, GameState.getInstance().pathingCache));
       }
     }
   }
@@ -363,14 +363,14 @@ public class Building extends Entity {
 
   public boolean savePathingList() {
     if (pathingParticle == null) {
-      Gdx.app.log("savePathingList","Called with pathingParticle = null. Maybe OK was chosen with no pathing list in progress?");
+      Gdx.app.log("savePathingList", "Called with pathingParticle = null. Maybe OK was chosen with no pathing list in progress?");
       return false;
     }
     if (pathingList == null) {
-      Gdx.app.error("savePathingList","Called with pathingList = null?!");
+      Gdx.app.error("savePathingList", "Called with pathingList = null?!");
       return false;
     }
-    Gdx.app.log("savePathingList","Set pathing " + pathingParticle + " to " + pathingList.get(0).toString());
+    Gdx.app.log("savePathingList", "Set pathing " + pathingParticle + " to " + pathingList.get(0).toString());
     buildingPathingLists.put(pathingParticle, pathingList);
     pathingList = null;
     pathingParticle = null;
@@ -393,8 +393,8 @@ public class Building extends Entity {
   }
 
   public Tile getQueuePathingTarget() {
-    if (myQueue != null) return tileFromCoordinate( myQueue.getQueuePathingTarget() );
-    return tileFromCoordinate( getPathingStartPoint(null) );
+    if (myQueue != null) return tileFromCoordinate(myQueue.getQueuePathingTarget());
+    return tileFromCoordinate(getPathingStartPoint(null));
   }
 
   private Tile tileFromCoordinate(IVector2 v) {
@@ -428,7 +428,7 @@ public class Building extends Entity {
   private void addTruck() {
     // This can be NULL as WARP will never call this
     Truck t = new Truck(tileFromCoordinate(getPathingStartPoint(null)), this);
-    t.setParticle( Particle.kBlank ); // This is so that Sprite::doMove does not crash
+    t.setParticle(Particle.kBlank); // This is so that Sprite::doMove does not crash
     GameState.getInstance().getSpriteStage().addActor(t);
     GameState.getInstance().getTrucksMap().put(t.id, t);
   }
@@ -437,15 +437,15 @@ public class Building extends Entity {
     timeBuild += delta;
     if (timeBuild < Param.BUILD_TIME) return;
     timeBuild -= Param.BUILD_TIME;
-    if (--built == 0)  {
+    if (--built == 0) {
       Tile t = getCentreTile();
-      GameState.getInstance().dustEffect( t );
-      for (Cardinal D : Cardinal.n8) GameState.getInstance().dustEffect( t.n8.get(D) );
+      GameState.getInstance().dustEffect(t);
+      for (Cardinal D : Cardinal.n8) GameState.getInstance().dustEffect(t.n8.get(D));
       updateBuildingTexture = true;
       // Introduce a small delay to let the cloud get into place
     }
     if (myQueue != null) {
-      Tile t = tileFromCoordinate( myQueue.getQueue().get(built) );
+      Tile t = tileFromCoordinate(myQueue.getQueue().get(built));
       t.setQueueTexture();
       GameState.getInstance().dustEffect(t);
       if (Camera.getInstance().onScreen(t)) Sounds.getInstance().foot();
@@ -461,7 +461,7 @@ public class Building extends Entity {
       GameState.getInstance().addBuildingExtraEntity(banner);
       childElements.add(banner.id);
       for (int i = 0; i < BuildingType.N_MODES; ++i) {
-        Entity p = new Entity(Param.SPRITE_SCALE*(coordinates.x), Param.SPRITE_SCALE*(coordinates.y + 1));
+        Entity p = new Entity(Param.SPRITE_SCALE * (coordinates.x), Param.SPRITE_SCALE * (coordinates.y + 1));
         p.moveBy(73, -5 + (20 * i)); // Fine tune-position of
         Particle input = type.getInput(BuildingType.N_MODES - i - 1);
         assert input != null;
@@ -497,7 +497,8 @@ public class Building extends Entity {
 
     // Upgrade. No spawning, no moving along (i.e. spriteProcessing will remain null until this ends)
     if (doUpgrade && spriteProcessing == 0) {
-      if (isSelected()) UI.getInstance().buildingSelectProgress.get(type).setValue(timeUpgrade / getUpgradeTime());
+      if (isSelected())
+        UI.getInstance().buildingSelectProgress.get(type).setValue(timeUpgrade / getUpgradeTime());
       timeUpgrade -= delta;
       if (timeUpgrade > 0) return;
       ++buildingLevel;
@@ -511,13 +512,13 @@ public class Building extends Entity {
 
       doUpgrade = false;
       clockVisible = false;
-      GameState.getInstance().getBuildingExtrasMap().get( clock ).setVisible(false); // clock
+      GameState.getInstance().getBuildingExtrasMap().get(clock).setVisible(false); // clock
       Sounds.getInstance().star();
       Tile t = getCentreTile();
       for (Cardinal D : Cardinal.n8) GameState.getInstance().upgradeDustEffect(t.n8.get(D));
       if (myQueue != null) {
         for (IVector2 v : myQueue.getQueue()) {
-          GameState.getInstance().upgradeDustEffect( tileFromCoordinate(v) );
+          GameState.getInstance().upgradeDustEffect(tileFromCoordinate(v));
         }
       }
       // Need to update multiple UI elements, so best to...
@@ -549,7 +550,7 @@ public class Building extends Entity {
       float progress = 0;
       if (truckWithLock != 0) {
         Truck t = GameState.getInstance().getTrucksMap().get(truckWithLock);
-        progress = t.holding / (float)t.getCapacity();
+        progress = t.holding / (float) t.getCapacity();
       }
       UI.getInstance().buildingSelectProgress.get(BuildingType.kMINE).setValue(progress);
     }
@@ -557,7 +558,8 @@ public class Building extends Entity {
     // Deconstructors
     if (spriteProcessing == 0) return;
     timeDisassemble -= delta;
-    if (isSelected()) UI.getInstance().buildingSelectProgress.get(type).setValue(timeDisassemble / getTimeDisassembleMax);
+    if (isSelected())
+      UI.getInstance().buildingSelectProgress.get(type).setValue(timeDisassemble / getTimeDisassembleMax);
     if (timeDisassemble > 0) return;
     finishProcessingParticle();
   }
@@ -570,15 +572,16 @@ public class Building extends Entity {
       assert N <= toPlace;
       holdingPen.put(p, toPlace - N);
       for (int i = 0; i < N; ++i) {
-        Sprite s = new Sprite( tileFromCoordinate( getPathingStartPoint(p) ) );
+        Sprite s = new Sprite(tileFromCoordinate(getPathingStartPoint(p)));
         List<IVector2> pList = getBuildingPathingList(p); // Do I have a standing order?
-        if (pList == null) s.pathTo( Sprite.findPathingLocation(tileFromCoordinate( getPathingStartPoint(p) ), true, true, true, false), null, null);  // random direction=True, needs parking=True, requireSameHeight=True
+        if (pList == null)
+          s.pathTo(Sprite.findPathingLocation(tileFromCoordinate(getPathingStartPoint(p)), true, true, true, false), null, null);  // random direction=True, needs parking=True, requireSameHeight=True
         else s.pathingList = new LinkedList<IVector2>(pList); // Clone
         assert p.getColourFromParticle() != null;
         s.setTexture("ball_" + p.getColourFromParticle().getString(), 6, false);
         s.setParticle(p);
         s.moveBy(Param.TILE_S / 2, Param.TILE_S / 2);
-        s.moveBy( Util.R.nextInt(Param.TILE_S ), Util.R.nextInt(Param.TILE_S )  );
+        s.moveBy(Util.R.nextInt(Param.TILE_S), Util.R.nextInt(Param.TILE_S));
         GameState.getInstance().addSprite(s);
         ++GameState.getInstance().inWorldParticles;
       }
@@ -588,15 +591,15 @@ public class Building extends Entity {
   private void finishProcessingParticle() {
     if (spriteProcessing == 0) return;
     Sprite s = GameState.getInstance().getParticleMap().get(spriteProcessing);
-    Pair<Particle,Particle> myDecay = type.getOutputs( s.getParticle() );
+    Pair<Particle, Particle> myDecay = type.getOutputs(s.getParticle());
     assert myDecay != null;
     if (myDecay.getKey() != null) {
-      placeParticle( myDecay.getKey(), true); // Output #1
+      placeParticle(myDecay.getKey(), true); // Output #1
     }
     if (myDecay.getValue() != null) {
       placeParticle(myDecay.getValue(), true); // Output #2
     }
-    GameState.getInstance().addEnergy( type.getOutputEnergy( s.getParticle() ) );
+    GameState.getInstance().addEnergy(type.getOutputEnergy(s.getParticle()));
     GameState.getInstance().killSprite(s);
     spriteProcessing = 0;
   }
@@ -651,7 +654,7 @@ public class Building extends Entity {
     GameState.getInstance().playerEnergy -= cost;
     addCost(cost);
     clockVisible = true;
-    Entity c = GameState.getInstance().getBuildingExtrasMap().get( clock );
+    Entity c = GameState.getInstance().getBuildingExtrasMap().get(clock);
     if (c != null) {
       c.setVisible(true);
     }

@@ -16,7 +16,6 @@ import timboe.vev.enums.BuildingType;
 import timboe.vev.enums.Particle;
 import timboe.vev.manager.GameState;
 import timboe.vev.manager.Textures;
-import timboe.vev.manager.UI;
 import timboe.vev.manager.World;
 import timboe.vev.pathfinding.IVector2;
 
@@ -48,10 +47,10 @@ public class Warp extends Building {
 
   public Warp(JSONObject json) throws JSONException {
     super(json);
-    setTexture( Textures.getInstance().getTexture("void", false), 0);
-    setTexture( Textures.getInstance().getTexture("void", true), 1);
-    setTexture( Textures.getInstance().getTexture("void", false), 2);
-    setTexture( Textures.getInstance().getTexture("void", true), 3);
+    setTexture(Textures.getInstance().getTexture("void", false), 0);
+    setTexture(Textures.getInstance().getTexture("void", true), 1);
+    setTexture(Textures.getInstance().getTexture("void", false), 2);
+    setTexture(Textures.getInstance().getTexture("void", true), 3);
 
     pathingStartPointSeed = json.getInt("pathingStartPointSeed");
 
@@ -59,12 +58,12 @@ public class Warp extends Building {
     Iterator startIt = startPointJson.keys();
     while (startIt.hasNext()) {
       String key = (String) startIt.next();
-      IVector2 v = new IVector2( startPointJson.getJSONObject(key));
-      pathingStartPointWarp.put( Particle.valueOf(key), v );
+      IVector2 v = new IVector2(startPointJson.getJSONObject(key));
+      pathingStartPointWarp.put(Particle.valueOf(key), v);
     }
 
-    int fxX = coordinates.x + (Param.WARP_SIZE/2) - 2;
-    int fxY = coordinates.y + (Param.WARP_SIZE/2) - 2;
+    int fxX = coordinates.x + (Param.WARP_SIZE / 2) - 2;
+    int fxY = coordinates.y + (Param.WARP_SIZE / 2) - 2;
 
     warpCloud = new ParticleEffect();
     warpCloud.load(Gdx.files.internal("hell_portal_effect.txt"), Textures.getInstance().getAtlas());
@@ -82,11 +81,11 @@ public class Warp extends Building {
 
   public Warp(Tile t) {
     super(t, BuildingType.kWARP);
-    setTexture( Textures.getInstance().getTexture("void", false), 0);
-    setTexture( Textures.getInstance().getTexture("void", true), 1);
-    setTexture( Textures.getInstance().getTexture("void", false), 2);
-    setTexture( Textures.getInstance().getTexture("void", true), 3);
-    moveBy(0, -Param.TILE_S/2);
+    setTexture(Textures.getInstance().getTexture("void", false), 0);
+    setTexture(Textures.getInstance().getTexture("void", true), 1);
+    setTexture(Textures.getInstance().getTexture("void", false), 2);
+    setTexture(Textures.getInstance().getTexture("void", true), 3);
+    moveBy(0, -Param.TILE_S / 2);
     // UpdatePathingStartPoint is called later by World - we don't have a pathing grid yet!
 
     warpCloud = new ParticleEffect();
@@ -108,16 +107,16 @@ public class Warp extends Building {
       int placeTry = 0;
       do {
         double rAngle = -Math.PI + (R.nextFloat() * Math.PI * 2);
-        int tryX = (int) Math.round(coordinates.x + Param.WARP_SIZE/2 - 2 + ((Param.WARP_SIZE/2 + 1) * Math.cos(rAngle)));
-        int tryY = (int) Math.round(coordinates.y + Param.WARP_SIZE/2 - 2 + ((Param.WARP_SIZE/2 + 1) * Math.sin(rAngle)));
+        int tryX = (int) Math.round(coordinates.x + Param.WARP_SIZE / 2 - 2 + ((Param.WARP_SIZE / 2 + 1) * Math.cos(rAngle)));
+        int tryY = (int) Math.round(coordinates.y + Param.WARP_SIZE / 2 - 2 + ((Param.WARP_SIZE / 2 + 1) * Math.sin(rAngle)));
         Tile tryTile = World.getInstance().getTile(tryX, tryY, isIntro);
         if (tryTile.coordinates.getNeighbours().size() == 0) continue; // Non-pathable
         boolean used = false;
         for (Particle p2 : Particle.values()) {
           if (p == p2) continue;
-          if (pathingStartPointWarp.get(p2) == null) continue;;
-          Tile startingPoint = coordinateToTile( pathingStartPointWarp.get(p2) );
-          if ( startingPoint == tryTile) used = true;
+          if (pathingStartPointWarp.get(p2) == null) continue;
+          Tile startingPoint = coordinateToTile(pathingStartPointWarp.get(p2));
+          if (startingPoint == tryTile) used = true;
         }
         if (used) continue; // Another particle has this starting point
         pathingStartPointWarp.put(p, tryTile.coordinates);
@@ -128,7 +127,7 @@ public class Warp extends Building {
 
   @Override
   protected IVector2 getPathingStartPoint(Particle p) {
-    return World.getInstance().getTile( pathingStartPointWarp.get(p), isIntro).coordinates;
+    return World.getInstance().getTile(pathingStartPointWarp.get(p), isIntro).coordinates;
   }
 
   public int newParticles(int toPlace, boolean stressTest) {
@@ -167,7 +166,7 @@ public class Warp extends Building {
   @Override
   public void draw(Batch batch, float alpha) {
     for (int i = 0; i < 4; ++i) {
-      batch.draw(textureRegion[i],this.getX(),this.getY(),this.getOriginX(),this.getOriginY(),this.getWidth(),this.getHeight(),this.getScaleX(),this.getScaleY(),rotAngle[i]);
+      batch.draw(textureRegion[i], this.getX(), this.getY(), this.getOriginX(), this.getOriginY(), this.getWidth(), this.getHeight(), this.getScaleX(), this.getScaleY(), rotAngle[i]);
     }
   }
 

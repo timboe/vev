@@ -25,7 +25,6 @@ import timboe.vev.manager.GameState;
 import timboe.vev.manager.Sounds;
 import timboe.vev.manager.StateManager;
 import timboe.vev.manager.UI;
-import timboe.vev.manager.UIIntro;
 import timboe.vev.manager.World;
 
 public class GameScreen implements Screen {
@@ -62,7 +61,7 @@ public class GameScreen implements Screen {
   }
 
   public void doInputHandles() {
-    Gdx.input.setInputProcessor( multiplexer );
+    Gdx.input.setInputProcessor(multiplexer);
   }
 
   @Override
@@ -81,9 +80,9 @@ public class GameScreen implements Screen {
     ////////////////////////////////////////////////
     // Tiles, buildings and warpMap
 
-    state.getTileStage().getRoot().setCullingArea( camera.getCullBoxTile() );
-    state.getBuildingStage().getRoot().setCullingArea( camera.getCullBoxTile() );
-    state.getWarpStage().getRoot().setCullingArea( camera.getCullBoxTile() );
+    state.getTileStage().getRoot().setCullingArea(camera.getCullBoxTile());
+    state.getBuildingStage().getRoot().setCullingArea(camera.getCullBoxTile());
+    state.getWarpStage().getRoot().setCullingArea(camera.getCullBoxTile());
 
     state.getTileStage().draw();
     state.getBuildingStage().draw();
@@ -117,8 +116,8 @@ public class GameScreen implements Screen {
     ////////////////////////////////////////////////
     // Particles & Foliage (x2 zoom)
 
-    state.getSpriteStage().getRoot().setCullingArea( camera.getCullBoxSprite() );
-    state.getFoliageStage().getRoot().setCullingArea( camera.getCullBoxSprite() );
+    state.getSpriteStage().getRoot().setCullingArea(camera.getCullBoxSprite());
+    state.getFoliageStage().getRoot().setCullingArea(camera.getCullBoxSprite());
     state.getSpriteStage().draw();
     state.getFoliageStage().draw();
 
@@ -157,7 +156,7 @@ public class GameScreen implements Screen {
       w.drawPath(sr);
     }
     if (state.doingPlacement) {
-      for (Tile x[] : world.getTile(false)) {
+      for (Tile[] x : world.getTile(false)) {
         for (Tile xy : x) {
           xy.drawSelected(sr);
         }
@@ -178,8 +177,8 @@ public class GameScreen implements Screen {
       sr.begin(ShapeRenderer.ShapeType.Line);
       sr.setColor(0, 1, 0, 1);
       sr.rect(state.selectStartWorld.x, state.selectStartWorld.y,
-          state.selectEndWorld.x - state.selectStartWorld.x,
-          state.selectEndWorld.y - state.selectStartWorld.y);
+              state.selectEndWorld.x - state.selectStartWorld.x,
+              state.selectEndWorld.y - state.selectStartWorld.y);
 
       sr.end();
     }

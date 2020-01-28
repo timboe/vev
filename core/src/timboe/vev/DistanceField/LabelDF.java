@@ -52,7 +52,7 @@ public class LabelDF extends Label {
   }
 
   @Override
-  public void draw (Batch batch, float parentAlpha) {
+  public void draw(Batch batch, float parentAlpha) {
     if (shader != null) batch.setShader(shader);
     super.draw(batch, parentAlpha);
     if (shader != null) batch.setShader(null);

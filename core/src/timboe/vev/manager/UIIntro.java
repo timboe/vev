@@ -29,12 +29,22 @@ import timboe.vev.input.NewGameDiag;
 
 public class UIIntro {
   private static UIIntro ourInstance = null;
+
   public static UIIntro getInstance() {
     return ourInstance;
   }
-  public static void create() { ourInstance = new UIIntro(); }
-  public static boolean constructed() { return ourInstance != null; }
-  public void dispose() { ourInstance = null; }
+
+  public static void create() {
+    ourInstance = new UIIntro();
+  }
+
+  public static boolean constructed() {
+    return ourInstance != null;
+  }
+
+  public void dispose() {
+    ourInstance = null;
+  }
 
   private Set<Image> ballImages = new HashSet<Image>();
 
@@ -82,7 +92,6 @@ public class UIIntro {
     }
 
 
-
     Table h0 = helpContainers.get(0).getActor();
     LabelDF vev = new LabelDF("VEV", ui.skin, "title", ui.dfShader_large);
     vev.setFontScale(6.4f);
@@ -96,7 +105,7 @@ public class UIIntro {
 
     Table h1 = helpContainers.get(2).getActor();
     int h1pad = 128;
-    if(Param.IS_ANDROID) {
+    if (Param.IS_ANDROID) {
       addHelpLabel(h1, Lang.get("UI_ANDROID_A_00"), h1pad, 32);
       addHelpLabel(h1, Lang.get("UI_ANDROID_A_01"), h1pad + 32);
       addHelpLabel(h1, Lang.get("UI_ANDROID_A_02"), h1pad + 64);
@@ -125,55 +134,55 @@ public class UIIntro {
     }
 
     Table h2 = helpContainers.get(3).getActor();
-    addHelpLabel(h2, Lang.get("UI_HELP_B_00"),16,16);
-    addHelpLabel(h2, Lang.get("UI_HELP_B_01"),16);
-    addHelpLabel(h2, Lang.get("UI_HELP_B_02"),16);
-    addHelpLabel(h2, Lang.get("UI_HELP_B_03"),16);
-    addHelpLabel(h2, Lang.get("UI_HELP_B_04"),230,30);
-    addHelpLabel(h2, Lang.get("UI_HELP_B_05"),180);
-    addHelpLabel(h2, Lang.get("UI_HELP_B_06"),16);
-    addHelpLabel(h2, Lang.get("UI_HELP_B_07"),16);
-    addHelpLabel(h2, Lang.get("UI_HELP_B_08"),160,20);
-    addHelpLabel(h2, Lang.get("UI_HELP_B_09"),140,50);
+    addHelpLabel(h2, Lang.get("UI_HELP_B_00"), 16, 16);
+    addHelpLabel(h2, Lang.get("UI_HELP_B_01"), 16);
+    addHelpLabel(h2, Lang.get("UI_HELP_B_02"), 16);
+    addHelpLabel(h2, Lang.get("UI_HELP_B_03"), 16);
+    addHelpLabel(h2, Lang.get("UI_HELP_B_04"), 230, 30);
+    addHelpLabel(h2, Lang.get("UI_HELP_B_05"), 180);
+    addHelpLabel(h2, Lang.get("UI_HELP_B_06"), 16);
+    addHelpLabel(h2, Lang.get("UI_HELP_B_07"), 16);
+    addHelpLabel(h2, Lang.get("UI_HELP_B_08"), 160, 20);
+    addHelpLabel(h2, Lang.get("UI_HELP_B_09"), 140, 50);
 
     Table h3 = helpContainers.get(4).getActor();
-    addHelpLabel(h3, Lang.get("UI_HELP_C_00"),16,16);
-    addHelpLabel(h3, Lang.get("UI_HELP_C_01"),16);
-    addHelpLabel(h3, Lang.get("UI_HELP_C_02"),295,30);
-    addHelpLabel(h3, Lang.get("UI_HELP_C_03"),255);
-    addHelpLabel(h3, Lang.get("UI_HELP_C_04"),230);
-    addHelpLabel(h3, Lang.get("UI_HELP_C_05"),90);
-    addHelpLabel(h3, Lang.get("UI_HELP_C_06"),90);
-    addHelpLabel(h3, Lang.get("UI_HELP_C_07"),90,20);
-    addHelpLabel(h3, Lang.get("UI_HELP_C_08"),90);
-    addHelpLabel(h3, Lang.get("UI_HELP_C_09"),90);
-    addHelpLabel(h3, Lang.get("UI_HELP_C_10"),150,25);
-    addHelpLabel(h3, Lang.get("UI_HELP_C_11"),90,15);
+    addHelpLabel(h3, Lang.get("UI_HELP_C_00"), 16, 16);
+    addHelpLabel(h3, Lang.get("UI_HELP_C_01"), 16);
+    addHelpLabel(h3, Lang.get("UI_HELP_C_02"), 295, 30);
+    addHelpLabel(h3, Lang.get("UI_HELP_C_03"), 255);
+    addHelpLabel(h3, Lang.get("UI_HELP_C_04"), 230);
+    addHelpLabel(h3, Lang.get("UI_HELP_C_05"), 90);
+    addHelpLabel(h3, Lang.get("UI_HELP_C_06"), 90);
+    addHelpLabel(h3, Lang.get("UI_HELP_C_07"), 90, 20);
+    addHelpLabel(h3, Lang.get("UI_HELP_C_08"), 90);
+    addHelpLabel(h3, Lang.get("UI_HELP_C_09"), 90);
+    addHelpLabel(h3, Lang.get("UI_HELP_C_10"), 150, 25);
+    addHelpLabel(h3, Lang.get("UI_HELP_C_11"), 90, 15);
 
     Table h4 = helpContainers.get(5).getActor();
-    addHelpLabel(h4, Lang.get("UI_HELP_D_00"), h1pad,20);
+    addHelpLabel(h4, Lang.get("UI_HELP_D_00"), h1pad, 20);
     addHelpLabel(h4, Lang.get("UI_HELP_D_01"), h1pad);
-    addHelpLabel(h4, Lang.get("UI_HELP_D_02"), h1pad+32);
-    addHelpLabel(h4, Lang.get("UI_HELP_D_03"), h1pad+64);
-    addHelpLabel(h4, Lang.get("UI_HELP_D_04"), h1pad+64);
-    addHelpLabel(h4, Lang.get("UI_HELP_D_05"), h1pad+64);
-    addHelpLabel(h4, Lang.get("UI_HELP_D_06"), h1pad+32);
-    addHelpLabel(h4, Lang.get("UI_HELP_D_07"), h1pad+64);
-    addHelpLabel(h4, Lang.get("UI_HELP_D_08"), h1pad+64);
-    addHelpLabel(h4, Lang.get("UI_HELP_D_09"), h1pad+64);
-    addHelpLabel(h4, Lang.get("UI_HELP_D_10"), h1pad+64);
-    addHelpLabel(h4, Lang.get("UI_HELP_D_11"), h1pad+64);
-    addHelpLabel(h4, Lang.get("UI_HELP_D_12"), h1pad+64);
-    addHelpLabel(h4, Lang.get("UI_HELP_D_13"), h1pad+64);
-    addHelpLabel(h4, Lang.get("UI_HELP_D_14"), h1pad+64);
-    addHelpLabel(h4, Lang.get("UI_HELP_D_15"), h1pad+64);
+    addHelpLabel(h4, Lang.get("UI_HELP_D_02"), h1pad + 32);
+    addHelpLabel(h4, Lang.get("UI_HELP_D_03"), h1pad + 64);
+    addHelpLabel(h4, Lang.get("UI_HELP_D_04"), h1pad + 64);
+    addHelpLabel(h4, Lang.get("UI_HELP_D_05"), h1pad + 64);
+    addHelpLabel(h4, Lang.get("UI_HELP_D_06"), h1pad + 32);
+    addHelpLabel(h4, Lang.get("UI_HELP_D_07"), h1pad + 64);
+    addHelpLabel(h4, Lang.get("UI_HELP_D_08"), h1pad + 64);
+    addHelpLabel(h4, Lang.get("UI_HELP_D_09"), h1pad + 64);
+    addHelpLabel(h4, Lang.get("UI_HELP_D_10"), h1pad + 64);
+    addHelpLabel(h4, Lang.get("UI_HELP_D_11"), h1pad + 64);
+    addHelpLabel(h4, Lang.get("UI_HELP_D_12"), h1pad + 64);
+    addHelpLabel(h4, Lang.get("UI_HELP_D_13"), h1pad + 64);
+    addHelpLabel(h4, Lang.get("UI_HELP_D_14"), h1pad + 64);
+    addHelpLabel(h4, Lang.get("UI_HELP_D_15"), h1pad + 64);
 
   }
 
   public void retextureSprites() {
     for (Image i : ballImages) {
-      String tex = (String)i.getUserObject();
-      i.setDrawable( new TextureRegionDrawable( Textures.getInstance().getTexture(tex, false) ) );
+      String tex = (String) i.getUserObject();
+      i.setDrawable(new TextureRegionDrawable(Textures.getInstance().getTexture(tex, false)));
     }
   }
 
@@ -202,7 +211,7 @@ public class UIIntro {
   }
 
   private void addHelpLabel(Table t, String s, float left) {
-    addHelpLabel(t,s,left, 2);
+    addHelpLabel(t, s, left, 2);
   }
 
   public void resetTitle(String toShow) {
@@ -224,7 +233,7 @@ public class UIIntro {
     } else if (toShow.equals("settings")) {
       windowSettings(titleWindow);
     } else {
-      Gdx.app.error("Intro UI","Unknown mode "+toShow);
+      Gdx.app.error("Intro UI", "Unknown mode " + toShow);
       Gdx.app.exit();
     }
 
@@ -234,7 +243,7 @@ public class UIIntro {
       tableIntro.debugAll();
     }
 
-    tableIntro.pad(Param.TILE_S*2);
+    tableIntro.pad(Param.TILE_S * 2);
     tableIntro.top().right();
     tableIntro.add(titleWindow);
 
@@ -244,10 +253,10 @@ public class UIIntro {
 
     Table gParent = new Table();
     gParent.setFillParent(true);
-    gParent.pad(Param.TILE_S*2);
+    gParent.pad(Param.TILE_S * 2);
     gParent.top().left();
     generating = ui.getWindow();
-    generating.add(ui.getLabel(Lang.get("UI_GENERATING"),"")).width(ui.SIZE_L*2).height(ui.SIZE_M);
+    generating.add(ui.getLabel(Lang.get("UI_GENERATING"), "")).width(ui.SIZE_L * 2).height(ui.SIZE_M);
     gParent.add(generating);
 
     Stage genStage = IntroState.getInstance().getIntroGeneratingStage();
@@ -266,7 +275,7 @@ public class UIIntro {
 
     final Button newGame = ui.getTextButton(Lang.get("UI_NEW"), "newGame");
     newGame.addListener(newGameButton);
-    titleWindow.add(newGame).pad(ui.SIZE_S/2).colspan(2).fillX();
+    titleWindow.add(newGame).pad(ui.SIZE_S / 2).colspan(2).fillX();
 
     titleWindow.row();
     ui.separator(titleWindow, 1);
@@ -279,14 +288,14 @@ public class UIIntro {
       }
     });
     if (Persistence.getInstance().save == null) {
-      Gdx.app.log("windowMain","No save game, LOAD disabled");
+      Gdx.app.log("windowMain", "No save game, LOAD disabled");
       loadGame.setDisabled(true);
       World.getInstance().requestGenerate();
     } else {
-      Gdx.app.log("windowMain","Found save game, LOAD enabled");
+      Gdx.app.log("windowMain", "Found save game, LOAD enabled");
       loadGame.setDisabled(false);
     }
-    titleWindow.add(loadGame).pad(ui.SIZE_S/2).colspan(1).fillX();
+    titleWindow.add(loadGame).pad(ui.SIZE_S / 2).colspan(1).fillX();
 
     titleWindow.row();
     ui.separator(titleWindow, 1);
@@ -298,7 +307,7 @@ public class UIIntro {
         resetTitle("settings");
       }
     });
-    titleWindow.add(settingsButton).pad(ui.SIZE_S/2).colspan(1).fillX();
+    titleWindow.add(settingsButton).pad(ui.SIZE_S / 2).colspan(1).fillX();
 
     titleWindow.row();
     ui.separator(titleWindow, 1);
@@ -310,7 +319,7 @@ public class UIIntro {
         resetTitle("help");
       }
     });
-    titleWindow.add(howToPlayButton).pad(ui.SIZE_S/2).colspan(1).fillX();
+    titleWindow.add(howToPlayButton).pad(ui.SIZE_S / 2).colspan(1).fillX();
 
     titleWindow.row();
     ui.separator(titleWindow, 1);
@@ -322,7 +331,7 @@ public class UIIntro {
         resetTitle("credit");
       }
     });
-    titleWindow.add(credit).pad(ui.SIZE_S/2).colspan(1).fillX();
+    titleWindow.add(credit).pad(ui.SIZE_S / 2).colspan(1).fillX();
 
     titleWindow.row();
     ui.separator(titleWindow, 1);
@@ -333,7 +342,7 @@ public class UIIntro {
         Gdx.app.exit();
       }
     });
-    titleWindow.add(exitGame).pad(ui.SIZE_S/2).colspan(1).fillX();
+    titleWindow.add(exitGame).pad(ui.SIZE_S / 2).colspan(1).fillX();
   }
 
   private void windowSettings(Table titleWindow) {
@@ -351,7 +360,7 @@ public class UIIntro {
     musicSlider.addListener(new ChangeListener() {
       @Override
       public void changed(ChangeEvent event, Actor actor) {
-        Persistence.getInstance().musicLevel = ((Slider)actor).getValue();
+        Persistence.getInstance().musicLevel = ((Slider) actor).getValue();
         Sounds.getInstance().musicVolume();
         Sounds.getInstance().click();
       }
@@ -366,7 +375,7 @@ public class UIIntro {
     sfxSlider.addListener(new ChangeListener() {
       @Override
       public void changed(ChangeEvent event, Actor actor) {
-        Persistence.getInstance().sfxLevel = ((Slider)actor).getValue();
+        Persistence.getInstance().sfxLevel = ((Slider) actor).getValue();
         Sounds.getInstance().click();
       }
     });
@@ -375,7 +384,7 @@ public class UIIntro {
     titleWindow.row();
     titleWindow.left();
     fsBox = new CheckBox("", ui.skin);
-    fsBox.setChecked( Gdx.graphics.isFullscreen() );
+    fsBox.setChecked(Gdx.graphics.isFullscreen());
     fsBox.addListener(fsListener);
     fsBox.getImage().setScaling(Scaling.fill);
     fsBox.getImageCell().size(ui.SIZE_S);
@@ -391,22 +400,22 @@ public class UIIntro {
     for (Particle p : Particle.values()) {
       if (p == Particle.kBlank) continue;
       assert p.getColourFromParticle() != null;
-      Image i = ui.getImage("ball_" + p.getColourFromParticle().getString(),"");
+      Image i = ui.getImage("ball_" + p.getColourFromParticle().getString(), "");
       ballImages.add(i);
-      ui.addToWin(titleWindow, ui.getLabel(p.getString(),""), ui.SIZE_S, ui.SIZE_S, 2);
+      ui.addToWin(titleWindow, ui.getLabel(p.getString(), ""), ui.SIZE_S, ui.SIZE_S, 2);
       ui.addToWin(titleWindow, i, ui.SIZE_M, ui.SIZE_M, 2);
-      Slider pSlider = new Slider(0, 360*3, 1, false, ui.skin, "default-horizontal");
-      pSlider.setValue( Persistence.getInstance().particleHues.get(p) );
+      Slider pSlider = new Slider(0, 360 * 3, 1, false, ui.skin, "default-horizontal");
+      pSlider.setValue(Persistence.getInstance().particleHues.get(p));
       pSlider.setUserObject(p);
       pSlider.addListener(new ChangeListener() {
         @Override
         public void changed(ChangeEvent event, Actor actor) {
-          Persistence.getInstance().particleHues.put( (Particle)actor.getUserObject(), (int) ((Slider)actor).getValue() );
+          Persistence.getInstance().particleHues.put((Particle) actor.getUserObject(), (int) ((Slider) actor).getValue());
           Textures.getInstance().updateParticleHues();
           Sounds.getInstance().click();
         }
       });
-      ui.addToWin(titleWindow, pSlider, ui.SIZE_L*2, ui.SIZE_M, 6);
+      ui.addToWin(titleWindow, pSlider, ui.SIZE_L * 2, ui.SIZE_M, 6);
       titleWindow.row();
       cacheHue.put(p, Persistence.getInstance().particleHues.get(p));
     }
@@ -417,8 +426,8 @@ public class UIIntro {
 
     ui.separator(titleWindow, 10, Param.UI_WIDTH_INTRO);
 
-    ui.addToWin(titleWindow, ui.getImageButton("tick",""), ui.SIZE_L, ui.SIZE_L, 5);
-    ui.addToWin(titleWindow, ui.getImageButton("cross",""), ui.SIZE_L, ui.SIZE_L, 5);
+    ui.addToWin(titleWindow, ui.getImageButton("tick", ""), ui.SIZE_L, ui.SIZE_L, 5);
+    ui.addToWin(titleWindow, ui.getImageButton("cross", ""), ui.SIZE_L, ui.SIZE_L, 5);
   }
 
   private void windowHelpCredits(Table titleWindow, final boolean helpMode) {
@@ -427,11 +436,11 @@ public class UIIntro {
     helpLevel = helpMode ? 2 : 5;
     Camera.getInstance().setHelpPos(helpLevel, false);
     if (helpMode) {
-      ui.addToWin(titleWindow, ui.getTextButton("<",""), ui.SIZE_L, ui.SIZE_L, 1);
-      ui.addToWin(titleWindow, ui.getTextButton(">",""), ui.SIZE_L, ui.SIZE_L, 1);
+      ui.addToWin(titleWindow, ui.getTextButton("<", ""), ui.SIZE_L, ui.SIZE_L, 1);
+      ui.addToWin(titleWindow, ui.getTextButton(">", ""), ui.SIZE_L, ui.SIZE_L, 1);
       titleWindow.row();
     }
-    ui.addToWin(titleWindow, ui.getTextButton(Lang.get("UI_BACK"),""), (ui.SIZE_L + ui.PAD ) * 2, ui.SIZE_L, helpMode ? 2 : 1);
+    ui.addToWin(titleWindow, ui.getTextButton(Lang.get("UI_BACK"), ""), (ui.SIZE_L + ui.PAD) * 2, ui.SIZE_L, helpMode ? 2 : 1);
 
   }
 }

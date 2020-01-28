@@ -10,7 +10,6 @@ import timboe.vev.Util;
 import timboe.vev.entity.Entity;
 import timboe.vev.enums.FSM;
 import timboe.vev.manager.Camera;
-import timboe.vev.manager.GameState;
 import timboe.vev.manager.IntroState;
 import timboe.vev.manager.Sounds;
 import timboe.vev.manager.StateManager;
@@ -37,7 +36,7 @@ public class TitleScreen implements Screen {
   }
 
   public void doInputHandles() {
-    Gdx.input.setInputProcessor( state.getUIStage() );
+    Gdx.input.setInputProcessor(state.getUIStage());
   }
 
   @Override
@@ -61,7 +60,7 @@ public class TitleScreen implements Screen {
 
     sr.setProjectionMatrix(camera.getTileCamera().combined);
     sr.begin(ShapeRenderer.ShapeType.Filled);
-    for (Entity e: state.demoBuildings) {
+    for (Entity e : state.demoBuildings) {
       e.drawPath(sr);
     }
     sr.end();
@@ -104,7 +103,7 @@ public class TitleScreen implements Screen {
       }
     }
 
-    UIIntro.getInstance().generating.setVisible( World.getInstance().doGenerate && !World.getInstance().getGenerated() );
+    UIIntro.getInstance().generating.setVisible(World.getInstance().doGenerate && !World.getInstance().getGenerated());
     state.getIntroGeneratingStage().draw();
   }
 

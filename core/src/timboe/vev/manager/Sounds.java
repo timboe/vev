@@ -40,10 +40,14 @@ public class Sounds {
   private boolean paused = false;
 
   private static Sounds ourInstance;
+
   public static Sounds getInstance() {
     return ourInstance;
   }
-  public static void create() { ourInstance = new Sounds(); }
+
+  public static void create() {
+    ourInstance = new Sounds();
+  }
 
   public void dispose() {
     foot.dispose();
@@ -135,24 +139,24 @@ public class Sounds {
 
   public void woosh() {
     if (paused) return;
-    woosh[ R.nextInt(nFW) ].play(Persistence.getInstance().sfxLevel);
+    woosh[R.nextInt(nFW)].play(Persistence.getInstance().sfxLevel);
   }
 
   public void boom() {
     if (paused) return;
-    boom[ R.nextInt(nBoom) ].play(Persistence.getInstance().sfxLevel);
+    boom[R.nextInt(nBoom)].play(Persistence.getInstance().sfxLevel);
   }
 
   public void zap() {
-    electric[ R.nextInt(nElectric) ].play(Persistence.getInstance().sfxLevel * sfxMod);
+    electric[R.nextInt(nElectric)].play(Persistence.getInstance().sfxLevel * sfxMod);
   }
 
   public void moveOrder() {
-    move[ R.nextInt(nMove) ].play(Persistence.getInstance().sfxLevel);
+    move[R.nextInt(nMove)].play(Persistence.getInstance().sfxLevel);
   }
 
   public void selectOrder() {
-    select[ R.nextInt(nSelect) ].play(Persistence.getInstance().sfxLevel);
+    select[R.nextInt(nSelect)].play(Persistence.getInstance().sfxLevel);
   }
 
   public void foot() {
@@ -163,7 +167,9 @@ public class Sounds {
     dirt.play(Persistence.getInstance().sfxLevel * sfxMod);
   }
 
-  public void demolish() { demolish.play( Persistence.getInstance().sfxLevel * sfxMod); }
+  public void demolish() {
+    demolish.play(Persistence.getInstance().sfxLevel * sfxMod);
+  }
 
   public void pulse() {
     swoosh.play(Persistence.getInstance().sfxLevel);

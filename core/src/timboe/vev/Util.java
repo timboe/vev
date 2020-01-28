@@ -10,9 +10,7 @@ import com.google.gwt.thirdparty.json.JSONObject;
 
 import java.util.Random;
 
-import timboe.vev.enums.Colour;
 import timboe.vev.manager.Camera;
-import timboe.vev.manager.GameState;
 import timboe.vev.pathfinding.IVector2;
 
 public class Util {
@@ -46,7 +44,7 @@ public class Util {
     }
     double x = json.getDouble("x");
     double y = json.getDouble("y");
-    return new Vector2((float)x,(float)y);
+    return new Vector2((float) x, (float) y);
   }
 
   public static Vector3 deserialiseVec3(JSONObject json) throws JSONException {
@@ -56,7 +54,7 @@ public class Util {
     double x = json.getDouble("x");
     double y = json.getDouble("y");
     double z = json.getDouble("z");
-    return new Vector3((float)x,(float)y,(float)z);
+    return new Vector3((float) x, (float) y, (float) z);
   }
 
   // Why -2? It's to allow for an buffer for odd world sizes
@@ -86,10 +84,13 @@ public class Util {
     Gdx.graphics.getGL20().glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT | GL20.GL_STENCIL_BUFFER_BIT);
   }
 
-  private static boolean needsClamp(float val, float min, float max) { return !(val == clamp(val,min,max)); }
+  private static boolean needsClamp(float val, float min, float max) {
+    return !(val == clamp(val, min, max));
+  }
 
 
   private static float elapsed = 0;
+
   public static boolean doFade(ShapeRenderer sr, float delta, float[] fadeTimer) {
     final int finalTime = 4000;
     if (fadeTimer[0] == 0) {
@@ -98,44 +99,43 @@ public class Util {
     elapsed += delta * 3.5;
     if (fadeTimer[2] > finalTime) {
       sr.begin(ShapeRenderer.ShapeType.Filled);
-      sr.setColor(136/255f, 57/255f, 80/255f, 1f);
-      strokeRect(sr, fadeTimer[2], fadeTimer[2]/4f);
+      sr.setColor(136 / 255f, 57 / 255f, 80 / 255f, 1f);
+      strokeRect(sr, fadeTimer[2], fadeTimer[2] / 4f);
       sr.end();
       return true;
     }
     sr.setProjectionMatrix(Camera.getInstance().getUiCamera().combined);
     sr.begin(ShapeRenderer.ShapeType.Filled);
-    sr.setColor(206f/255f, 101f/255f, 80f/255f, 1f);
-    strokeRect(sr, fadeTimer[2], fadeTimer[2]/4f);
-    sr.setColor(176/255f, 78/255f, 80/255f, 1f);
-    strokeRect(sr, fadeTimer[1], fadeTimer[1]/4f);
-    sr.setColor(136/255f, 57/255f, 80/255f, 1f);
-    strokeRect(sr, fadeTimer[0], fadeTimer[0]/4f);
+    sr.setColor(206f / 255f, 101f / 255f, 80f / 255f, 1f);
+    strokeRect(sr, fadeTimer[2], fadeTimer[2] / 4f);
+    sr.setColor(176 / 255f, 78 / 255f, 80 / 255f, 1f);
+    strokeRect(sr, fadeTimer[1], fadeTimer[1] / 4f);
+    sr.setColor(136 / 255f, 57 / 255f, 80 / 255f, 1f);
+    strokeRect(sr, fadeTimer[0], fadeTimer[0] / 4f);
     sr.end();
     Gdx.gl.glLineWidth(5);
     sr.begin(ShapeRenderer.ShapeType.Line);
-    sr.setColor(72f/255f, 43f/255f, 81f/255f, 1f);
-    strokeRect(sr, fadeTimer[0], fadeTimer[0]/4f);
-    strokeRect(sr, fadeTimer[1], fadeTimer[1]/4f);
-    strokeRect(sr, fadeTimer[2], fadeTimer[2]/4f);
+    sr.setColor(72f / 255f, 43f / 255f, 81f / 255f, 1f);
+    strokeRect(sr, fadeTimer[0], fadeTimer[0] / 4f);
+    strokeRect(sr, fadeTimer[1], fadeTimer[1] / 4f);
+    strokeRect(sr, fadeTimer[2], fadeTimer[2] / 4f);
     sr.end();
-    fadeTimer[0] = (float)Math.exp(elapsed) * 5f;
+    fadeTimer[0] = (float) Math.exp(elapsed) * 5f;
     if (fadeTimer[0] > 2.5) {
-      fadeTimer[1] = (float)Math.exp(elapsed) * 10f;
+      fadeTimer[1] = (float) Math.exp(elapsed) * 10f;
     }
     if (fadeTimer[1] > 2.5) {
-      fadeTimer[2] = (float)Math.exp(elapsed) * 15f;
+      fadeTimer[2] = (float) Math.exp(elapsed) * 15f;
     }
     return (fadeTimer[2] > finalTime);
   }
 
   private static void strokeRect(ShapeRenderer sr, float width, float angle) {
     final float midX = Param.DISPLAY_X / 2, midY = Param.DISPLAY_Y / 2;
-    sr.rect(midX-width, midY-width,
-            width,width,2*width,2*width,
-            1,1,angle);
+    sr.rect(midX - width, midY - width,
+            width, width, 2 * width, 2 * width,
+            1, 1, angle);
   }
-
 
 
 }

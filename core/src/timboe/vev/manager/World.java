@@ -104,7 +104,7 @@ public class World {
     JSONObject jsonTiles = json.getJSONObject("tiles");
     for (Integer x = 0; x < Param.TILES_X; ++x) {
       for (Integer y = 0; y < Param.TILES_Y; ++y) {
-        tiles[x][y] = new Tile( jsonTiles.getJSONObject(x.toString() + "," + y.toString() ) );
+        tiles[x][y] = new Tile(jsonTiles.getJSONObject(x.toString() + "," + y.toString()));
         GameState.getInstance().getTileStage().addActor(tiles[x][y]);
       }
     }
@@ -115,7 +115,7 @@ public class World {
     Iterator tiberiumIt = jsonTiberium.keys();
     while (tiberiumIt.hasNext()) {
       String key = (String) tiberiumIt.next();
-      Patch p = new Patch( jsonTiberium.getJSONObject( key ) );
+      Patch p = new Patch(jsonTiberium.getJSONObject(key));
       tiberiumPatches.put(p.id, p);
       if (p.id != Integer.valueOf(key)) throw new AssertionError();
     }
@@ -124,7 +124,7 @@ public class World {
     Iterator tiberiumShardsIt = jsonTiberiumShards.keys();
     while (tiberiumShardsIt.hasNext()) {
       String key = (String) tiberiumShardsIt.next();
-      Sprite t = new Sprite( jsonTiberiumShards.getJSONObject( key ) );
+      Sprite t = new Sprite(jsonTiberiumShards.getJSONObject(key));
       tiberiumShards.put(t.id, t);
       GameState.getInstance().getSpriteStage().addActor(t);
       if (t.id != Integer.valueOf(key)) throw new AssertionError();
@@ -134,13 +134,13 @@ public class World {
     Iterator foliageIt = jsonFoliage.keys();
     while (foliageIt.hasNext()) {
       String key = (String) foliageIt.next();
-      Sprite f = new Sprite( jsonFoliage.getJSONObject( key ) );
+      Sprite f = new Sprite(jsonFoliage.getJSONObject(key));
       foliage.put(f.id, f);
       GameState.getInstance().getFoliageStage().addActor(f);
       if (f.id != Integer.valueOf(key)) throw new AssertionError();
     }
     for (Sprite f : foliage.values()) {
-      f.setZIndex((int)f.getY());
+      f.setZIndex((int) f.getY());
     }
   }
 
@@ -183,7 +183,7 @@ public class World {
   }
 
 
-    public Tile getTile(int x, int y, boolean isIntro) {
+  public Tile getTile(int x, int y, boolean isIntro) {
     // Removed bounds check for speed....
 //    if (x < 0 || y < 0 || x >= Param.TILES_X-1 || y >= Param.TILES_Y-1) return null;
     return isIntro ? introTiles[x][y] : tiles[x][y];
@@ -253,7 +253,7 @@ public class World {
       for (int y = 0; y < Param.TILES_INTRO_Y; ++y) {
         introTiles[x][y].level = 1;
         introTiles[x][y].isIntro = true;
-        if (x < 2*Param.TILES_INTRO_X / 5) { // 2/5 or 40%
+        if (x < 2 * Param.TILES_INTRO_X / 5) { // 2/5 or 40%
           introTiles[x][y].tileColour = Colour.kGREEN;
         } else {
           introTiles[x][y].tileColour = Colour.kRED;
@@ -287,8 +287,8 @@ public class World {
 
   private void load() {
     try {
-      deserialise( Persistence.getInstance().save.getJSONObject("World") );
-      GameState.getInstance().deserialise( Persistence.getInstance().save.getJSONObject("GameState") );
+      deserialise(Persistence.getInstance().save.getJSONObject("World"));
+      GameState.getInstance().deserialise(Persistence.getInstance().save.getJSONObject("GameState"));
       Gdx.app.log("load", "Deserialised and applied game data from save-file.");
       generated = true;
       doLoad = false;
@@ -307,20 +307,48 @@ public class World {
       return;
     }
     switch (stage) {
-      case 0: success = doZones(); break;
-      case 1: success = doEdges(worldEdges, allZones, Colour.kBLACK, Colour.kRED, 0, 1, Param.KRINKLE_OFFSET, (2 * Param.KRINKLE_OFFSET) - Param.KRINKLE_GAP); break;
-      case 2: success = doSpecialZones(true); break;
-      case 3: success = removeGreenStubs(); break;
-      case 4: success = doSpecialZones(false); break;
-      case 5: success = removeEWSingleStairs(); break;
-      case 6: success = addWarp(); break;
-      case 7: success = markCliffs(tiles, Param.TILES_X, Param.TILES_Y); break;
-      case 8: success = addPatch(false, Param.TIBERIUM_SIZE, Param.MIN_TIBERIUM_PATCH, Param.MAX_TIBERIUM_PATCH); break;
-      case 9: success = addPatch(true, Param.FOREST_SIZE, Param.MIN_FORESTS, Param.MAX_FORESTS); break;
-      case 10: success = addFoliage(tiles, Param.TILES_X, Param.TILES_Y, false); break;
-      case 11: success = doPathGrid(tiles, Param.TILES_X, Param.TILES_Y); break;
-      case 12: success = finaliseWarp(); break;
-      case 13: success = applyTileGraphics(tiles, Param.TILES_X, Param.TILES_Y); break;
+      case 0:
+        success = doZones();
+        break;
+      case 1:
+        success = doEdges(worldEdges, allZones, Colour.kBLACK, Colour.kRED, 0, 1, Param.KRINKLE_OFFSET, (2 * Param.KRINKLE_OFFSET) - Param.KRINKLE_GAP);
+        break;
+      case 2:
+        success = doSpecialZones(true);
+        break;
+      case 3:
+        success = removeGreenStubs();
+        break;
+      case 4:
+        success = doSpecialZones(false);
+        break;
+      case 5:
+        success = removeEWSingleStairs();
+        break;
+      case 6:
+        success = addWarp();
+        break;
+      case 7:
+        success = markCliffs(tiles, Param.TILES_X, Param.TILES_Y);
+        break;
+      case 8:
+        success = addPatch(false, Param.TIBERIUM_SIZE, Param.MIN_TIBERIUM_PATCH, Param.MAX_TIBERIUM_PATCH);
+        break;
+      case 9:
+        success = addPatch(true, Param.FOREST_SIZE, Param.MIN_FORESTS, Param.MAX_FORESTS);
+        break;
+      case 10:
+        success = addFoliage(tiles, Param.TILES_X, Param.TILES_Y, false);
+        break;
+      case 11:
+        success = doPathGrid(tiles, Param.TILES_X, Param.TILES_Y);
+        break;
+      case 12:
+        success = finaliseWarp();
+        break;
+      case 13:
+        success = applyTileGraphics(tiles, Param.TILES_X, Param.TILES_Y);
+        break;
     }
 
     if (success || (stage == 13 && Param.ALLOW_TILING_ERRORS)) {
@@ -368,7 +396,7 @@ public class World {
     for (Cardinal D : Cardinal.n8) {
       if (shouldLink(t, t.n8.get(D))) {
         t.pathFindDebug.add(D);
-        t.coordinates.pathFindNeighbours.add( t.n8.get(D).coordinates );
+        t.coordinates.pathFindNeighbours.add(t.n8.get(D).coordinates);
       }
     }
   }
@@ -398,8 +426,7 @@ public class World {
     if (isFoliage) {
       if (isIntro) IntroState.getInstance().getIntroFoliageStage().addActor(s);
       else GameState.getInstance().getFoliageStage().addActor(s);
-    }
-    else {
+    } else {
       if (isIntro) IntroState.getInstance().getIntroSpriteStage().addActor(s);
       else GameState.getInstance().getSpriteStage().addActor(s);
     }
@@ -427,8 +454,8 @@ public class World {
         for (int y = _y - Param.WARP_SIZE / 2 - Param.KRINKLE_GAP; y < _y + Param.WARP_SIZE / 2 + Param.KRINKLE_GAP; ++y) {
           if (Param.WARP_SIZE / 2 + Param.KRINKLE_GAP <= Math.hypot(x - _x, y - _y)) continue;
           if (tiles[x][y].type != TileType.kGROUND
-              || tiles[x][y].tileColour != Colour.kRED
-              || tiles[x][y].level != level) tooClose = true;
+                  || tiles[x][y].tileColour != Colour.kRED
+                  || tiles[x][y].level != level) tooClose = true;
         }
       }
       for (Zone z : allZones) {
@@ -441,7 +468,8 @@ public class World {
       if (tooClose) continue;
       // Apply the area
       ++fPlaced;
-      if (GameState.getInstance().debug > 0) Gdx.app.log("addWarp", "Adding WARP at (" + _x + "," + _y + ")");
+      if (GameState.getInstance().debug > 0)
+        Gdx.app.log("addWarp", "Adding WARP at (" + _x + "," + _y + ")");
       for (int x = _x - Param.WARP_SIZE / 2; x < _x + Param.WARP_SIZE / 2; ++x) {
         for (int y = _y - Param.WARP_SIZE / 2; y < _y + Param.WARP_SIZE / 2; ++y) {
           if (Param.WARP_SIZE / 2 <= Math.hypot(x - _x, y - _y)) continue;
@@ -715,8 +743,8 @@ public class World {
     //if (true) return true;
     IVector2 test = new IVector2(start.x + offX, start.y + offY);
     return (test.x >= 0 && test.y >= 0 && test.x < Param.TILES_X && test.y < Param.TILES_Y
-        && ((tiles[test.x][test.y].tileColour != fromC || tiles[test.x][test.y].level != fromLevel)
-        && (tiles[test.x][test.y].tileColour != toC || tiles[test.x][test.y].level != toLevel)));
+            && ((tiles[test.x][test.y].tileColour != fromC || tiles[test.x][test.y].level != fromLevel)
+            && (tiles[test.x][test.y].tileColour != toC || tiles[test.x][test.y].level != toLevel)));
   }
 
   private Edge krinkle(IVector2 v, final Cardinal D, Edge direction, final int distanceToDest,
@@ -830,7 +858,7 @@ public class World {
           Gdx.app.log("      krinkle", v.toString() + " Too close to centre -> kOUT");
         return Edge.kOUT;
       } else if (notSameColourAndLevel(v, outOfBoundX, outOfBoundY, fromC, toC, fromLevel, toLevel)
-          || (distanceToDest > Param.MAX_DIST && notSameColourAndLevel(v, lookAheadOutOfBoundsX, lookAheadOutOfBoundsY, fromC, toC, fromLevel, toLevel))) {
+              || (distanceToDest > Param.MAX_DIST && notSameColourAndLevel(v, lookAheadOutOfBoundsX, lookAheadOutOfBoundsY, fromC, toC, fromLevel, toLevel))) {
         for (int i = 0; i < Param.EDGE_ADJUSTMENT; ++i) {
           v.x += outOfBoundModX;
           v.y += outOfBoundModY;
@@ -963,8 +991,8 @@ public class World {
 
         if (GameState.getInstance().debug > 0)
           Gdx.app.log("doSpecialZones - " + (doGreenZones ? "GreenZone" : "Hill"),
-              "Start z(" + x + "," + y + ") L(" + zones[x][y].getLowerX() + "," + zones[x][y].getLowerY() +
-                  ") HWH:" + zones[x][y].hillWithinHill);
+                  "Start z(" + x + "," + y + ") L(" + zones[x][y].getLowerX() + "," + zones[x][y].getLowerY() +
+                          ") HWH:" + zones[x][y].hillWithinHill);
 
         // Do a flood-fill
         final IVector2 floodStart = new IVector2(x, y);
@@ -988,7 +1016,7 @@ public class World {
           success = doEdges(edges, zone, zones[x][y].tileColour, zones[x][y].tileColour, 1, zones[x][y].level, 3 * Param.KRINKLE_OFFSET, (4 * Param.KRINKLE_OFFSET) - Param.KRINKLE_GAP);
         if (doHills && success && hwh) {
           if (GameState.getInstance().debug > 0) Gdx.app.log("doSpecialZones - HillWithinHill",
-              "Start z(" + x + "," + y + ") L(" + zones[x][y].getLowerX() + "," + zones[x][y].getLowerY() + ")");
+                  "Start z(" + x + "," + y + ") L(" + zones[x][y].getLowerX() + "," + zones[x][y].getLowerY() + ")");
           success = doEdges(edges, zone, zones[x][y].tileColour, zones[x][y].tileColour, zones[x][y].level, hwh_level, 4 * Param.KRINKLE_OFFSET, (5 * Param.KRINKLE_OFFSET) - Param.KRINKLE_GAP);
         }
         if (!success) {
@@ -1082,9 +1110,9 @@ public class World {
       final Cardinal D = getDirection(current, destination);
       final boolean rightTurnNext = (next == null || getDirection(destination, next) == D.next90(true));
       if (GameState.getInstance().debug > 0) Gdx.app.log("    Edge",
-          "From " + edges.elementAt(section - 1).toString() +
-              " to " + destination.toString() +
-              ", D: " + D + ", RightTurnNext:" + rightTurnNext);
+              "From " + edges.elementAt(section - 1).toString() +
+                      " to " + destination.toString() +
+                      ", D: " + D + ", RightTurnNext:" + rightTurnNext);
       int distanceToDest = 999;
       Edge direction = Edge.kOUT;
       while (distanceToDest > 0) {
@@ -1112,8 +1140,8 @@ public class World {
           ++stairCount;
         } else {
           direction = Edge.random(doingHill
-              && direction != Edge.kSTAIRS_OUT
-              && distanceToDest > Param.MAX_DIST * 2, zones.size());
+                  && direction != Edge.kSTAIRS_OUT
+                  && distanceToDest > Param.MAX_DIST * 2, zones.size());
         }
       }
     }
@@ -1192,22 +1220,30 @@ public class World {
     final float dim = 0.4f;
     animTime += delta;
     if (animTime > Param.ANIM_TIME * slowdown) {
-      animTime -=  Param.ANIM_TIME * slowdown;
+      animTime -= Param.ANIM_TIME * slowdown;
       ++animFrame;
     }
-    final int X2 = Param.TILES_X/2, Y2 = Param.TILES_Y/2;
+    final int X2 = Param.TILES_X / 2, Y2 = Param.TILES_Y / 2;
     for (int x = 0; x <= X2; ++x) {
       if (x > animFrame) break;
       Color c;
       switch (11 - ((x + animFrame) % 12)) {
-        case 0: case 1: case 2:
+        case 0:
+        case 1:
+        case 2:
           c = Param.HIGHLIGHT_RED;
           break;
-        case 3: case 4: case 5:
-        case 9: case 10: case 11:
+        case 3:
+        case 4:
+        case 5:
+        case 9:
+        case 10:
+        case 11:
           c = Param.HIGHLIGHT_YELLOW;
           break;
-        case 6: case 7: case 8:
+        case 6:
+        case 7:
+        case 8:
           c = Param.HIGHLIGHT_GREEN;
           break;
         default:
@@ -1222,8 +1258,8 @@ public class World {
         tiles[X2 - xMod][Y2 - y].setHighlightColour(c, Cardinal.kNONE);
 
         // BR
-        tiles[Param.TILES_X-1 - xMod][y].setHighlightColour(c, Cardinal.kNONE);
-        tiles[X2 - 1  + xMod][Y2 - y].setHighlightColour(c, Cardinal.kNONE);
+        tiles[Param.TILES_X - 1 - xMod][y].setHighlightColour(c, Cardinal.kNONE);
+        tiles[X2 - 1 + xMod][Y2 - y].setHighlightColour(c, Cardinal.kNONE);
 
         // TL
         tiles[xMod][Param.TILES_Y - 1 - y].setHighlightColour(c, Cardinal.kNONE);

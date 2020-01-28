@@ -1,14 +1,12 @@
 package timboe.vev.entity;
 
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.google.gwt.thirdparty.json.JSONException;
 import com.google.gwt.thirdparty.json.JSONObject;
 
 import timboe.vev.Param;
 import timboe.vev.Util;
-import timboe.vev.enums.BuildingType;
 import timboe.vev.enums.Particle;
 import timboe.vev.manager.GameState;
 import timboe.vev.manager.World;
@@ -25,7 +23,7 @@ public class Truck extends Sprite {
     kOFFLOAD,
     kRETURN_FROM_PATCH,
     kLOAD,
-    kDORMANT; // Nothing left to get
+    kDORMANT // Nothing left to get
   }
 
   // Persistent
@@ -43,29 +41,29 @@ public class Truck extends Sprite {
     json.put("holding", holding);
     json.put("level", level);
     json.put("myBuilding", myBuilding);
-    json.put("extraFrames",extraFrames);
-    json.put("toRemove",toRemove);
-    json.put("toAdd",toAdd);
-    return  json;
+    json.put("extraFrames", extraFrames);
+    json.put("toRemove", toRemove);
+    json.put("toAdd", toAdd);
+    return json;
   }
 
   public float getUpgradeFactor() {
-    return (float)Math.pow(Param.TRUCK_SPEED_BONUS, level);
+    return (float) Math.pow(Param.TRUCK_SPEED_BONUS, level);
   }
 
   public float getNextUpgradeFactor() {
-    return (float)Math.pow(Param.TRUCK_SPEED_BONUS, level + 1);
+    return (float) Math.pow(Param.TRUCK_SPEED_BONUS, level + 1);
   }
 
   public Truck(JSONObject json) throws JSONException {
     super(json);
-    truckState = TruckState.valueOf( json.getString("truckState") );
+    truckState = TruckState.valueOf(json.getString("truckState"));
     holding = json.getInt("holding");
     level = json.getInt("level");
     myBuilding = json.getInt("myBuilding");
     extraFrames = json.getInt("extraFrames");
-    toAdd = (float)json.getDouble("toAdd");
-    toRemove = (float)json.getDouble("toRemove");
+    toAdd = (float) json.getDouble("toAdd");
+    toRemove = (float) json.getDouble("toRemove");
   }
 
   @Override
@@ -84,7 +82,7 @@ public class Truck extends Sprite {
   public Truck(Tile t, Building myBuilding) {
     super(t);
     setTexture("pyramid", Param.N_TRUCK_SPRITES, false);
-    moveBy(0, Param.TILE_S/2); // Floats
+    moveBy(0, Param.TILE_S / 2); // Floats
     this.myBuilding = myBuilding == null ? 0 : myBuilding.id;
     this.frame = 0;
     this.extraFrames = 0;
@@ -104,9 +102,14 @@ public class Truck extends Sprite {
   @Override
   protected void atFinalDestination(Tile next, boolean wasParked) {
     switch (truckState) {
-      case kGO_TO_PATCH: this.truckState = TruckState.kLOAD; return;
-      case kRETURN_FROM_PATCH: this.truckState = TruckState.kOFFLOAD; return;
-      case kDORMANT: return;
+      case kGO_TO_PATCH:
+        this.truckState = TruckState.kLOAD;
+        return;
+      case kRETURN_FROM_PATCH:
+        this.truckState = TruckState.kOFFLOAD;
+        return;
+      case kDORMANT:
+        return;
     }
   }
 
@@ -114,7 +117,7 @@ public class Truck extends Sprite {
   protected void doDraw(Batch batch) {
     super.doDraw(batch);
     for (int i = 1; i < extraFrames; ++i) {
-      batch.draw(textureRegion[i],this.getX(),this.getY(),this.getOriginX(),this.getOriginY(),this.getWidth(),this.getHeight(),this.getScaleX(),this.getScaleY(),this.getRotation());
+      batch.draw(textureRegion[i], this.getX(), this.getY(), this.getOriginX(), this.getOriginY(), this.getWidth(), this.getHeight(), this.getScaleX(), this.getScaleY(), this.getRotation());
     }
   }
 
@@ -127,18 +130,18 @@ public class Truck extends Sprite {
       return;
     }
     Patch myPatch = World.getInstance().getTiberiumPatches().get(myB.myPatch);
-    if ( myPatch == null) {
+    if (myPatch == null) {
       truckState = TruckState.kDORMANT;
       return;
     }
     final boolean actionsPaused = (myB.doUpgrade || myB.built > 0);
     final int capacity = getCapacity();
-    this.extraFrames = Math.round((this.holding / (float)capacity) * (Param.N_TRUCK_SPRITES - 1));
+    this.extraFrames = Math.round((this.holding / (float) capacity) * (Param.N_TRUCK_SPRITES - 1));
 
     if (!actionsPaused) {
       actMovement(delta);
       time += delta;
-      moveBy(0f, .2f * (float)Math.cos(time));
+      moveBy(0f, .2f * (float) Math.cos(time));
     }
 
     switch (truckState) {
@@ -195,7 +198,7 @@ public class Truck extends Sprite {
         break;
       case kDORMANT:
         // If we have made it this far, we have a new home
-        Tile t = World.getInstance().getTile( myB.getPathingStartPoint(Particle.kBlank), isIntro);
+        Tile t = World.getInstance().getTile(myB.getPathingStartPoint(Particle.kBlank), isIntro);
         pathTo(t, null, null);
         truckState = TruckState.kRETURN_FROM_PATCH;
       default:

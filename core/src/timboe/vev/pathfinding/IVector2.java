@@ -4,13 +4,10 @@ import com.badlogic.gdx.Gdx;
 import com.google.gwt.thirdparty.json.JSONException;
 import com.google.gwt.thirdparty.json.JSONObject;
 
-import java.awt.font.GlyphJustificationInfo;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-
-import timboe.vev.entity.Tile;
 
 public class IVector2 implements Comparable, Serializable, Node {
   public int x;
@@ -42,17 +39,17 @@ public class IVector2 implements Comparable, Serializable, Node {
   }
 
   public IVector2(JSONObject json) throws JSONException {
-   this.x = json.getInt("x");
-   this.y = json.getInt("y");
-   if (json.has("n")) {
-     pathFindNeighbours = new HashSet<IVector2>();
-     JSONObject n = json.getJSONObject("n");
-     Iterator it = n.keys();
-     while (it.hasNext()) {
-       JSONObject sub = n.getJSONObject((String) it.next());
-       pathFindNeighbours.add( new IVector2( sub ) );
-     }
-   }
+    this.x = json.getInt("x");
+    this.y = json.getInt("y");
+    if (json.has("n")) {
+      pathFindNeighbours = new HashSet<IVector2>();
+      JSONObject n = json.getJSONObject("n");
+      Iterator it = n.keys();
+      while (it.hasNext()) {
+        JSONObject sub = n.getJSONObject((String) it.next());
+        pathFindNeighbours.add(new IVector2(sub));
+      }
+    }
   }
 
   public IVector2(int x, int y) {
@@ -81,7 +78,7 @@ public class IVector2 implements Comparable, Serializable, Node {
   }
 
   public float dst(IVector2 v) {
-    return (float)Math.hypot(this.x - v.x, this.y - v.y);
+    return (float) Math.hypot(this.x - v.x, this.y - v.y);
   }
 
   @Override
@@ -102,7 +99,7 @@ public class IVector2 implements Comparable, Serializable, Node {
     return "(" + x + "," + y + ")";
   }
 
-  public IVector2 clone()  {
+  public IVector2 clone() {
     return new IVector2(this);
   }
 
@@ -120,7 +117,7 @@ public class IVector2 implements Comparable, Serializable, Node {
   @Override
   public Set getNeighbours() {
     if (pathFindNeighbours == null) {
-      Gdx.app.error("Null Err","No neighbours! I am:" + this);
+      Gdx.app.error("Null Err", "No neighbours! I am:" + this);
     }
     return pathFindNeighbours;
   }

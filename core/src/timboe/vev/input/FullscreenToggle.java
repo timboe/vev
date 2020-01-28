@@ -12,12 +12,12 @@ public class FullscreenToggle extends ChangeListener {
 
   @Override
   public void changed(ChangeEvent event, Actor actor) {
-    CheckBox cb = (CheckBox)actor;
+    CheckBox cb = (CheckBox) actor;
     set(cb.isChecked(), true);
   }
 
   public void toggle() {
-    set( !Gdx.graphics.isFullscreen(), false );
+    set(!Gdx.graphics.isFullscreen(), false);
   }
 
   public void set(boolean fs, boolean fromChanged) {

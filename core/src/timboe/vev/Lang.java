@@ -9,13 +9,17 @@ import timboe.vev.enums.Particle;
 public class Lang {
 
   private static Lang ourInstance;
+
   public static Lang getInstance() {
     return ourInstance;
   }
-  public static void create() { ourInstance = new Lang(); }
+
+  public static void create() {
+    ourInstance = new Lang();
+  }
 
   private Lang() {
-    EN_GB.put("energy","Get energy from mining ore and deconstructing particles.\nSpend it on new buildings, and on upgrading them.");
+    EN_GB.put("energy", "Get energy from mining ore and deconstructing particles.\nSpend it on new buildings, and on upgrading them.");
     EN_GB.put("particles", "Particles in the world.\nDeconstruct them all to finish the game.\nParticles are spawned by white holes.");
     EN_GB.put("wParticles", "Particles yet to spawn into the world.");
     EN_GB.put("disassembleTime", "Time to deconstruct particle.");
@@ -30,34 +34,34 @@ public class Lang {
     EN_GB.put("howToPlay", "Controls, and game instructions.");
     EN_GB.put("credits", "Asset credits.");
     EN_GB.put("exit", "Exit to desktop.");
-    EN_GB.put("standingOrder","Setup standing move order.\nSpawned # will be sent to this location.");
-    EN_GB.put("standingBlank","Setup overflow standing move order.\nParticles which COULD be accepted,\nbut are turned away due to a full queue\nwill be sent here. NO cyclic loops.");
-    EN_GB.put("select","Toggle selection mode.");
-    EN_GB.put("pause","Show the pause menu.");
-    EN_GB.put("particleSelect","Left Click: Refine selection to just #\nShift+Left Click: Remove # from selection");
-    EN_GB.put("qSimple","Construct a straight queue.");
-    EN_GB.put("qSpiral","Construct a spiral queue.");
-    EN_GB.put("upgradeBuilding_A","Upgrade building.");
-    EN_GB.put("upgradeBuilding_B","\nUpgrade Cost: ");
-    EN_GB.put("upgradeBuilding_C","\nUpgrade Time: ");
-    EN_GB.put("upgradeBuilding_D","\nBuilding Speed Bonus: ");
-    EN_GB.put("upgradeBuilding_D_Mine","\nAverage Truck Speed Bonus: ");
-    EN_GB.put("buildBuilding_A","Build: ");
-    EN_GB.put("buildBuilding_B","\nAccepts: ");
-    EN_GB.put("buildBuilding_B_Mine","\nMines Ore, Produces Energy");
-    EN_GB.put("buildBuilding_C","\nBase Cost: ");
-    EN_GB.put("wrecking","Demolish building.\nRecoup #% of building's cost.");
-    EN_GB.put("saveAndQuit","Save the game and exit VEV.");
-    EN_GB.put("quitToTitle","Exit to the title screen.");
-    EN_GB.put("resume","Un-pause and resume.");
-    EN_GB.put("fullscreen","Toggles fullscreen mode.");
-    EN_GB.put("volume","Changes the volume.");
-    EN_GB.put("settingsTime","Current game time.");
-    EN_GB.put("newGameOpeningA","This white hole has spawned the first # particles into the land.");
-    EN_GB.put("newGameOpeningB","# more particles will follow, then the white holes will be depleted.");
-    EN_GB.put("newGameOpeningC","Deconstruct every particle in the shortest possible time.");
-    EN_GB.put("ok","OK");
-    EN_GB.put("midGame","The white holes are empty!\nDeconstruct the remaining # particles in the shortest possible time.");
+    EN_GB.put("standingOrder", "Setup standing move order.\nSpawned # will be sent to this location.");
+    EN_GB.put("standingBlank", "Setup overflow standing move order.\nParticles which COULD be accepted,\nbut are turned away due to a full queue\nwill be sent here. NO cyclic loops.");
+    EN_GB.put("select", "Toggle selection mode.");
+    EN_GB.put("pause", "Show the pause menu.");
+    EN_GB.put("particleSelect", "Left Click: Refine selection to just #\nShift+Left Click: Remove # from selection");
+    EN_GB.put("qSimple", "Construct a straight queue.");
+    EN_GB.put("qSpiral", "Construct a spiral queue.");
+    EN_GB.put("upgradeBuilding_A", "Upgrade building.");
+    EN_GB.put("upgradeBuilding_B", "\nUpgrade Cost: ");
+    EN_GB.put("upgradeBuilding_C", "\nUpgrade Time: ");
+    EN_GB.put("upgradeBuilding_D", "\nBuilding Speed Bonus: ");
+    EN_GB.put("upgradeBuilding_D_Mine", "\nAverage Truck Speed Bonus: ");
+    EN_GB.put("buildBuilding_A", "Build: ");
+    EN_GB.put("buildBuilding_B", "\nAccepts: ");
+    EN_GB.put("buildBuilding_B_Mine", "\nMines Ore, Produces Energy");
+    EN_GB.put("buildBuilding_C", "\nBase Cost: ");
+    EN_GB.put("wrecking", "Demolish building.\nRecoup #% of building's cost.");
+    EN_GB.put("saveAndQuit", "Save the game and exit VEV.");
+    EN_GB.put("quitToTitle", "Exit to the title screen.");
+    EN_GB.put("resume", "Un-pause and resume.");
+    EN_GB.put("fullscreen", "Toggles fullscreen mode.");
+    EN_GB.put("volume", "Changes the volume.");
+    EN_GB.put("settingsTime", "Current game time.");
+    EN_GB.put("newGameOpeningA", "This white hole has spawned the first # particles into the land.");
+    EN_GB.put("newGameOpeningB", "# more particles will follow, then the white holes will be depleted.");
+    EN_GB.put("newGameOpeningC", "Deconstruct every particle in the shortest possible time.");
+    EN_GB.put("ok", "OK");
+    EN_GB.put("midGame", "The white holes are empty!\nDeconstruct the remaining # particles in the shortest possible time.");
     EN_GB.put("demolish", "Demolish Building?\nRecover # Energy");
     EN_GB.put("progressTimer", "Particle deconstruction or\nbuilding upgrade timer.");
 
@@ -161,7 +165,7 @@ public class Lang {
     EN_GB.put("UI_HELP_C_08", "BUILDING'S ACCEPTED");
     EN_GB.put("UI_HELP_C_09", "PARTICLES");
     EN_GB.put("UI_HELP_C_10", Particle.kH.getString() + " PARTICLES");
-    EN_GB.put("UI_HELP_C_11", "WHITE HOLE'S STANDING MOVE ORDER FOR "+Particle.kH.getString()+" PARTICLES");
+    EN_GB.put("UI_HELP_C_11", "WHITE HOLE'S STANDING MOVE ORDER FOR " + Particle.kH.getString() + " PARTICLES");
 
     EN_GB.put("UI_HELP_D_00", "A game in LIBGDX by Tim Martin");
     EN_GB.put("UI_HELP_D_01", "A* implementation by Ben Ruijl");
@@ -187,10 +191,10 @@ public class Lang {
   public static String get(String key) {
     String[] parts = key.split("#");
     if (!EN_GB.containsKey(parts[0])) {
-      Gdx.app.error("Get","MISSING TEXT FOR " + parts[0]);
+      Gdx.app.error("Get", "MISSING TEXT FOR " + parts[0]);
       throw new AssertionError();
     }
-    String result =  EN_GB.get(parts[0]);
+    String result = EN_GB.get(parts[0]);
     if (parts.length > 1) {
       result = result.replaceAll("#", parts[1]);
     }

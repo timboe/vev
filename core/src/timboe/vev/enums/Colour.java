@@ -1,7 +1,5 @@
 package timboe.vev.enums;
 
-import com.google.gwt.thirdparty.json.JSONObject;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -25,12 +23,18 @@ public enum Colour {
 
   public String getString() {
     switch (this) {
-      case kRED: return "r";
-      case kRED_DARK: return "r_dark";
-      case kGREEN: return "g";
-      case kGREEN_DARK: return "g_dark";
-      case kBLUE: return "blue";
-      default: return "b";
+      case kRED:
+        return "r";
+      case kRED_DARK:
+        return "r_dark";
+      case kGREEN:
+        return "g";
+      case kGREEN_DARK:
+        return "g_dark";
+      case kBLUE:
+        return "blue";
+      default:
+        return "b";
     }
   }
 }

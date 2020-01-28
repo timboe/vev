@@ -5,10 +5,8 @@ import java.util.Set;
 /**
  * A node in a graph, useful for pathfinding.
  *
+ * @param <T> Actual type of the node
  * @author Ben Ruijl
- *
- * @param <T>
- *            Actual type of the node
  */
 public interface Node<T> {
   /**
@@ -26,8 +24,7 @@ public interface Node<T> {
    * can be added as well (for example climbing a mountain is more expensive
    * than walking on a road).
    *
-   * @param neighbour
-   *            Neighbour of current node
+   * @param neighbour Neighbour of current node
    * @return Traversal cost
    */
   double getTraversalCost(T neighbour);

@@ -4,10 +4,6 @@ import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 
-import java.util.EnumMap;
-import java.util.Vector;
-
-import timboe.vev.enums.Particle;
 import timboe.vev.enums.QueueType;
 
 public class Param {
@@ -20,12 +16,12 @@ public class Param {
   public static final int TILES_INTRO_X = 64;
   public static final int TILES_INTRO_Y = TILES_INTRO_X * INTRO_STRETCH;
 
-  public static final int TILES_INTRO_X_MID = TILES_INTRO_X/2;
-  public static final int TILES_INTRO_Y_MID = (TILES_INTRO_X * (INTRO_STRETCH-1)) + (TILES_INTRO_X/2);
+  public static final int TILES_INTRO_X_MID = TILES_INTRO_X / 2;
+  public static final int TILES_INTRO_Y_MID = (TILES_INTRO_X * (INTRO_STRETCH - 1)) + (TILES_INTRO_X / 2);
   public static final float TILES_INTRO_ZOOM = .25f;
 
-  public static final int TILES_X = 128+32;
-  public static final int TILES_Y = 128+32;
+  public static final int TILES_X = 128 + 32;
+  public static final int TILES_Y = 128 + 32;
   private static final int TILES_MIN = Math.min(TILES_X, TILES_Y);
   public static final int TILES_MAX = Math.max(TILES_X, TILES_Y);
 
@@ -34,7 +30,7 @@ public class Param {
   public static final int WORLD_SEED = 0; // 0 to disable
 
   public static final int SPRITE_SCALE = 2;
-  public static final float PARTICLE_VELOCITY = 32f*2f;
+  public static final float PARTICLE_VELOCITY = 32f * 2f;
   public static final float PARTICLE_AT_TARGET = 2f;
   public static final float NEW_PARTICLE_MEAN = Param.IS_ANDROID ? 2.5f : 5f; // mean number of particles to place
   public static final float NEW_PARTICLE_WIDTH = Param.IS_ANDROID ? 5f : 10f; // width of new particles dist
@@ -50,11 +46,11 @@ public class Param {
   public static final int MIN_GREEN_HILL = 2;
   public static final int MIN_RED_HILL = 2;
 
-  public static final int KRINKLE_OFFSET = (TILES_MIN/ZONES_MAX) / 10; // To leave room for edge-red-green-hill1-hill2 x2
+  public static final int KRINKLE_OFFSET = (TILES_MIN / ZONES_MAX) / 10; // To leave room for edge-red-green-hill1-hill2 x2
   public static final int KRINKLE_GAP = 3; // Tiles to leave clear between krinkles
   public static final int MAX_KRINKLE = 3; // Must be ODD
   public static final int NEAR_TO_EDGE = (MAX_KRINKLE * 2) + 1; // Min close-able space. If one went +ve and the other -ve,
-  public static final int EDGE_ADJUSTMENT = (MAX_KRINKLE/2)+1;
+  public static final int EDGE_ADJUSTMENT = (MAX_KRINKLE / 2) + 1;
   public static final boolean ALLOW_TILING_ERRORS = false;
 
   public static final int N_PATCH_TRIES = 25;
@@ -117,7 +113,7 @@ public class Param {
   public static final float ZOOM_MAX = 3.0f;
 
   private static final float DESIRED_FPS = 60; // FPS ANIM_SPEED is tuned for
-  public static final float FRAME_TIME = (1f/DESIRED_FPS);
+  public static final float FRAME_TIME = (1f / DESIRED_FPS);
 
   public static final int DEBUG_INITIAL = 0;
   private static final boolean FAKE_ANDROID = true;
@@ -128,7 +124,7 @@ public class Param {
   public static final int PARTICLES_LARGE = IS_ANDROID ? 2500 : 20000;
   public static final int PARTICLES_XL = IS_ANDROID ? 5000 : 50000;
 
-  public static final float ANIM_TIME = 1/20f; // I.e. 12 frames per second
+  public static final float ANIM_TIME = 1 / 20f; // I.e. 12 frames per second
 
   public static final float FADE_SPEED_GAME = 70f;
   public static final float FADE_SPEED_INTRO = 200f;
@@ -138,7 +134,7 @@ public class Param {
   public static final Color HIGHLIGHT_YELLOW = new Color(1f, 1f, 0f, 1f);
 
   public static final int DISPLAY_X = 1920;
-  public static final int DISPLAY_Y = Math.round(DISPLAY_X * (9f/16f));
+  public static final int DISPLAY_Y = Math.round(DISPLAY_X * (9f / 16f));
   public static final int UI_WIDTH_INTRO = 450;
 
   public static final int PLAYER_STARTING_ENERGY = 8500;
@@ -147,7 +143,7 @@ public class Param {
   public static final int TRUCK_LOAD_SPEED = 1250;
   public static final float TRUCK_SPEED_BONUS = 1.1f; //^(building level)
 
-  public static final Color PARTICLE_Blank = new Color(128/255f, 128/255f, 128/255f, 1f);
+  public static final Color PARTICLE_Blank = new Color(128 / 255f, 128 / 255f, 128 / 255f, 1f);
 
   public static final int HSB_BASE_SATURATION = 61;
   public static final int HSB_BASE_BRIGHTNESS = 81;

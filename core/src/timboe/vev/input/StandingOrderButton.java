@@ -25,15 +25,15 @@ public class StandingOrderButton extends ChangeListener {
     // Enforce one clicked
     if (data == null) return;
     final EnumMap<BuildingType, EnumMap<Particle, Button>> btButtonsMap = UI.getInstance().buildingSelectStandingOrder;
-    if (!btButtonsMap.containsKey( data.getKey() )) return;
-    final EnumMap<Particle, Button> pButtonsMap = btButtonsMap.get( data.getKey() );
+    if (!btButtonsMap.containsKey(data.getKey())) return;
+    final EnumMap<Particle, Button> pButtonsMap = btButtonsMap.get(data.getKey());
     for (Particle p : Particle.values()) {
       // For WARP, we iterate over all of these. For buildings, only the important one or two
       if (!pButtonsMap.containsKey(p)) continue;
       Button b = pButtonsMap.get(p);
       if (p == data.getValue()) {
         if (b.isChecked()) { // I was just clicked ON - start doing pathing for this building
-          Gdx.app.log("StandingOrderButton","Clicked " + data.getKey().toString() + " " + data.getValue().toString());
+          Gdx.app.log("StandingOrderButton", "Clicked " + data.getKey().toString() + " " + data.getValue().toString());
           GameState.getInstance().doingPlacement = true;
           GameState.getInstance().selectedBuildingStandingOrderParticle = p;
           UI.getInstance().selectTickIsEnabled(true);
@@ -44,7 +44,7 @@ public class StandingOrderButton extends ChangeListener {
           Sounds.getInstance().OK();
         }
       } else {
-        b.setChecked( false );
+        b.setChecked(false);
       }
     }
   }

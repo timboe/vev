@@ -28,14 +28,23 @@ import static timboe.vev.enums.Particle.kZ;
 
 public class Persistence {
   private static Persistence ourInstance = null;
-  public static Persistence getInstance() { return ourInstance; }
-  public static void create() { ourInstance = new Persistence(); }
-  public static boolean constructed() { return ourInstance != null; }
+
+  public static Persistence getInstance() {
+    return ourInstance;
+  }
+
+  public static void create() {
+    ourInstance = new Persistence();
+  }
+
+  public static boolean constructed() {
+    return ourInstance != null;
+  }
 
   // Persistent
   public float musicLevel;
   public float sfxLevel;
-  public EnumMap<Particle,Integer> particleHues = new EnumMap<Particle,Integer>(Particle.class);
+  public EnumMap<Particle, Integer> particleHues = new EnumMap<Particle, Integer>(Particle.class);
   public Vector<Integer> bestTimes = new Vector<Integer>();
 
   // Transient
@@ -79,13 +88,13 @@ public class Persistence {
         objectIn.close();
       } catch (IOException e) {
         e.printStackTrace();
-        Gdx.app.error("tryLoadGameSave","IOException!");
+        Gdx.app.error("tryLoadGameSave", "IOException!");
       } catch (ClassNotFoundException e) {
         e.printStackTrace();
-        Gdx.app.error("ClassNotFoundException","IOException!");
+        Gdx.app.error("ClassNotFoundException", "IOException!");
       } catch (JSONException e) {
         e.printStackTrace();
-        Gdx.app.error("JSONException","IOException!");
+        Gdx.app.error("JSONException", "IOException!");
       }
       Gdx.app.log("tryLoadGameSave", "Load save file complete");
     } else {
@@ -102,8 +111,8 @@ public class Persistence {
     if (settings.exists()) {
       try {
         JSONObject json = new JSONObject(settings.readString());
-        musicLevel = (float)json.getDouble("music");
-        sfxLevel = (float)json.getDouble("sfx");
+        musicLevel = (float) json.getDouble("music");
+        sfxLevel = (float) json.getDouble("sfx");
         JSONObject hue = json.getJSONObject("hue");
         for (Particle p : Particle.values()) {
           particleHues.put(p, hue.getInt(p.name()));
@@ -115,7 +124,7 @@ public class Persistence {
         bestTimes.add(json.getInt("bestTime3"));
       } catch (JSONException e) {
         e.printStackTrace();
-        Gdx.app.error("tryLoadSetting","JSONException! Resetting");
+        Gdx.app.error("tryLoadSetting", "JSONException! Resetting");
         reset();
       }
     }
@@ -156,7 +165,7 @@ public class Persistence {
       save.put("Camera", Camera.getInstance().serialise());
     } catch (JSONException e) {
       e.printStackTrace();
-      Gdx.app.error("trySaveGame","JSONException!");
+      Gdx.app.error("trySaveGame", "JSONException!");
     }
   }
 
@@ -176,7 +185,7 @@ public class Persistence {
       baos.writeTo(handle.write(false));
     } catch (IOException e) {
       e.printStackTrace();
-      Gdx.app.error("flushSaveGame","IOException!");
+      Gdx.app.error("flushSaveGame", "IOException!");
     }
   }
 
@@ -185,7 +194,7 @@ public class Persistence {
     FileHandle fh = Gdx.files.local(Param.SAVE_FILE);
     fh.delete();
     save = null;
-    Gdx.app.log("deleteSave","WARNING!!! Deleting save game");
+    Gdx.app.log("deleteSave", "WARNING!!! Deleting save game");
   }
 
   public void dispose() {

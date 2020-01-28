@@ -7,18 +7,18 @@ import timboe.vev.manager.Camera;
 import timboe.vev.manager.GameState;
 import timboe.vev.manager.IntroState;
 import timboe.vev.manager.Persistence;
-import timboe.vev.manager.StateManager;
-import timboe.vev.manager.UIIntro;
 import timboe.vev.manager.Sounds;
+import timboe.vev.manager.StateManager;
 import timboe.vev.manager.Textures;
 import timboe.vev.manager.UI;
+import timboe.vev.manager.UIIntro;
 import timboe.vev.manager.World;
 
 public class VEVGame extends Game {
 
 
   @Override
-  public void create () {
+  public void create() {
     Persistence.create();
     Lang.create();
     Camera.create();
@@ -34,10 +34,10 @@ public class VEVGame extends Game {
 
     StateManager.getInstance().init(this);
     Sounds.getInstance().doMusic(true);
-	}
-	
+  }
+
   @Override
-  public void dispose () {
+  public void dispose() {
     if (StateManager.getInstance().fsm == FSM.kGAME) {
       // We were closed from the X button / Alt+F4 / Android... etc.
       Persistence.getInstance().trySaveGame();
