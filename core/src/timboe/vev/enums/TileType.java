@@ -31,8 +31,6 @@ public enum TileType {
   kCLIFF_EDGE_4,
   kCLIFF_3;
 
-
-
   private static final Random R = new Random();
 
   public static String getTextureString(TileType tt, Colour c) {
@@ -152,13 +150,6 @@ public enum TileType {
   public static String getTextureString(final Tile t) {
     final Map<Cardinal, Tile> neighbours = t.n8;
 
-    // Temp
-//    if (t.mask) return "missing3";
-//    if (true) return getTextureString(kGROUND, t.tileColour);
-
-//    if (t.type == kSTAIRS) return "missing2";
-
-
     // Stairs N
     if (testStairs(t, neighbours, 1, 0, -1, 0)) return getTextureString(kSTAIRS, t.tileColour, Cardinal.kN, Cardinal.kN);
     if (testStairs(t, neighbours, 1, 9, -1, 0)) return getTextureString(kSTAIRS, t.tileColour, Cardinal.kN, Cardinal.kE);
@@ -266,10 +257,5 @@ public enum TileType {
 
     // Regular ground
     return getTextureString(kGROUND, t.tileColour);
-
-    // Void
-//    if (t.level == 0) return getTextureString(kGROUND, Colour.kBLACK);
-
-//    return "missing";
   }
 }

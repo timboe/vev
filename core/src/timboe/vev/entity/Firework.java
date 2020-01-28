@@ -1,6 +1,5 @@
 package timboe.vev.entity;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.math.Vector2;
 
@@ -38,6 +37,8 @@ public class Firework extends Entity {
 
   public void act(float delta){
     boolean isActive = false;
+    boolean isBooming = (this.locations.size() > 1);
+
     for (Pair<Vector2, ArrayDeque<Vector2>> p : this.locations) {
       if (p.getValue().size() == 0) {
         continue;
@@ -46,7 +47,6 @@ public class Firework extends Entity {
 
       // Movement
       boolean isStick = (p == this.locations.getFirst());
-      boolean isBooming = (this.locations.size() > 1);
       boolean isDead = p.getKey().isZero();
 
       if ((isStick && !isBooming) || (!isStick && !isDead)) {
@@ -81,7 +81,7 @@ public class Firework extends Entity {
       }
     }
 
-    if (locations.size() == 1 && locations.getFirst().getKey().y < 100) {
+    if (!isBooming && locations.getFirst().getKey().y < 100) {
       explode();
     }
 

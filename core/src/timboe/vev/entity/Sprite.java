@@ -162,7 +162,6 @@ public class Sprite extends Entity {
         idleWander = GameState.getInstance().mapPathingDestination(World.getInstance().getTile(newX, newY, isIntro));
       }
       if (idleWander != null) {
-//        Gdx.app.log("act", "Trying idle wander to " + idleWander + " (isIntro = " + isIntro + ")");
         pathTo(idleWander, null, null);
         idleTime = 0;
       }

@@ -102,9 +102,6 @@ public class Tile extends Entity {
     if (this.queueTex != "" && this.queueTexSet) { // Delayed rendering was activated
       setQueueTexture();
     }
-//    if (this.x == 32 && this.y == 32) {
-//      Gdx.app.log("Tile ("+x+","+y+") id "+id+" DeSerial Debug", json.toString());
-//    }
   }
 
   public Tile(int x, int y) {
@@ -167,7 +164,6 @@ public class Tile extends Entity {
     this.queueClockwise = true;
     this.queueTexSet = false;
     this.queueTex = "";
-    Gdx.app.log("removeBuilding","Called on "+coordinates);
     loadTexture();
   }
 
@@ -224,7 +220,6 @@ public class Tile extends Entity {
     Tile t = World.getInstance().getTile(s.myTile, isIntro);
     t.deRegSprite(s);
 
-//    Gdx.app.log("tryRegSprite", "Try reg "+s.id);
     Entity e = getMySprite();
     boolean isTruck = (s.getClass() == Truck.class);
     boolean isStartOfQueue = (e != null && e.getClass() == Building.class);

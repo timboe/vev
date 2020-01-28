@@ -125,7 +125,6 @@ public class GameScreen implements Screen {
     ////////////////////////////////////////////////
     // FX
 
-    // TODO optimise additive mixed batching
     Batch batch = state.getTileStage().getBatch();
     batch.begin();
     if (GameState.getInstance().warpParticles > 0) {

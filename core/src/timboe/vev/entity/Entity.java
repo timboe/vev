@@ -128,7 +128,6 @@ public class Entity extends Actor implements Serializable {
         if (maxKey >= 0) {
           for (Integer i = 0; i <= maxKey; ++i) {
             IVector2 v = new IVector2(vecList.getJSONObject(i.toString()));
-//            Gdx.app.log("DBG_D",i.toString() + " = " + vecList.getJSONObject(i.toString()).toString());
             pl.add(v);
           }
         }
@@ -228,7 +227,6 @@ public class Entity extends Actor implements Serializable {
     boolean ok = true;
     for (int f = 0; f < texFrames; ++f) {
       final String texName = texString + (texFrames > 1 ? "_" + f : "");
-//      Gdx.app.log("DBG", "Get " + texName);
 
       TextureRegion r = Textures.getInstance().getTexture(texName, texFlipped);
       if (r == null) {
@@ -239,7 +237,7 @@ public class Entity extends Actor implements Serializable {
       setTexture(r, f);
     }
     if (this.frame == -1) {
-      this.frame = Util.R.nextInt(texFrames); // TODO check this doesn't mess anything up
+      this.frame = Util.R.nextInt(texFrames);
     }
     this.frames = texFrames;
     return ok;
@@ -282,7 +280,6 @@ public class Entity extends Actor implements Serializable {
     } else {
       doDraw(batch);
     }
-//    draw(TextureRegion region, float x, float y, float originX, float originY, float width, float height, float scaleX, float scaleY, float rotation)
   }
 
   protected void doDraw(Batch batch) {
@@ -332,7 +329,6 @@ public class Entity extends Actor implements Serializable {
   public void drawPath(ShapeRenderer sr) {
     if (!selected && !(UI.getInstance().uiMode == UIMode.kSETTINGS)) return;
     if (pathingList != null) { // in-progress
-//      Gdx.app.log("DBG", "pathingList:" + pathingList + " pathingParticle:" + pathingParticle + " me:" + this);
       sr.setColor(pathingParticle.getHighlightColour());
       drawList(pathingList, sr, pathingParticle.getStandingOrderOffset());
     }

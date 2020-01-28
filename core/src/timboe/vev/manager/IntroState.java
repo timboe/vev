@@ -80,7 +80,6 @@ public class IntroState {
     if (getIntroSpriteStage().getActors().size > 0) {
       return;
     }
-    Gdx.app.log("addParticles", "Doing intro particle population.");
     int pType = 0;
     for (double a = -Math.PI; a <= Math.PI; a += (2*Math.PI) / (double)(Particle.values().length - 1) ) { // -1 due to kBlank
       if (pType == (Particle.values().length - 1)) break; // Else rely on floating point in for loop

@@ -2,7 +2,6 @@ package timboe.vev.input;
 
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
@@ -17,7 +16,6 @@ import timboe.vev.manager.Persistence;
 import timboe.vev.manager.Sounds;
 import timboe.vev.manager.Textures;
 import timboe.vev.manager.UI;
-import timboe.vev.manager.UIIntro;
 
 public class NewGameButton extends ChangeListener {
 

@@ -38,21 +38,21 @@ public class Zone extends Entity {
   public void addEdgePairs(Vector<Pair<IVector2,IVector2>> edgePairs) {
     // Bottom left to top left, TL to TR, TR to BR, BR to BL
     edgePairs.add(new Pair<IVector2, IVector2>(new IVector2(getLowerX(),getLowerY()), new IVector2(getLowerX(),getLowerY() + h)));
-    edgePairs.add(new Pair<IVector2, IVector2>(new IVector2(getLowerX(),getLowerY() + w), new IVector2(getUperX(),getUperY())));
-    edgePairs.add(new Pair<IVector2, IVector2>(new IVector2(getUperX(),getUperY()), new IVector2(getLowerX() + w, getLowerY())));
+    edgePairs.add(new Pair<IVector2, IVector2>(new IVector2(getLowerX(),getLowerY() + w), new IVector2(getUpperX(), getUpperY())));
+    edgePairs.add(new Pair<IVector2, IVector2>(new IVector2(getUpperX(), getUpperY()), new IVector2(getLowerX() + w, getLowerY())));
     edgePairs.add(new Pair<IVector2, IVector2>(new IVector2(getLowerX() + w, getLowerY()), new IVector2(getLowerX(),getLowerY())));
   }
 
   public boolean inZone(int x, int y) {
-    return (x >= getLowerX() && x < getUperX() && y >= getLowerY() && y < getUperY());
+    return (x >= getLowerX() && x < getUpperX() && y >= getLowerY() && y < getUpperY());
   }
 
   public int getLowerX() { return lowerLeft.x; }
 
-  private int getUperX() { return upperRight.x; }
+  private int getUpperX() { return upperRight.x; }
 
   public int getLowerY() { return lowerLeft.y; }
 
-  private int getUperY() { return upperRight.y; }
+  private int getUpperY() { return upperRight.y; }
 
 }

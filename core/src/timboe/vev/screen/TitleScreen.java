@@ -22,7 +22,6 @@ public class TitleScreen implements Screen {
   private final Camera camera = Camera.getInstance();
   private final IntroState state = IntroState.getInstance();
   private final World world = World.getInstance();
-  private final UIIntro ui = UIIntro.getInstance();
   private final ShapeRenderer sr = new ShapeRenderer();
   public float fadeIn = 0;
   public float[] transitionOutTimers = new float[3];
@@ -51,8 +50,6 @@ public class TitleScreen implements Screen {
     camera.update(delta);
     state.act(delta);
 
-//    state.getIntroTileStage().getRoot().setCullingArea( camera.getCullBoxTile() );
-
     state.getIntroTileStage().draw();
     state.getIntroFoliageStage().draw();
     state.getIntroBuildingStage().draw();
@@ -75,14 +72,12 @@ public class TitleScreen implements Screen {
     Batch batch = state.getIntroTileStage().getBatch();
     batch.begin();
     state.demoWarp.warpCloud.draw(batch, delta);
-    //if (!state.demoWarp.zap.isComplete()) state.demoWarp.zap.draw(batch, delta);     // We currently don't zap
     batch.end();
 
     ////////////////////////////////////////////////
     // UI
 
     state.getIntroHelpStage().draw();
-
 
     state.getUIStage().draw();
 

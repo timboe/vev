@@ -178,7 +178,6 @@ public class UIIntro {
   }
 
   public void cancelSettingsChanges() {
-    Gdx.app.log("cancelSettingsChanges","Cancelling");
     for (Particle p : Particle.values()) {
       if (p == Particle.kBlank) continue;
       Persistence.getInstance().particleHues.put(p, cacheHue.get(p));
@@ -259,7 +258,6 @@ public class UIIntro {
     helpStage.clear();
     helpStage.addActor(tableHelp);
 
-    Gdx.app.log("resetTitle", "made intro UI");
   }
 
   private void windowMain(Table titleWindow) {
@@ -272,7 +270,6 @@ public class UIIntro {
 
     titleWindow.row();
     ui.separator(titleWindow, 1);
-    Gdx.app.log("DBG","WINDOW MAIN");
     Button loadGame = ui.getTextButton(Lang.get("UI_LOAD"), "loadGame");
     loadGame.addListener(new ChangeListener() {
       @Override

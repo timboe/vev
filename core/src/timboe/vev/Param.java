@@ -88,7 +88,6 @@ public class Param {
   public static final float BUILDING_DISASSEMBLE_BONUS = 0.9f; //^(building level)
   public static final float BUILDING_REFUND_AMOUND = 0.8f; //Recoup % of all building costs
 
-
   public static final float LONG_PRESS_TIME = 0.15f;
 
   public static final int N_TIBERIUM_SPRITES = 4; // Number of sprites
@@ -121,7 +120,6 @@ public class Param {
   public static final float FRAME_TIME = (1f/DESIRED_FPS);
 
   public static final int DEBUG_INITIAL = 0;
-  public static final boolean CHEATS = true;
   private static final boolean FAKE_ANDROID = true;
   public static final boolean IS_ANDROID = FAKE_ANDROID || Gdx.app.getType() == Application.ApplicationType.Android;
 

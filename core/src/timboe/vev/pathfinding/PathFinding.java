@@ -86,18 +86,15 @@ public class PathFinding {
           Gdx.app.error("pathFinding","element was in solutionsKnownFrom but not any individual soln?!");
           return null;
         }
-//        Gdx.app.error("pathFinding","partial pathfind. CACHED. Split at:" + ((Tile)current).x + "," + ((Tile)current).y);
+
         for (int i = otherSolution.size() - 1; i >= 0; --i) {
           if (otherSolution.get(i) == current) break;
           route.add(0, (T)otherSolution.get(i) );
-//          Gdx.app.error("  ADD C - ",((Tile)otherSolution.get(i)).x + "," + ((Tile)otherSolution.get(i)).y);
         }
 
         // Add the remainder - unique to me
-//        Gdx.app.error("pathFinding","partial pathfind. UNIQUE");
         while (current != null) {
           route.add(0, current);
-//          Gdx.app.error("  ADD - U",((Tile)current).x + "," + ((Tile)current).y);
           current = fromMap.get(current);
         }
         cache.addToCache(start, goal, route);

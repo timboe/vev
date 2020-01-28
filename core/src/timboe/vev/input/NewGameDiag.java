@@ -39,7 +39,6 @@ public class NewGameDiag extends Dialog {
       StateManager.getInstance().transitionToGameScreen();
     } else {
       Sounds.getInstance().cancel();
-      Gdx.app.log("result","Pressed CANCEL");
     }
   }
 }

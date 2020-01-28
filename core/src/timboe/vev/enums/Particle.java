@@ -72,14 +72,15 @@ public enum Particle {
   // Offset of chevrons so that they don't overlap
   public int getStandingOrderOffset() {
     switch (this) {
-      case kH: return 0;
       case kW: return 2;
       case kZ: return 4;
       case kE: return 6;
       case kM: return 8;
       case kQ: return 10;
       case kBlank: return 12;
-      default: return 0;
+      case kH:
+      default:
+        return 0;
     }
   }
 
@@ -96,7 +97,6 @@ public enum Particle {
     }
   }
 
-  // TODO tweak
   public int getCreateEnergy() {
     switch (this) {
       case kH: return 305;

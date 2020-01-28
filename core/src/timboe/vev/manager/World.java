@@ -289,11 +289,11 @@ public class World {
     try {
       deserialise( Persistence.getInstance().save.getJSONObject("World") );
       GameState.getInstance().deserialise( Persistence.getInstance().save.getJSONObject("GameState") );
+      Gdx.app.log("load", "Deserialised and applied game data from save-file.");
       generated = true;
       doLoad = false;
       doGenerate = false;
       warpParticlesCached = -1;
-      //Gdx.app.log("DBG", "LOADED. WARPS ACTORS SIZE " + GameState.getInstance().getWarpStage().getActors().size);
       StateManager.getInstance().transitionToGameScreen();
     } catch (JSONException e) {
       e.printStackTrace();
@@ -556,10 +556,6 @@ public class World {
           else introFoliage.put(s.id, s);
           tileArray[x][y].type = TileType.kFOLIAGE;
           tileArray[x][y].mySprite = s.id;
-//        } else if (tiles[x][y].tileColour == Colour.kGREEN && R.nextFloat() < 0.01) {
-//          Tile s = new Tile(x,y);
-//          GameState.getInstance().getStage().addActor(s);
-//          s.setTexture("building_" + R.nextInt(5), 1);
         }
       }
     }
@@ -996,8 +992,7 @@ public class World {
           success = doEdges(edges, zone, zones[x][y].tileColour, zones[x][y].tileColour, zones[x][y].level, hwh_level, 4 * Param.KRINKLE_OFFSET, (5 * Param.KRINKLE_OFFSET) - Param.KRINKLE_GAP);
         }
         if (!success) {
-          if (GameState.getInstance().debug > 0)
-            Gdx.app.error("  doSpecialZone", "Failed doEdges doGreen:" + doGreenZones + " doHill:" + doHills + " doHWH:" + hwh);
+          Gdx.app.error("doSpecialZone", "Failed doEdges doGreen:" + doGreenZones + " doHill:" + doHills + " doHWH:" + hwh);
           return false;
         }
       }
@@ -1056,7 +1051,6 @@ public class World {
   private void floodFill(final Zone z, final Colour fromC, final Colour toC, final int fromLevel, final int toLevel) {
     for (int x = z.lowerLeft.x; x < z.upperRight.x; ++x) {
       for (int y = z.lowerLeft.y; y < z.upperRight.y; ++y) {
-//        Gdx.app.log("DBG","x " + x + " y " + y + " | " + z.upperRight.x + " " + z.upperRight.y);
         if (!tiles[x][y].mask && tiles[x][y].tileColour == fromC && tiles[x][y].level == fromLevel) {
           setGround(new IVector2(x, y), toC, toLevel, Edge.kFLAT);
         }
@@ -1107,7 +1101,7 @@ public class World {
           direction = krinkle(location, D, direction, distanceToDest, maxIncursion, destination, fromC, toC, fromLevel, toLevel);
           if (!Util.inBounds(location, false)) {
             Gdx.app.error("doEdges", "Serious krinkle error, gone out-of-bounds");
-            return true; // TODO make this an error, return false
+            return false;
           }
           if (distanceToDest == 0) break;
         }
@@ -1187,7 +1181,6 @@ public class World {
         String tex = TileType.getTextureString(tileArray[x][y]);
         ok &= (!tex.contains("missing")); // Should not return "missingX"
         ok &= tileArray[x][y].setTexture(tex, 1, false); // Should be found in atlas
-//        Gdx.app.log("applyTileGraphics", "set " + x + "," + y + " to " + tex);
       }
     }
     if (!ok) Gdx.app.error("applyTileGraphics", "Graphics errors reported");

@@ -34,8 +34,7 @@ public class Truck extends Sprite {
   public int level = 0;
   public int myBuilding;
   public int extraFrames;
-
-  float toRemove = 0, toAdd = 0;  // Transient
+  private float toRemove = 0, toAdd = 0;
 
 
   public JSONObject serialise() throws JSONException {
@@ -45,6 +44,8 @@ public class Truck extends Sprite {
     json.put("level", level);
     json.put("myBuilding", myBuilding);
     json.put("extraFrames",extraFrames);
+    json.put("toRemove",toRemove);
+    json.put("toAdd",toAdd);
     return  json;
   }
 
@@ -63,6 +64,8 @@ public class Truck extends Sprite {
     level = json.getInt("level");
     myBuilding = json.getInt("myBuilding");
     extraFrames = json.getInt("extraFrames");
+    toAdd = (float)json.getDouble("toAdd");
+    toRemove = (float)json.getDouble("toRemove");
   }
 
   @Override

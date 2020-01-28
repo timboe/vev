@@ -245,7 +245,6 @@ public class GameState {
     }
   }
 
-
   public PathingCache<IVector2> pathingCache = new PathingCache<IVector2>();
   public final Random R = new Random();
 
@@ -467,7 +466,8 @@ public class GameState {
     if (selectedSet.isEmpty()) showMainUITable(false);
     else UI.getInstance().doSelectParticle(selectedSet, false);
   }
-    public void killSelectedBuilding() {
+
+  public void killSelectedBuilding() {
     Building selected = getBuildingMap().remove( selectedBuilding );
     if (selected == null) {
       Gdx.app.error("killSelectedBuilding", "Trying to kill NULL selected building?! selectedBuilding is " + selectedBuilding);
@@ -752,7 +752,6 @@ public class GameState {
   }
 
   public Tile mapPathingDestination(Tile target) {
-//    Gdx.app.log("mapPathingDestination","For "+target.coordinates.toString());
     Entity targetSprite = target.getMySprite();
     if (targetSprite != null && targetSprite.getClass() == Building.class) {
       return ((Building)targetSprite).getQueuePathingTarget();
@@ -835,7 +834,6 @@ public class GameState {
     } while (anotherRoundNeeded);
     Gdx.app.log("pathingInternal","Pathing of " + pathed.size() + " sprites took " + rounds + " rounds");
     if (!doRepath && pathed.size() > 0) {
-      Gdx.app.log("MO","MO");
       Sounds.getInstance().moveOrder();
       Sounds.getInstance().OK();
     }

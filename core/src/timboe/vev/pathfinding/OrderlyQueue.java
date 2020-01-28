@@ -118,7 +118,6 @@ public class OrderlyQueue {
       assert tile != null;
       for (int id : tile.containedSprites) {
         Sprite s = GameState.getInstance().getParticleMap().get(id);
-//        Gdx.app.log("moveAlongMoveAlong","tile " + tile.coordinates + " contains "+id+" sprite=" + s + " parked=" + tile.parkingSpaces.get(s.id));
         // Get parking space
         final Cardinal parking = tile.parkingSpaces.get(s.id);
         if (parking == null) continue; // I'm not parked here, e.g. moving over the entrance tile
@@ -127,7 +126,6 @@ public class OrderlyQueue {
           if (i == 0) { // Is this the final tile?
             // Is the sprite *actually here*
             Building b = getMyBuilding();
-//            Gdx.app.log("moveAlongMoveAlong", "b.spriteProcessing="+b.spriteProcessing+" nudgeDest="+s.nudgeDestination);
             if (b.spriteProcessing == 0 && s.nudgeDestination.isZero()) { // Arrived
               if (toRemove != null) Gdx.app.error("moveAlongMoveAlong", "should only ever be one toRemove");
               // Goodby - this particle is now DEAD
@@ -172,7 +170,6 @@ public class OrderlyQueue {
       Cardinal D = queueStart;
       do {
         if (t.parkingSpaces.containsValue(D)) { // Someone is here - go for the previous place
-          Gdx.app.debug("getFreeLocationInQueue","Accepted sprite to "+t.coordinates+" "+D.getString());
           if (previousT != null) return new Pair<Tile, Cardinal>(previousT, previousD);
           return null;
         } else { // We can put the sprite here! Make a note

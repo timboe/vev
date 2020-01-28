@@ -45,7 +45,6 @@ public class IVector2 implements Comparable, Serializable, Node {
    this.x = json.getInt("x");
    this.y = json.getInt("y");
    if (json.has("n")) {
-//     Gdx.app.log("Deserial","tile " + x + " " + y + " has n");
      pathFindNeighbours = new HashSet<IVector2>();
      JSONObject n = json.getJSONObject("n");
      Iterator it = n.keys();

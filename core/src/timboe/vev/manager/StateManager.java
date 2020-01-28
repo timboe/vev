@@ -58,7 +58,6 @@ public class StateManager {
     if (fsm == FSM.kTRANSITION_TO_INTRO_SAVE) {
       UI.getInstance().saving.setVisible(true);
     }
-    Gdx.app.log("transitionToTitleScreen","State now "+fsm);
     Gdx.input.setInputProcessor(null);
     theGameScreen.transitionOutTimers[0] = 0f;
     Sounds.getInstance().pulse();
@@ -75,7 +74,6 @@ public class StateManager {
     if (doSave) {
       Persistence.getInstance().trySaveGame();
       World.getInstance().reset(false);
-      Persistence.getInstance().flushSaveGame();
     } else {
       World.getInstance().reset(false);
     }

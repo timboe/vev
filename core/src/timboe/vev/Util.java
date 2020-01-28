@@ -89,7 +89,7 @@ public class Util {
   private static boolean needsClamp(float val, float min, float max) { return !(val == clamp(val,min,max)); }
 
 
-  static float elapsed = 0;
+  private static float elapsed = 0;
   public static boolean doFade(ShapeRenderer sr, float delta, float[] fadeTimer) {
     final int finalTime = 4000;
     if (fadeTimer[0] == 0) {

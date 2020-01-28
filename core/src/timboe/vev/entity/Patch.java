@@ -19,7 +19,7 @@ import timboe.vev.manager.World;
 
 public class Patch extends Entity {
   private Vector<Integer> contained = new Vector<Integer>();
-  private int untilNextShardConsumed;
+  private int untilNextShardConsumed = 0;
 
   public JSONObject serialise() throws JSONException {
     JSONObject json = super.serialise(false);

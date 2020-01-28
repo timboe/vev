@@ -57,7 +57,6 @@ public class UI {
   public static void create() { ourInstance = new UI(); }
   public static boolean constructed() { return ourInstance != null; }
   public void dispose() { ourInstance = null; }
-  private static DecimalFormat df2 = new DecimalFormat(".##");
 
 
   public UIMode uiMode = UIMode.kNONE;
@@ -86,6 +85,7 @@ public class UI {
   private float displayWarpParticles = Param.PARTICLES_SMALL;
   private float time;
   public final DecimalFormat formatter = new DecimalFormat("###,###");
+  private static DecimalFormat df2 = new DecimalFormat(".##");
   private LabelDF displayPlayerEnergyLabel;
   private LabelDF displayPLayerParticleLabel;
   private Set<LabelDF> displayPlayerEnergyLabelSet = new HashSet<LabelDF>();
@@ -356,7 +356,6 @@ public class UI {
 
 
   protected void resetGame() {
-    Gdx.app.log("resetGame", "made game UI");
 
     Table sParent = new Table();
     sParent.setFillParent(true);

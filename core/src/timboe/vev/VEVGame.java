@@ -51,7 +51,7 @@ public class VEVGame extends Game {
     IntroState.getInstance().dispose();
     GameState.getInstance().dispose();
     StateManager.getInstance().dispose();
-    Persistence.getInstance().dispose();
+    Persistence.getInstance().dispose(); // Flushes save file (if any) to disk
   }
 
 }

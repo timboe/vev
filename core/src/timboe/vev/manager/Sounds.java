@@ -78,7 +78,6 @@ public class Sounds {
   }
 
   public void pause() {
-    Gdx.app.log("pause","DoPause");
     paused = true;
     theme[track].pause();
   }
@@ -89,7 +88,6 @@ public class Sounds {
   }
 
   public void musicVolume() {
-    Gdx.app.log("musicVolume","Now " + Persistence.getInstance().musicLevel);
     theme[track].setVolume(Persistence.getInstance().musicLevel);
   }
 
@@ -150,7 +148,6 @@ public class Sounds {
   }
 
   public void moveOrder() {
-    Gdx.app.log("moveOrder","MO");
     move[ R.nextInt(nMove) ].play(Persistence.getInstance().sfxLevel);
   }
 

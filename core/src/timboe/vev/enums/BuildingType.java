@@ -58,46 +58,53 @@ public enum BuildingType {
 
   public int getBaseCost() {
     switch (this) {
-      case kHZE: return 10000;
-      case kHWM: return 10000;
-      case kWEQ: return 10000;
-      case kZMQ: return 10000;
-      case kMINE: return 3000;
-      default: return 10000;
+      case kMINE:
+        return 3000;
+      case kHZE:
+      case kHWM:
+      case kWEQ:
+      case kZMQ:
+      default:
+        return 10000;
     }
   }
 
   public int getQueueBaseCost() {
     switch (this) {
-      case kHZE: return 100;
-      case kHWM: return 100;
-      case kWEQ: return 100;
-      case kZMQ: return 100;
-      case kMINE: return 0;
-      default: return 0;
+      case kHZE:
+      case kWEQ:
+      case kHWM:
+      case kZMQ:
+        return 100;
+      case kMINE:
+      default:
+        return 0;
     }
   }
 
   public float getCostIncrease() {
     switch (this) {
-      case kHZE: return 1.3f;
-      case kHWM: return 1.3f;
-      case kWEQ: return 1.3f;
-      case kZMQ: return 1.3f;
-      case kMINE: return 1.3f;
-      default: return 1.3f;
+      case kHWM:
+      case kHZE:
+      case kWEQ:
+      case kZMQ:
+      case kMINE:
+      default:
+        return 1.3f;
     }
   }
 
 
   public float getUpgradeBaseCost() {
     switch (this) {
-      case kHZE: return 1000;
-      case kHWM: return 1000;
-      case kWEQ: return 1000;
-      case kZMQ: return 1000;
-      case kMINE: return 2500;
-      default: return 1000;
+      case kMINE:
+        return 2500;
+      case kHZE:
+      case kHWM:
+      case kWEQ:
+      case kZMQ:
+      default:
+        return 1000;
     }
   }
 

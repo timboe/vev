@@ -35,7 +35,6 @@ public class Gesture implements GestureDetector.GestureListener {
 
   @Override
   public boolean tap(float x, float y, int count, int button) {
-    Gdx.app.log("tap","tap "+x+","+"y");
     GameState state = GameState.getInstance();
     UI ui = UI.getInstance();
     v3temp.set(x, y, 0);

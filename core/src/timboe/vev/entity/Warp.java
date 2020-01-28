@@ -28,21 +28,21 @@ public class Warp extends Building {
 
   private float[] rotAngle = {0f, 90f, 0f, -90f};
   private final float[] rotV = {Param.WARP_ROTATE_SPEED, Param.WARP_ROTATE_SPEED, -Param.WARP_ROTATE_SPEED, -Param.WARP_ROTATE_SPEED};
-  private final int pathingStartPointSeed = Util.R.nextInt();
   public final ParticleEffect warpCloud;
   public final ParticleEffect zap;
 
   // Persistent
+  private int pathingStartPointSeed = Util.R.nextInt();
   private final EnumMap<Particle, IVector2> pathingStartPointWarp = new EnumMap<Particle, IVector2>(Particle.class);
 
   public JSONObject serialise() throws JSONException {
-    //Gdx.app.log("DBG_S","Saving WARP " + id );
     JSONObject json = super.serialise();
     JSONObject startPointJson = new JSONObject();
     for (EnumMap.Entry<Particle, IVector2> entry : pathingStartPointWarp.entrySet()) {
       startPointJson.put(entry.getKey().toString(), entry.getValue().serialise());
     }
     json.put("pathingStartPointWarp", startPointJson);
+    json.put("pathingStartPointSeed", pathingStartPointSeed);
     return json;
   }
 
@@ -53,13 +53,14 @@ public class Warp extends Building {
     setTexture( Textures.getInstance().getTexture("void", false), 2);
     setTexture( Textures.getInstance().getTexture("void", true), 3);
 
+    pathingStartPointSeed = json.getInt("pathingStartPointSeed");
+
     JSONObject startPointJson = json.getJSONObject("pathingStartPointWarp");
     Iterator startIt = startPointJson.keys();
     while (startIt.hasNext()) {
       String key = (String) startIt.next();
       IVector2 v = new IVector2( startPointJson.getJSONObject(key));
       pathingStartPointWarp.put( Particle.valueOf(key), v );
-//      Gdx.app.log("warp deserialise","Particle "+key+" starts from "+v);
     }
 
     int fxX = coordinates.x + (Param.WARP_SIZE/2) - 2;
@@ -127,7 +128,6 @@ public class Warp extends Building {
 
   @Override
   protected IVector2 getPathingStartPoint(Particle p) {
-//    Gdx.app.log("getPathingStartPoint WARP","Returning for "+p+" "+pathingStartPointWarp.get(p));
     return World.getInstance().getTile( pathingStartPointWarp.get(p), isIntro).coordinates;
   }
 

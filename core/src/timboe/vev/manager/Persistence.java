@@ -79,15 +79,15 @@ public class Persistence {
         objectIn.close();
       } catch (IOException e) {
         e.printStackTrace();
-        Gdx.app.log("tryLoadGameSave","IOException!");
+        Gdx.app.error("tryLoadGameSave","IOException!");
       } catch (ClassNotFoundException e) {
         e.printStackTrace();
-        Gdx.app.log("ClassNotFoundException","IOException!");
+        Gdx.app.error("ClassNotFoundException","IOException!");
       } catch (JSONException e) {
         e.printStackTrace();
-        Gdx.app.log("JSONException","IOException!");
+        Gdx.app.error("JSONException","IOException!");
       }
-      Gdx.app.log("tryLoadGameSave", "Load save complete");
+      Gdx.app.log("tryLoadGameSave", "Load save file complete");
     } else {
       Gdx.app.log("tryLoadGameSave", "No save file");
     }
@@ -115,7 +115,7 @@ public class Persistence {
         bestTimes.add(json.getInt("bestTime3"));
       } catch (JSONException e) {
         e.printStackTrace();
-        Gdx.app.log("tryLoadSetting","JSONException! Resetting");
+        Gdx.app.error("tryLoadSetting","JSONException! Resetting");
         reset();
       }
     }
@@ -124,7 +124,7 @@ public class Persistence {
   public void trySaveSettings() {
     if (!Gdx.files.isLocalStorageAvailable()) return;
 
-    Gdx.app.log("trySave", "SAVE SETTINGS");
+    Gdx.app.log("trySave", "Save Settings");
     FileHandle settings = Gdx.files.local(Param.SETTINGS_FILE);
     JSONObject jsonSettings = new JSONObject();
     try {
@@ -148,7 +148,7 @@ public class Persistence {
   public void trySaveGame() {
     if (!Gdx.files.isLocalStorageAvailable()) return;
 
-    Gdx.app.log("trySave", "SAVING");
+    Gdx.app.log("trySave", "Streaming game data");
     save = new JSONObject();
     try {
       save.put("GameState", GameState.getInstance().serialise());
@@ -163,7 +163,7 @@ public class Persistence {
   public void flushSaveGame() {
     if (!Gdx.files.isLocalStorageAvailable()) return;
     if (save == null) return;
-    Gdx.app.log("flushSaveGame", "FLUSHING TO DISK");
+    Gdx.app.log("flushSaveGame", "Flushing save data to disk");
 
     FileHandle handle = Gdx.files.local(Param.SAVE_FILE);
     ByteArrayOutputStream baos = new ByteArrayOutputStream();

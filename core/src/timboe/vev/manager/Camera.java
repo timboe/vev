@@ -47,6 +47,7 @@ public class Camera {
   private final Vector2 desiredPos = new Vector2(0, 0);
   private final Vector2 velocity = new Vector2(0, 0);
   private float shake;
+  private boolean cheats = false;
 
   private final Random R = new Random();
 
@@ -70,7 +71,6 @@ public class Camera {
     return json;
   }
 
-
   public void deserialise(JSONObject json) throws JSONException {
     desiredPos.set((float)json.getDouble("desiredPos.x"), (float)json.getDouble("desiredPos.y"));
     desiredZoom = (float)json.getDouble("desiredZoom");
@@ -90,7 +90,6 @@ public class Camera {
     if (instant) {
       this.currentPos.set( this.desiredPos );
     }
-    Gdx.app.log("setHelpPos", "Level:"+level + " " + this.desiredPos);
   }
 
   public void setCurrentZoom(float currentZoom) {
@@ -193,7 +192,12 @@ public class Camera {
       }
     }
 
-    if (Param.CHEATS) {
+    if (Gdx.input.isKeyJustPressed(Input.Keys.F1)) {
+      cheats = !cheats;
+      Gdx.app.log("pollInputs","Cheats:"+cheats);
+    }
+
+    if (cheats) {
       if (Gdx.input.isKeyJustPressed(Input.Keys.BACKSPACE)) {
         GameState.getInstance().killSelectedParticles();
       }

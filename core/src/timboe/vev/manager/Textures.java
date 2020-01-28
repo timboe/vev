@@ -85,8 +85,8 @@ public class Textures {
     if (s == 0.f) {
       R = G = B = (int)(b * 255.f + .5f);
     } else {
-      float hm6h_A = (h - (float)Math.floor((double)h)) * 6f;
-      float hm6h = hm6h_A - (float)Math.floor((double)hm6h_A);
+      float hm6h_A = (h - (float)Math.floor((float)h)) * 6f;
+      float hm6h = hm6h_A - (float)Math.floor((float)hm6h_A);
       float bX1ms = b * (1f - s);
       float bX1msXhm6 = b * (1f - s * hm6h);
       float bX1msX1mhm6 = b * (1f - s * (1f - hm6h));
@@ -170,7 +170,6 @@ public class Textures {
 
         colourReplace(pixmap, redHighlight, mod(p, Param.HSB_HIGHLIGHT_HUE_MOD, Param.HSB_HIGHLIGHT_SATURATION, Param.HSB_HIGHLIGHT_BRIGHTNESS));
 
-//        colourReplace(pixmap, redTexture, Param.PARTICLE_BASE_COLOUR.get(p));
         colourReplace(pixmap, redTexture, mod(p, 0, Param.HSB_BASE_SATURATION, Param.HSB_BASE_BRIGHTNESS));
 
         colourReplace(pixmap, redOutline, mod(p, Param.HSB_OUTLINE_HUE_MOD, Param.HSB_OUTLINE_SATURATION, Param.HSB_OUTLINE_BRIGHTNESS));
