@@ -1060,7 +1060,6 @@ public class UI {
   }
 
   void showMain() {
-    Gdx.app.log("showMain", "Show main In Game UI");
     table.clear();
     androidWindow.clear();
     addToWin(androidWindow, selectParticlesButton, SIZE_L, SIZE_L, 1);

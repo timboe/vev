@@ -210,7 +210,7 @@ public class Sounds {
     blop = Gdx.audio.newSound(Gdx.files.internal("Blop-Mark_DiAngelo-79054334.mp3"));
     foot = Gdx.audio.newSound(Gdx.files.internal("365810__fxkid2__cute-walk-run-c.wav"));
     dirt = Gdx.audio.newSound(Gdx.files.internal("427074__doorajar__dirtshovel.wav"));
-    processing = Gdx.audio.newSound(Gdx.files.internal("382963__dragonphoenix__dirty-rewinder.wav"));
+    processing = Gdx.audio.newSound(Gdx.files.internal("16156__visual__industrial-bass-1.wav"));
     processingID = processing.loop(0);
     move[0] = Gdx.audio.newSound(Gdx.files.internal("379234__westington__skiffy1.wav"));
     move[1] = Gdx.audio.newSound(Gdx.files.internal("379233__westington__skiffy2.wav"));

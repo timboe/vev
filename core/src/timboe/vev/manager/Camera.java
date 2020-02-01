@@ -244,16 +244,14 @@ public class Camera {
   }
 
   public void translate(float x, float y) {
-    x = Math.min(x, Param.MAX_TRANSLATE);
-    y = Math.min(y, Param.MAX_TRANSLATE);
+    float x2 = (x > 0 ? 1 : -1) * Math.min(Math.abs(x), Param.MAX_TRANSLATE);
+    float y2 = (y > 0 ? 1 : -1) * Math.min(Math.abs(y), Param.MAX_TRANSLATE);
     final float xMod = (float) Param.DISPLAY_X / (float) getUiViewport().getScreenWidth();
     final float yMod = (float) Param.DISPLAY_Y / (float) getUiViewport().getScreenHeight();
-    desiredPos.add(xMod * x * currentZoom, yMod * y * currentZoom);
+    desiredPos.add(xMod * x2 * currentZoom, yMod * y2 * currentZoom);
   }
 
   public void velocity(float x, float y) {
-    x = Math.min(x, Param.MAX_TRANSLATE);
-    y = Math.min(y, Param.MAX_TRANSLATE);
     this.velocity.set(x * Param.FLING_MOD, y * Param.FLING_MOD);
   }
 

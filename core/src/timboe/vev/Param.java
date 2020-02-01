@@ -118,7 +118,7 @@ public class Param {
   public static final float MAX_TRANSLATE = 100f;
 
   public static final int DEBUG_INITIAL = 0;
-  private static final boolean FAKE_ANDROID = true;
+  private static final boolean FAKE_ANDROID = false;
   public static final boolean IS_ANDROID = FAKE_ANDROID || Gdx.app.getType() == Application.ApplicationType.Android;
 
   public static final int PARTICLES_SMALL = IS_ANDROID ? 500 : 1000;

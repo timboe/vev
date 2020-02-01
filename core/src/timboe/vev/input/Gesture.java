@@ -89,7 +89,8 @@ public class Gesture implements GestureDetector.GestureListener {
 
   @Override
   public boolean pan(float x, float y, float deltaX, float deltaY) {
-    if (Gdx.input.isButtonPressed(Input.Buttons.RIGHT) || (UI.getInstance().selectParticlesButton != null && !UI.getInstance().selectParticlesButton.isChecked())) {
+    if (Gdx.input.isButtonPressed(Input.Buttons.RIGHT) ||
+            (UI.getInstance().selectParticlesButton != null && !UI.getInstance().selectParticlesButton.isChecked() && Param.IS_ANDROID)) {
       Camera.getInstance().translate(-deltaX, deltaY);
     }
     if (Gdx.input.isButtonPressed(Input.Buttons.LEFT) && UI.getInstance().uiMode != UIMode.kSETTINGS) { // Select box
