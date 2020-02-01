@@ -103,7 +103,7 @@ public enum BuildingType {
       case kZMQ:
       case kMINE:
       default:
-        return 1.3f;
+        return 1.4f;
     }
   }
 

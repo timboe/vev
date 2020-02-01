@@ -212,6 +212,9 @@ public class Camera {
       if (Gdx.input.isKeyJustPressed(Input.Keys.F)) {
         StateManager.getInstance().gameOver();
       }
+      if (Gdx.input.isKeyJustPressed(Input.Keys.U)) {
+        GameState.getInstance().uiOn = !GameState.getInstance().uiOn;
+      }
     }
 
     // Following are only allowed in-game or game over mode
@@ -241,12 +244,16 @@ public class Camera {
   }
 
   public void translate(float x, float y) {
+    x = Math.min(x, Param.MAX_TRANSLATE);
+    y = Math.min(y, Param.MAX_TRANSLATE);
     final float xMod = (float) Param.DISPLAY_X / (float) getUiViewport().getScreenWidth();
     final float yMod = (float) Param.DISPLAY_Y / (float) getUiViewport().getScreenHeight();
     desiredPos.add(xMod * x * currentZoom, yMod * y * currentZoom);
   }
 
   public void velocity(float x, float y) {
+    x = Math.min(x, Param.MAX_TRANSLATE);
+    y = Math.min(y, Param.MAX_TRANSLATE);
     this.velocity.set(x * Param.FLING_MOD, y * Param.FLING_MOD);
   }
 

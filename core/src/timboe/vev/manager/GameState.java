@@ -81,6 +81,7 @@ public class GameState {
   private boolean shownMidGame;
   //
   public int debug;
+  public boolean uiOn;
   public int entityID;
   private final HashMap<Integer, Sprite> particleMap = new HashMap<Integer, Sprite>(); // All movable sprites (exc. trucks)
   private final HashMap<Integer, Building> buildingMap = new HashMap<Integer, Building>(); // All buildings
@@ -120,7 +121,6 @@ public class GameState {
     json.put("warpSpawnTime", warpSpawnTime);
     json.put("newParticlesMean", newParticlesMean);
     json.put("newParticlesWidth", newParticlesWidth);
-    json.put("debug", debug);
     json.put("entityID", entityID);
     json.put("difficulty", difficulty);
     json.put("gameTime", gameTime);
@@ -183,7 +183,6 @@ public class GameState {
     warpSpawnTime = (float) json.getDouble("warpSpawnTime");
     newParticlesMean = (float) json.getDouble("newParticlesMean");
     newParticlesWidth = (float) json.getDouble("newParticlesWidth");
-    debug = json.getInt("debug");
     entityID = json.getInt("entityID");
     difficulty = json.getInt("difficulty");
     gameTime = (float) json.getDouble("gameTime");
@@ -280,7 +279,6 @@ public class GameState {
   }
 
   public void act(float delta) {
-
     if (!World.getInstance().getGenerated()) return;
 
     uiStage.act(delta);
@@ -954,6 +952,7 @@ public class GameState {
     treesBulldozed = 0;
     warpParticles = 0;
     debug = Param.DEBUG_INITIAL;
+    uiOn = true;
     queueType = Param.QUEUE_INITIAL_TYPE;
     queueSize = Param.QUEUE_INITIAL_SIZE;
     warpSpawnTime = Param.WARP_SPAWN_TIME_INITIAL;

@@ -121,6 +121,7 @@ public class UI {
   private final ButtonHover buttonHover = new ButtonHover();
 
   public Button selectParticlesButton;
+  public Button selectAllButton;
   private Button selectCross;
   private Button selectTick;
   private Container<Actor> selectTickEnableImage;
@@ -495,7 +496,15 @@ public class UI {
     });
     addToWin(mainWindow, settings, SIZE_L + SIZE_M, SIZE_L, 2);
 
-
+    selectAllButton = getTextButton( Lang.get("UI_ALL"), "selectAll");
+    selectAllButton.addListener(new ChangeListener() {
+      @Override
+      public void changed(ChangeEvent event, Actor actor) {
+        GameState.getInstance().startSelectingAndroid();
+        GameState.getInstance().selectEndWorld.set(Param.TILES_X*Param.TILE_S, Param.TILES_Y*Param.TILE_S, 0);
+        GameState.getInstance().doParticleSelect(true);
+      }
+    });
     selectParticlesButton = getImageButton("select", "toggle", SIZE_M, "");
     selectParticlesButton.addListener(new ChangeListener() {
       @Override
@@ -657,7 +666,7 @@ public class UI {
       }
       bw.row();
       if (bt != BuildingType.kWARP) {
-        String percent = Float.toString(Param.BUILDING_REFUND_AMOUND * 100f);
+        String percent = Float.toString(Param.BUILDING_REFUND_AMOUNT * 100f);
         addToWin(bw, getImageButton("wrecking", "default", SIZE_L, "wrecking#" + percent), 2 * SIZE_L, SIZE_M + SIZE_S, 6);
       }
     }
@@ -1055,6 +1064,7 @@ public class UI {
     table.clear();
     androidWindow.clear();
     addToWin(androidWindow, selectParticlesButton, SIZE_L, SIZE_L, 1);
+    addToWin(androidWindow, selectAllButton, SIZE_L+SIZE_M, SIZE_L, 1);
     addAndroid();
     table.add(mainWindow);
     if (GameState.getInstance().debug > 0) table.debugAll();

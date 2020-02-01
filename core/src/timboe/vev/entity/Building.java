@@ -201,7 +201,7 @@ public class Building extends Entity {
   }
 
   public void addCost(int cost) {
-    this.refund += Math.round(Param.BUILDING_REFUND_AMOUND * cost);
+    this.refund += Math.round(Param.BUILDING_REFUND_AMOUNT * cost);
   }
 
   public void updateMyPatch() {

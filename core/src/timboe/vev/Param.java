@@ -30,7 +30,7 @@ public class Param {
   public static final int WORLD_SEED = 0; // 0 to disable
 
   public static final int SPRITE_SCALE = 2;
-  public static final float PARTICLE_VELOCITY = 32f * 2f;
+  public static final float PARTICLE_VELOCITY = 64f;
   public static final float PARTICLE_AT_TARGET = 2f;
   public static final float NEW_PARTICLE_MEAN = Param.IS_ANDROID ? 2.5f : 5f; // mean number of particles to place
   public static final float NEW_PARTICLE_WIDTH = Param.IS_ANDROID ? 5f : 10f; // width of new particles dist
@@ -73,7 +73,7 @@ public class Param {
   public static final float WARP_ROTATE_SPEED = 3f;
   public static final float WARP_SHAKE = 5f;
   public static final float WARP_SPAWN_TIME_INITIAL = 5f; // seconds between spawn
-  public static final float WARP_SPAWN_TIME_REDUCTION = 0.01f; // time reduced by this every spawn TODO make no higher than .01f
+  public static final float WARP_SPAWN_TIME_REDUCTION = (Param.IS_ANDROID ? 0.0075f : 0.01f); // time reduced by this every spawn TODO make no higher than .01f
   public static final float WARP_SPAWN_MEAN_INCREASE = (Param.IS_ANDROID ? .125f : .25f); // increase in mean number of spawned
   public static final float WARP_SPAWN_WIDTH_INCREASE = (Param.IS_ANDROID ? .05f : .1f); // increase in width of mean number
   public static final float WARP_SPAWN_TIME_MIN = 0.5f; // min time between spawn
@@ -81,8 +81,8 @@ public class Param {
   public static final float BUILD_TIME = .5f; // Time in seconds between build phases
   public static final float BUILDING_QUEUE_MOVE_TIME = .2f; // Time in seconds between particles moving through queue
   public static final float BUILDING_SHAKE = 2.5f;
-  public static final float BUILDING_DISASSEMBLE_BONUS = 0.9f; //^(building level)
-  public static final float BUILDING_REFUND_AMOUND = 0.8f; //Recoup % of all building costs
+  public static final float BUILDING_DISASSEMBLE_BONUS = 0.75f; //^(building level)
+  public static final float BUILDING_REFUND_AMOUNT = 0.8f; //Recoup % of all building costs
 
   public static final float LONG_PRESS_TIME = 0.15f;
 
@@ -107,7 +107,7 @@ public class Param {
   public static final int N_BORDER_VARIANTS = 4;
 
   public static final float SCROLL_ZOOM = 0.1f;
-  public static final float FLING_MOD = 0.02f;
+  public static final float FLING_MOD = 0.01f;
 
   public static final float ZOOM_MIN = 0.1f;
   public static final float ZOOM_MAX = 3.0f;
@@ -115,12 +115,14 @@ public class Param {
   private static final float DESIRED_FPS = 60; // FPS ANIM_SPEED is tuned for
   public static final float FRAME_TIME = (1f / DESIRED_FPS);
 
+  public static final float MAX_TRANSLATE = 100f;
+
   public static final int DEBUG_INITIAL = 0;
   private static final boolean FAKE_ANDROID = true;
   public static final boolean IS_ANDROID = FAKE_ANDROID || Gdx.app.getType() == Application.ApplicationType.Android;
 
-  public static final int PARTICLES_SMALL = IS_ANDROID ? 250 : 1000;
-  public static final int PARTICLES_MED = IS_ANDROID ? 500 : 5000;
+  public static final int PARTICLES_SMALL = IS_ANDROID ? 500 : 1000;
+  public static final int PARTICLES_MED = IS_ANDROID ? 1000 : 5000;
   public static final int PARTICLES_LARGE = IS_ANDROID ? 2500 : 20000;
   public static final int PARTICLES_XL = IS_ANDROID ? 5000 : 50000;
 
@@ -137,7 +139,7 @@ public class Param {
   public static final int DISPLAY_Y = Math.round(DISPLAY_X * (9f / 16f));
   public static final int UI_WIDTH_INTRO = 450;
 
-  public static final int PLAYER_STARTING_ENERGY = 8500;
+  public static final int PLAYER_STARTING_ENERGY = 9000;
 
   public static final int TRUCK_INITIAL_CAPACITY = 15000;
   public static final int TRUCK_LOAD_SPEED = 1250;

@@ -64,6 +64,7 @@ public class Lang {
     EN_GB.put("midGame", "The white holes are empty!\nDeconstruct the remaining # particles in the shortest possible time.");
     EN_GB.put("demolish", "Demolish Building?\nRecover # Energy");
     EN_GB.put("progressTimer", "Particle deconstruction or\nbuilding upgrade timer.");
+    EN_GB.put("selectAll", "Select all particles.");
 
 
     EN_GB.put("UI_NEW", "NEW GAME");
@@ -108,7 +109,8 @@ public class Lang {
     EN_GB.put("UI_BUILDING_UPGRADES", "BUILDING UPGRADES: #");
     EN_GB.put("UI_YES", "YES");
     EN_GB.put("UI_NO", "NO");
-    EN_GB.put("UI_WARN", "WARNING: STARTING A NEW GAME WILL\nOVERWRITE YOUR EXISTING SAVE GAME!!!");
+    EN_GB.put("UI_WARN", "WARNING: STARTING A NEW GAME WILL\nOVERWRITE YOUR EXISTING SAVE GAME!");
+    EN_GB.put("UI_ALL", "ALL");
 
 
     EN_GB.put("UI_HELP_00", "A game by Tim Martin");
@@ -182,7 +184,7 @@ public class Lang {
     EN_GB.put("UI_HELP_D_12", "MATTIX: Retro Explosion 5. Mark DiAngelo: Blip");
     EN_GB.put("UI_HELP_D_13", "man: Swoosh 1. Selector: rocket launch");
     EN_GB.put("UI_HELP_D_14", "pel2na: Two Kazoo Fanfare. Raclure: miss chime");
-    EN_GB.put("UI_HELP_D_15", "Voktebef: 8bit. doorajar: DirtShovel");
+    EN_GB.put("UI_HELP_D_15", "Voktebef: 8bit. visual: Industrial Bass 1");
 
   }
 

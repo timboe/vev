@@ -66,7 +66,7 @@ public class GameScreen implements Screen {
 
   @Override
   public void render(float delta) {
-    delta = Math.min(delta, Param.FRAME_TIME * 10); // Do not let this get too extreme
+    delta = Math.min(delta, Param.FRAME_TIME * 8); // Do not let this get too extreme
     Util.renderClear();
     final boolean paused = (ui.uiMode == UIMode.kSETTINGS);
     final float fxDelta = (paused ? 0 : delta);
@@ -188,7 +188,9 @@ public class GameScreen implements Screen {
 
     state.getFireworkStage().draw();
 
-    state.getUIStage().draw();
+    if (GameState.getInstance().uiOn) {
+      state.getUIStage().draw();
+    }
 
     ////////////////////////////////////////////////
     // Fade in
