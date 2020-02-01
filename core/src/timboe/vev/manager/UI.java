@@ -976,9 +976,9 @@ public class UI {
       for (int i = 0; i < v.size(); ++i) {
         Truck t = v.elementAt(i);
         if (v.size() > 1) {
-          mineSelectText.elementAt(i).setText((i + 1) + ": Level " + (t.level + 1));
+          mineSelectText.elementAt(i).setText((i + 1) + ": "+Lang.get("level")+" " + (t.level + 1));
         } else {
-          mineSelectText.elementAt(i).setText("Level " + (t.level + 1));
+          mineSelectText.elementAt(i).setText(Lang.get("level")+" " + (t.level + 1));
         }
         mineSelectInfo.add(mineSelectImages.elementAt(i)).padRight(6);
         mineSelectInfo.add(mineSelectText.elementAt(i));

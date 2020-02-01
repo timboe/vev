@@ -65,6 +65,7 @@ public class Lang {
     EN_GB.put("demolish", "Demolish Building?\nRecover # Energy");
     EN_GB.put("progressTimer", "Particle deconstruction or\nbuilding upgrade timer.");
     EN_GB.put("selectAll", "Select all particles.");
+    EN_GB.put("level", "Level");
 
 
     EN_GB.put("UI_NEW", "NEW GAME");
@@ -179,12 +180,12 @@ public class Lang {
     EN_GB.put("UI_HELP_D_07", "Chris Zabriskie: Is That You Or Are You You?,");
     EN_GB.put("UI_HELP_D_08", "Divider, CGI Snake.");
     EN_GB.put("UI_HELP_D_09", "cameronmusic: pulse1. Planman: Poof of Smoke");
-    EN_GB.put("UI_HELP_D_10", "FxKid2: Cute Walk Run 2. tix99: skiffy1-9");
-    EN_GB.put("UI_HELP_D_11", "waveplay_old: Short Click. Raclure: Affirmative");
-    EN_GB.put("UI_HELP_D_12", "MATTIX: Retro Explosion 5. Mark DiAngelo: Blip");
+    EN_GB.put("UI_HELP_D_10", "FxKid2: Cute Walk Run 2. tix99: squeak toy");
+    EN_GB.put("UI_HELP_D_11", "waveplay_old: Short Click. pel2na: Two Kazoo Fanfare.");
+    EN_GB.put("UI_HELP_D_12", "MATTIX: Retro Explosion 5. Mark DiAngelo: Blop");
     EN_GB.put("UI_HELP_D_13", "man: Swoosh 1. Selector: rocket launch");
-    EN_GB.put("UI_HELP_D_14", "pel2na: Two Kazoo Fanfare. Raclure: miss chime");
-    EN_GB.put("UI_HELP_D_15", "Voktebef: 8bit. visual: Industrial Bass 1");
+    EN_GB.put("UI_HELP_D_14", "Raclure: miss chime, affirmative chime");
+    EN_GB.put("UI_HELP_D_15", "doorajar: DirtShovel. visual: Industrial Bass 1");
 
   }
 
