@@ -56,7 +56,7 @@ public class Persistence {
   }
 
   private void reset() {
-    musicLevel = 1f;
+    musicLevel = 0.5f;
     sfxLevel = 1f;
     particleHues.put(kH, 1080);
     particleHues.put(kW, 791);

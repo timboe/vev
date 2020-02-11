@@ -97,7 +97,7 @@ public class GameState {
   public boolean doingPlacement = false;
   private EnumMap<BuildingType, Integer> buildingPrices = new EnumMap<BuildingType, Integer>(BuildingType.class);
   private EnumMap<BuildingType, Integer> buildingQueuePrices = new EnumMap<BuildingType, Integer>(BuildingType.class);
-  private Warp toFocusOn;
+  public Warp toFocusOn;
 
   public JSONObject serialise() throws JSONException {
     JSONObject json = new JSONObject();
@@ -419,7 +419,7 @@ public class GameState {
     int toPlace = floor + Math.round(
             Util.clamp(newParticlesMean + ((float) R.nextGaussian() * newParticlesWidth), 1, Param.NEW_PARTICLE_MAX)
     );
-    if (stressTest) toPlace = 1000000;
+    if (stressTest) toPlace = warpParticles;
     int placed = from.newParticles(toPlace, stressTest);
     Gdx.app.debug("GameState:act", "Warp: SpawnTime: " + warpSpawnTime + " meanP: "
             + newParticlesMean + " widthP: " + newParticlesWidth

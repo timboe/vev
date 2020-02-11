@@ -97,6 +97,7 @@ public class Sounds {
 
   public void doMusic(boolean initial) {
     if (!initial) {
+      theme[track].stop();
       int trackTemp = track;
       while (trackTemp == track) trackTemp = Util.R.nextInt(nMusic);
       track = trackTemp; // Random - but not the same

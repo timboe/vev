@@ -98,7 +98,7 @@ public class UIIntro {
     h0.add(vev).padLeft(16).left();
     h0.row();
     //
-    addHelpLabel(h0, Lang.get("UI_HELP_00"), 16);
+    addHelpLabel(h0, Lang.get("UI_HELP_00#"+Param.VERSION), 16);
     addHelpLabel(h0, Lang.get("UI_HELP_01"), 16);
     addHelpLabel(h0, Lang.get("UI_HELP_02"), 32);
     addHelpLabel(h0, Lang.get("UI_HELP_03"), 16);

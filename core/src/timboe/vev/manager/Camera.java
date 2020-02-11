@@ -207,13 +207,16 @@ public class Camera {
         if (++GameState.getInstance().debug == 4) GameState.getInstance().debug = 0;
       }
       if (Gdx.input.isKeyJustPressed(Input.Keys.G)) {
-        GameState.getInstance().tryNewParticles(true, null, 1);
+        GameState.getInstance().tryNewParticles(true, GameState.getInstance().toFocusOn, 1);
       }
       if (Gdx.input.isKeyJustPressed(Input.Keys.F)) {
         StateManager.getInstance().gameOver();
       }
       if (Gdx.input.isKeyJustPressed(Input.Keys.U)) {
         GameState.getInstance().uiOn = !GameState.getInstance().uiOn;
+      }
+      if (Gdx.input.isKeyJustPressed(Input.Keys.M)) {
+        Sounds.getInstance().doMusic(false);
       }
     }
 

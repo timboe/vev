@@ -114,7 +114,7 @@ public class Lang {
     EN_GB.put("UI_ALL", "ALL");
 
 
-    EN_GB.put("UI_HELP_00", "A game by Tim Martin");
+    EN_GB.put("UI_HELP_00", "VEV #. A game by Tim Martin");
     EN_GB.put("UI_HELP_01", "Music by Chris Zabriskie (CC v4)");
     EN_GB.put("UI_HELP_02", "Is That You Or Are You You? / Divider / CGI Snake");
     EN_GB.put("UI_HELP_03", "Open Game Art by Buch (CC0 v1)");
