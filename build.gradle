@@ -22,7 +22,7 @@ allprojects {
     version = '1.0'
     ext {
         appName = "VEV"
-        gdxVersion = '1.9.6'
+        gdxVersion = '1.9.10'
     }
 
     repositories {
