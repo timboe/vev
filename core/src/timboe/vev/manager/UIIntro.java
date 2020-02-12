@@ -195,9 +195,9 @@ public class UIIntro {
     Persistence.getInstance().musicLevel = cacheMusic;
     Persistence.getInstance().sfxLevel = cacheSfx;
     Sounds.getInstance().musicVolume();
-    if (cacheFullscreen != Gdx.graphics.isFullscreen()) {
-      fsListener.set(cacheFullscreen, false);
-    }
+//    if (cacheFullscreen != Gdx.graphics.isFullscreen()) {
+//      fsListener.set(cacheFullscreen, false);
+//    }
   }
 
   private LabelDF helpLabel(String s) {
@@ -383,16 +383,16 @@ public class UIIntro {
 
     titleWindow.row();
     titleWindow.left();
-    fsBox = new CheckBox("", ui.skin);
-    fsBox.setChecked(Gdx.graphics.isFullscreen());
-    fsBox.addListener(fsListener);
-    fsBox.getImage().setScaling(Scaling.fill);
-    fsBox.getImageCell().size(ui.SIZE_S);
-    if (!Param.IS_ANDROID) {
-      ui.addToWin(titleWindow, ui.getLabel(Lang.get("UI_FULLSCREEN"), ""), ui.SIZE_L, ui.SIZE_S, 7);
-      ui.addToWin(titleWindow, fsBox, ui.SIZE_S, ui.SIZE_S, 3);
-      titleWindow.row();
-    }
+//    fsBox = new CheckBox("", ui.skin);
+//    fsBox.setChecked(Gdx.graphics.isFullscreen());
+//    fsBox.addListener(fsListener);
+//    fsBox.getImage().setScaling(Scaling.fill);
+//    fsBox.getImageCell().size(ui.SIZE_S);
+//    if (!Param.IS_ANDROID) {
+//      ui.addToWin(titleWindow, ui.getLabel(Lang.get("UI_FULLSCREEN"), ""), ui.SIZE_L, ui.SIZE_S, 7);
+//      ui.addToWin(titleWindow, fsBox, ui.SIZE_S, ui.SIZE_S, 3);
+//      titleWindow.row();
+//    }
 
     ui.separator(titleWindow, 10, Param.UI_WIDTH_INTRO);
 
