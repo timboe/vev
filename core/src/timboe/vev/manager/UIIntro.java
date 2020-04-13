@@ -59,10 +59,11 @@ public class UIIntro {
   public Table generating = null;
 
   public CheckBox fsBox = null;
+  public CheckBox vibBox = null;
 
   // Settings cache
   private float cacheMusic, cacheSfx;
-  private boolean cacheFullscreen;
+  private boolean cacheFullscreen, cacheVibrate;
   private EnumMap<Particle, Integer> cacheHue = new EnumMap<Particle, Integer>(Particle.class);
 
   private UIIntro() {
@@ -194,6 +195,7 @@ public class UIIntro {
     Textures.getInstance().updateParticleHues();
     Persistence.getInstance().musicLevel = cacheMusic;
     Persistence.getInstance().sfxLevel = cacheSfx;
+    Persistence.getInstance().vibrate = cacheVibrate;
     Sounds.getInstance().musicVolume();
 //    if (cacheFullscreen != Gdx.graphics.isFullscreen()) {
 //      fsListener.set(cacheFullscreen, false);
@@ -394,6 +396,17 @@ public class UIIntro {
 //      titleWindow.row();
 //    }
 
+    vibBox = new CheckBox("", ui.skin);
+    vibBox.setChecked(Gdx.graphics.isFullscreen());
+    vibBox.addListener(fsListener);
+    vibBox.getImage().setScaling(Scaling.fill);
+    vibBox.getImageCell().size(ui.SIZE_S);
+    if (Param.IS_ANDROID) {
+      ui.addToWin(titleWindow, ui.getLabel(Lang.get("UI_VIBRATE"), ""), ui.SIZE_L, ui.SIZE_S, 4);
+      ui.addToWin(titleWindow, vibBox, ui.SIZE_S, ui.SIZE_S, 6);
+      titleWindow.row();
+    }
+
     ui.separator(titleWindow, 10, Param.UI_WIDTH_INTRO);
 
     ballImages.clear();
@@ -422,6 +435,7 @@ public class UIIntro {
 
     cacheMusic = Persistence.getInstance().musicLevel;
     cacheSfx = Persistence.getInstance().sfxLevel;
+    cacheVibrate = Persistence.getInstance().vibrate;
     cacheFullscreen = Gdx.graphics.isFullscreen();
 
     ui.separator(titleWindow, 10, Param.UI_WIDTH_INTRO);

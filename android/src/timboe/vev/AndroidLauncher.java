@@ -11,6 +11,10 @@ public class AndroidLauncher extends AndroidApplication {
 		super.onCreate(savedInstanceState);
 		AndroidApplicationConfiguration config = new AndroidApplicationConfiguration();
     config.numSamples = 2;
+    config.useAccelerometer = false;
+    config.useCompass = false;
+    config.useGyroscope = false;
+    config.useRotationVectorSensor = true;
 		initialize(new VEVGame(), config);
 	}
 }

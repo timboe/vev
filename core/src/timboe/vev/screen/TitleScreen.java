@@ -10,6 +10,7 @@ import timboe.vev.Util;
 import timboe.vev.entity.Entity;
 import timboe.vev.enums.FSM;
 import timboe.vev.manager.Camera;
+import timboe.vev.manager.GameState;
 import timboe.vev.manager.IntroState;
 import timboe.vev.manager.Sounds;
 import timboe.vev.manager.StateManager;
@@ -78,7 +79,9 @@ public class TitleScreen implements Screen {
 
     state.getIntroHelpStage().draw();
 
-    state.getUIStage().draw();
+    if (GameState.getInstance().uiOn) {
+      state.getUIStage().draw();
+    }
 
     if (StateManager.getInstance().fsm == FSM.kTRANSITION_TO_GAME) {
       final boolean finished = Util.doFade(sr, delta, transitionOutTimers);

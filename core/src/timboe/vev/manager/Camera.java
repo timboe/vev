@@ -1,5 +1,6 @@
 package timboe.vev.manager;
 
+import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -146,6 +147,9 @@ public class Camera {
 
   public void addShake(float amount) {
     shake += amount;
+    if (Gdx.app.getType() == Application.ApplicationType.Android && Persistence.getInstance().vibrate) {
+      Gdx.input.vibrate((int)(amount * 25));
+    }
   }
 
   public float distanceToCamera(int x, int y) {
@@ -183,12 +187,20 @@ public class Camera {
       UIIntro.getInstance().fsListener.toggle();
     }
 
-    if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE) && StateManager.getInstance().fsm == FSM.kGAME) {
+    if ((Gdx.input.isKeyJustPressed(Input.Keys.SPACE) || Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) && StateManager.getInstance().fsm == FSM.kGAME) {
       if (UI.getInstance().uiMode == UIMode.kSETTINGS) {
-        GameState.getInstance().showMainUITable(true);
+        if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
+          GameState.getInstance().showMainUITable(true);
+        } else {
+          StateManager.getInstance().transitionToTitleScreen();
+        }
       } else {
         UI.getInstance().showSettings();
       }
+    }
+
+    if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE) && StateManager.getInstance().fsm == FSM.kINTRO) {
+      Gdx.app.exit();
     }
 
     if (Gdx.input.isKeyJustPressed(Input.Keys.F1)) {
@@ -209,6 +221,9 @@ public class Camera {
       if (Gdx.input.isKeyJustPressed(Input.Keys.G)) {
         GameState.getInstance().tryNewParticles(true, GameState.getInstance().toFocusOn, 1);
       }
+      if (Gdx.input.isKeyJustPressed(Input.Keys.N)) {
+        GameState.getInstance().tryNewParticles(false, GameState.getInstance().toFocusOn, 1);
+      }
       if (Gdx.input.isKeyJustPressed(Input.Keys.F)) {
         StateManager.getInstance().gameOver();
       }
@@ -225,24 +240,29 @@ public class Camera {
       return;
     }
 
+    float vMod = 2f;
+    if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) || Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT)) {
+      vMod = 0.3f;
+    }
+
     if (Gdx.input.isKeyPressed(Input.Keys.W)) {
-      modVelocity(0, +2);
+      modVelocity(0, +vMod);
     }
     if (Gdx.input.isKeyPressed(Input.Keys.A)) {
-      modVelocity(-2, 0);
+      modVelocity(-vMod, 0);
     }
     if (Gdx.input.isKeyPressed(Input.Keys.S)) {
-      modVelocity(0, -2);
+      modVelocity(0, -vMod);
     }
     if (Gdx.input.isKeyPressed(Input.Keys.D)) {
-      modVelocity(+2, 0);
+      modVelocity(+vMod, 0);
     }
 
     if (Gdx.input.isKeyPressed(Input.Keys.Q)) {
-      modZoom(0.02f);
+      modZoom(0.01f * vMod);
     }
     if (Gdx.input.isKeyPressed(Input.Keys.E)) {
-      modZoom(-0.02f);
+      modZoom(-0.01f * vMod);
     }
   }
 

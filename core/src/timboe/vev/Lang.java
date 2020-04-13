@@ -112,6 +112,7 @@ public class Lang {
     EN_GB.put("UI_NO", "NO");
     EN_GB.put("UI_WARN", "WARNING: STARTING A NEW GAME WILL\nOVERWRITE YOUR EXISTING SAVE GAME!");
     EN_GB.put("UI_ALL", "ALL");
+    EN_GB.put("UI_VIBRATE", "VIBRATE");
 
 
     EN_GB.put("UI_HELP_00", "VEV #. A game by Tim Martin");
