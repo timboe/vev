@@ -23,8 +23,7 @@ public enum BuildingType {
   final Pair<Particle, Particle> returnValue = new Pair<Particle, Particle>();
 
   public boolean accepts(Sprite s) {
-    Colour c = s.getParticle().getColourFromParticle();
-    Particle p = Particle.getParticleFromColour(c);
+    Particle p = s.getParticle();
     for (int i = 0; i < N_MODES; ++i) {
       if (getInput(i) == p) return true;
     }
@@ -117,7 +116,7 @@ public enum BuildingType {
       case kWEQ:
       case kZMQ:
       default:
-        return 1000;
+        return 7500;
     }
   }
 

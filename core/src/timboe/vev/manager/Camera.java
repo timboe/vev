@@ -222,6 +222,7 @@ public class Camera {
         GameState.getInstance().tryNewParticles(true, GameState.getInstance().toFocusOn, 1);
       }
       if (Gdx.input.isKeyJustPressed(Input.Keys.N)) {
+        GameState.getInstance().warpParticles += 100;
         GameState.getInstance().tryNewParticles(false, GameState.getInstance().toFocusOn, 1);
       }
       if (Gdx.input.isKeyJustPressed(Input.Keys.F)) {

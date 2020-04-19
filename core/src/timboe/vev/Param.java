@@ -29,8 +29,10 @@ public class Param {
 
   public static final int WORLD_SEED = 0; // 0 to disable
 
+  private static final float SLOWMO = 1f;
+
   public static final int SPRITE_SCALE = 2;
-  public static final float PARTICLE_VELOCITY = 64f;
+  public static final float PARTICLE_VELOCITY = 64f * SLOWMO;
   public static final float PARTICLE_AT_TARGET = 2f;
   public static final float NEW_PARTICLE_MEAN = Param.IS_ANDROID ? 2.5f : 5f; // mean number of particles to place
   public static final float NEW_PARTICLE_WIDTH = Param.IS_ANDROID ? 5f : 10f; // width of new particles dist
@@ -72,7 +74,7 @@ public class Param {
   public static final float WARP_TRANSPARENCY = 0.5f;
   public static final float WARP_ROTATE_SPEED = 3f;
   public static final float WARP_SHAKE = 5f;
-  public static final float WARP_SPAWN_TIME_INITIAL = 5f; // seconds between spawn
+  public static final float WARP_SPAWN_TIME_INITIAL = (Param.IS_ANDROID ? 10f : 5f); // seconds between spawn
   public static final float WARP_SPAWN_TIME_REDUCTION = (Param.IS_ANDROID ? 0.0075f : 0.01f); // time reduced by this every spawn TODO make no higher than .01f
   public static final float WARP_SPAWN_MEAN_INCREASE = (Param.IS_ANDROID ? .125f : .25f); // increase in mean number of spawned
   public static final float WARP_SPAWN_WIDTH_INCREASE = (Param.IS_ANDROID ? .05f : .1f); // increase in width of mean number
@@ -128,7 +130,7 @@ public class Param {
   public static final int PARTICLES_LARGE = IS_ANDROID ? 2500 : 20000;
   public static final int PARTICLES_XL = IS_ANDROID ? 5000 : 50000;
 
-  public static final float ANIM_TIME = 1 / 20f; // I.e. 12 frames per second
+  public static final float ANIM_TIME = 1 / (20f * SLOWMO); // I.e. 20 frames per second
 
   public static final float FADE_SPEED_GAME = 70f;
   public static final float FADE_SPEED_INTRO = 200f;

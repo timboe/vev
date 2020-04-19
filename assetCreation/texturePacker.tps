@@ -466,6 +466,7 @@
             <key type="filename">large/cloud_sprite.png</key>
             <key type="filename">large/cross.png</key>
             <key type="filename">large/tick.png</key>
+            <key type="filename">large/tick_disabled.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
                 <point_f>0.5,0.5</point_f>
