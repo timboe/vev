@@ -115,7 +115,7 @@ public class Lang {
     EN_GB.put("UI_VIBRATE", "VIBRATE");
 
 
-    EN_GB.put("UI_HELP_00", "VEV #. A game by Tim Martin");
+    EN_GB.put("UI_HELP_00", "VEV #. Tim Martin, 2020");
     EN_GB.put("UI_HELP_01", "Music by Chris Zabriskie (CC v4)");
     EN_GB.put("UI_HELP_02", "Is That You Or Are You You? / Divider / CGI Snake");
     EN_GB.put("UI_HELP_03", "Open Game Art by Buch (CC0 v1)");
@@ -123,9 +123,9 @@ public class Lang {
     EN_GB.put("UI_HELP_A_00", "CONTROLS");
     EN_GB.put("UI_HELP_A_01", "LEFT CLICK");
     EN_GB.put("UI_HELP_A_02", "Select Particle / Building");
-    EN_GB.put("UI_HELP_A_03", "Confirm Particle Move Order");
-    EN_GB.put("UI_HELP_A_04", "Confirm Build New Building");
-    EN_GB.put("UI_HELP_A_05", "Confirm Building Move Destination");
+    EN_GB.put("UI_HELP_A_03", "Confirm Particle Move-Order");
+    EN_GB.put("UI_HELP_A_04", "Confirm New Building");
+    EN_GB.put("UI_HELP_A_05", "Confirm Building Spawn Destination");
     EN_GB.put("UI_HELP_A_06", "LEFT CLICK AND DRAG");
     EN_GB.put("UI_HELP_A_07", "Select Particles Within Box");
     EN_GB.put("UI_HELP_A_08", "RIGHT CLICK");
@@ -138,7 +138,7 @@ public class Lang {
     EN_GB.put("UI_ANDROID_A_00", "CONTROLS");
     EN_GB.put("UI_ANDROID_A_01", "TAP");
     EN_GB.put("UI_ANDROID_A_02", "Select Particle / Building");
-    EN_GB.put("UI_ANDROID_A_03", "Confirm Particle Move Order");
+    EN_GB.put("UI_ANDROID_A_03", "Confirm Particle Move-Order");
     EN_GB.put("UI_ANDROID_A_04", "LONG-TAP AND DRAG");
     EN_GB.put("UI_ANDROID_A_05", "Select Particles Within Box");
     EN_GB.put("UI_ANDROID_A_06", "DRAG");
@@ -158,7 +158,7 @@ public class Lang {
     EN_GB.put("UI_HELP_B_08", "ORE TRUCK");
     EN_GB.put("UI_HELP_B_09", "ORE TRUCK'S ROUTE");
 
-    EN_GB.put("UI_HELP_C_00", "Setup standing move orders to route particles from white holes");
+    EN_GB.put("UI_HELP_C_00", "Setup move-orders to route particles from white holes");
     EN_GB.put("UI_HELP_C_01", "to (and between) deconstruction buildings.");
     EN_GB.put("UI_HELP_C_02", "WHITE HOLE");
     EN_GB.put("UI_HELP_C_03", "(ONLY FOUND IN DESERTS)");
@@ -169,7 +169,7 @@ public class Lang {
     EN_GB.put("UI_HELP_C_08", "BUILDING'S ACCEPTED");
     EN_GB.put("UI_HELP_C_09", "PARTICLES");
     EN_GB.put("UI_HELP_C_10", Particle.kH.getString() + " PARTICLES");
-    EN_GB.put("UI_HELP_C_11", "WHITE HOLE'S STANDING MOVE ORDER FOR " + Particle.kH.getString() + " PARTICLES");
+    EN_GB.put("UI_HELP_C_11", "WHITE HOLE'S MOVE-ORDER FOR " + Particle.kH.getString() + " PARTICLES");
 
     EN_GB.put("UI_HELP_D_00", "A game in LIBGDX by Tim Martin");
     EN_GB.put("UI_HELP_D_01", "A* implementation by Ben Ruijl");
