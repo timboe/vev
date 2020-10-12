@@ -117,6 +117,10 @@ public class OrderlyQueue {
       assert tile != null;
       for (int id : tile.containedSprites) {
         Sprite s = GameState.getInstance().getParticleMap().get(id);
+        if (s == null) {
+          Gdx.app.error("moveAlongMoveAlong", "Got a null Sprite from containedSprites of tile " + tile);
+          continue;
+        }
         // Get parking space
         final Cardinal parking = tile.parkingSpaces.get(s.id);
         if (parking == null) continue; // I'm not parked here, e.g. moving over the entrance tile
