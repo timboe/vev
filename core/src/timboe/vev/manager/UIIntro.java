@@ -96,7 +96,7 @@ public class UIIntro {
     Table h0 = helpContainers.get(0).getActor();
     LabelDF vev = new LabelDF("VEV", ui.skin, "title", ui.dfShader_large);
     vev.setFontScale(6.4f);
-    h0.add(vev).padLeft(16).left();
+    h0.add(vev).padLeft(30).left();
     h0.row();
     //
     addHelpLabel(h0, Lang.get("UI_HELP_00#"+Param.VERSION), 16);
@@ -161,14 +161,14 @@ public class UIIntro {
     addHelpLabel(h3, Lang.get("UI_HELP_C_11"), 90, 15);
 
     Table h4 = helpContainers.get(5).getActor();
-    addHelpLabel(h4, Lang.get("UI_HELP_D_00"), h1pad, 20);
+    addHelpLabel(h4, Lang.get("UI_HELP_D_00"), h1pad, 10);
     addHelpLabel(h4, Lang.get("UI_HELP_D_01"), h1pad);
     addHelpLabel(h4, Lang.get("UI_HELP_D_02"), h1pad + 32);
     addHelpLabel(h4, Lang.get("UI_HELP_D_03"), h1pad + 64);
     addHelpLabel(h4, Lang.get("UI_HELP_D_04"), h1pad + 64);
     addHelpLabel(h4, Lang.get("UI_HELP_D_05"), h1pad + 64);
-    addHelpLabel(h4, Lang.get("UI_HELP_D_06"), h1pad + 32);
-    addHelpLabel(h4, Lang.get("UI_HELP_D_07"), h1pad + 64);
+    addHelpLabel(h4, Lang.get("UI_HELP_D_06"), h1pad + 64);
+    addHelpLabel(h4, Lang.get("UI_HELP_D_07"), h1pad + 32);
     addHelpLabel(h4, Lang.get("UI_HELP_D_08"), h1pad + 64);
     addHelpLabel(h4, Lang.get("UI_HELP_D_09"), h1pad + 64);
     addHelpLabel(h4, Lang.get("UI_HELP_D_10"), h1pad + 64);
@@ -177,6 +177,9 @@ public class UIIntro {
     addHelpLabel(h4, Lang.get("UI_HELP_D_13"), h1pad + 64);
     addHelpLabel(h4, Lang.get("UI_HELP_D_14"), h1pad + 64);
     addHelpLabel(h4, Lang.get("UI_HELP_D_15"), h1pad + 64);
+    addHelpLabel(h4, Lang.get("UI_HELP_D_16"), h1pad + 64);
+    addHelpLabel(h4, Lang.get("UI_HELP_D_17"), h1pad + 64);
+
 
   }
 
@@ -396,6 +399,22 @@ public class UIIntro {
 //      titleWindow.row();
 //    }
 
+    Slider longtapSlider = new Slider(.05f, 1f, .01f, false, ui.skin, "default-horizontal");
+    longtapSlider.setValue(Persistence.getInstance().longTap);
+    longtapSlider.addListener(new ChangeListener() {
+      @Override
+      public void changed(ChangeEvent event, Actor actor) {
+        Persistence.getInstance().longTap = ((Slider) actor).getValue();
+        Sounds.getInstance().click();
+      }
+    });
+    if (Param.IS_ANDROID) {
+      ui.addToWin(titleWindow, ui.getLabel(Lang.get("UI_LONGTAP"), ""), ui.SIZE_L, ui.SIZE_S, 4);
+      ui.addToWin(titleWindow, longtapSlider, ui.SIZE_L, ui.SIZE_S, 6);
+      titleWindow.row();
+      titleWindow.left();
+    }
+
     vibBox = new CheckBox("", ui.skin);
     vibBox.setChecked(Gdx.graphics.isFullscreen());
     vibBox.addListener(fsListener);
@@ -405,6 +424,7 @@ public class UIIntro {
       ui.addToWin(titleWindow, ui.getLabel(Lang.get("UI_VIBRATE"), ""), ui.SIZE_L, ui.SIZE_S, 4);
       ui.addToWin(titleWindow, vibBox, ui.SIZE_S, ui.SIZE_S, 6);
       titleWindow.row();
+      titleWindow.left();
     }
 
     ui.separator(titleWindow, 10, Param.UI_WIDTH_INTRO);

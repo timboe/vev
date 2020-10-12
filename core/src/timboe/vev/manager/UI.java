@@ -113,6 +113,7 @@ public class UI {
   private LabelDF taps;
   private LabelDF particlesDestroyed;
   private LabelDF particleBounces;
+  private LabelDF cht;
 
   private final YesNoButton yesNoButton = new YesNoButton();
   private final StandingOrderButton standingOrderButton = new StandingOrderButton();
@@ -737,6 +738,7 @@ public class UI {
     taps = new LabelDF("", skin, "wide", UI.getInstance().dfShader_medium);
     particlesDestroyed = new LabelDF("", skin, "wide", UI.getInstance().dfShader_medium);
     particleBounces = new LabelDF("", skin, "wide", UI.getInstance().dfShader_medium);
+    cht = new LabelDF("", skin, "red", UI.getInstance().dfShader_medium);
     finishedTable.add(finishedTitle).colspan(2).align(Align.center).row();
     finishedTable.add(difficulty).colspan(2).align(Align.center).padTop(SIZE_S).row();
     finishedTable.add(finishedTime).colspan(2).align(Align.center).row();
@@ -749,6 +751,7 @@ public class UI {
     finishedTable.add(taps).right().align(Align.right).row();
     finishedTable.add(particlesDestroyed).colspan(2).padTop(SIZE_S).align(Align.center).row();
     finishedTable.add(particleBounces).colspan(2).align(Align.center).row();
+    finishedTable.add(cht).colspan(2).align(Align.center).row();
     finishedTable.add(finishedWindow).align(Align.center).padTop(SIZE_S).colspan(2);
 
     for (LabelDF l : displayPlayerEnergyLabelSet) {
@@ -911,6 +914,7 @@ public class UI {
     taps.setText(Lang.get("UI_TAPS#" + formatter.format(GameState.getInstance().taps)));
     particlesDestroyed.setText(Lang.get("UI_PARTICLES_DESTROYED#" + formatter.format(GameState.getInstance().particlesDeconstructed)));
     particleBounces.setText(Lang.get("UI_PARTICLE_BOUNCES#" + formatter.format(GameState.getInstance().particleBounces)));
+    cht.setText( GameState.getInstance().cht ? Lang.get("UI_CHT") : "");
     table.clear();
     androidWindow.clear();
     table.align(Align.center).add(finishedTable).expandX();

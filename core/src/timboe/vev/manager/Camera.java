@@ -1,6 +1,7 @@
 package timboe.vev.manager;
 
 import com.badlogic.gdx.Application;
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -210,29 +211,41 @@ public class Camera {
 
     if (cheats) {
       if (Gdx.input.isKeyJustPressed(Input.Keys.BACKSPACE)) {
+        GameState.getInstance().cht = true;
         GameState.getInstance().killSelectedParticles();
       }
       if (Gdx.input.isKeyJustPressed(Input.Keys.C)) {
+        GameState.getInstance().cht = true;
         GameState.getInstance().playerEnergy += Param.PLAYER_STARTING_ENERGY;
       }
       if (Gdx.input.isKeyJustPressed(Input.Keys.B)) {
         if (++GameState.getInstance().debug == 4) GameState.getInstance().debug = 0;
       }
       if (Gdx.input.isKeyJustPressed(Input.Keys.G)) {
+        GameState.getInstance().cht = true;
         GameState.getInstance().tryNewParticles(true, GameState.getInstance().toFocusOn, 1);
       }
       if (Gdx.input.isKeyJustPressed(Input.Keys.N)) {
+        GameState.getInstance().cht = true;
         GameState.getInstance().warpParticles += 100;
         GameState.getInstance().tryNewParticles(false, GameState.getInstance().toFocusOn, 1);
       }
       if (Gdx.input.isKeyJustPressed(Input.Keys.F)) {
+        GameState.getInstance().cht = true;
         StateManager.getInstance().gameOver();
       }
       if (Gdx.input.isKeyJustPressed(Input.Keys.U)) {
         GameState.getInstance().uiOn = !GameState.getInstance().uiOn;
+        Gdx.app.log("Cheats", "UI toggled");
       }
       if (Gdx.input.isKeyJustPressed(Input.Keys.M)) {
         Sounds.getInstance().doMusic(false);
+      }
+      if (Gdx.input.isKeyJustPressed(Input.Keys.R)) {
+        GameState.getInstance().cht = true;
+        GameState.getInstance().newParticlesMean += Param.WARP_SPAWN_MEAN_INCREASE;
+        GameState.getInstance().newParticlesWidth += Param.WARP_SPAWN_WIDTH_INCREASE;
+        GameState.getInstance().warpSpawnTime -= Param.WARP_SPAWN_TIME_REDUCTION;
       }
     }
 

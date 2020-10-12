@@ -11,7 +11,7 @@ font2.use=true
 pad.top=8
 pad.right=10
 pad.bottom=8
-pad.left=8
+pad.left=10
 pad.advance.x=-16
 pad.advance.y=-16
 

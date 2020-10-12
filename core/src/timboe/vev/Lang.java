@@ -113,6 +113,8 @@ public class Lang {
     EN_GB.put("UI_WARN", "WARNING: STARTING A NEW GAME WILL\nOVERWRITE YOUR EXISTING SAVE GAME!");
     EN_GB.put("UI_ALL", "ALL");
     EN_GB.put("UI_VIBRATE", "VIBRATE");
+    EN_GB.put("UI_LONGTAP", "LONG-TAP");
+    EN_GB.put("UI_CHT", "CHEATS WERE USED ON THIS PLAY THROUGH.");
 
 
     EN_GB.put("UI_HELP_00", "VEV #. Tim Martin, 2020");
@@ -174,19 +176,21 @@ public class Lang {
     EN_GB.put("UI_HELP_D_00", "A game in LIBGDX by Tim Martin");
     EN_GB.put("UI_HELP_D_01", "A* implementation by Ben Ruijl");
     EN_GB.put("UI_HELP_D_02", "GRAPHICS & FONT ASSETS");
-    EN_GB.put("UI_HELP_D_03", "Buch: Colony sim, match 3. Pawel Pastuszak: VisUI");
-    EN_GB.put("UI_HELP_D_04", "SpriteFX: plants, lightning. OniMille: Crystal");
-    EN_GB.put("UI_HELP_D_05", "Steve Matteson: Open Sans. Peter Hull: VT323");
-    EN_GB.put("UI_HELP_D_06", "MUSIC & SOUND EFFECT ASSETS");
-    EN_GB.put("UI_HELP_D_07", "Chris Zabriskie: Is That You Or Are You You?,");
-    EN_GB.put("UI_HELP_D_08", "Divider, CGI Snake.");
-    EN_GB.put("UI_HELP_D_09", "cameronmusic: pulse1. Planman: Poof of Smoke");
-    EN_GB.put("UI_HELP_D_10", "FxKid2: Cute Walk Run 2. tix99: squeak toy");
-    EN_GB.put("UI_HELP_D_11", "waveplay_old: Short Click. pel2na: Two Kazoo Fanfare.");
-    EN_GB.put("UI_HELP_D_12", "MATTIX: Retro Explosion 5. Mark DiAngelo: Blop");
-    EN_GB.put("UI_HELP_D_13", "man: Swoosh 1. Selector: rocket launch");
-    EN_GB.put("UI_HELP_D_14", "Raclure: miss chime, affirmative chime");
-    EN_GB.put("UI_HELP_D_15", "doorajar: DirtShovel. visual: Industrial Bass 1");
+    EN_GB.put("UI_HELP_D_03", "Buch: Colony sim, match 3.");
+    EN_GB.put("UI_HELP_D_04", "Pawel Pastuszak: VisUI");
+    EN_GB.put("UI_HELP_D_05", "SpriteFX: plants, lightning. OniMille: Crystal");
+    EN_GB.put("UI_HELP_D_06", "Steve Matteson: Open Sans. Peter Hull: VT323");
+    EN_GB.put("UI_HELP_D_07", "MUSIC & SOUND EFFECT ASSETS");
+    EN_GB.put("UI_HELP_D_08", "Chris Zabriskie: Is That You Or Are You You?,");
+    EN_GB.put("UI_HELP_D_09", "Divider, CGI Snake.");
+    EN_GB.put("UI_HELP_D_10", "cameronmusic: pulse1. Planman: Poof of Smoke");
+    EN_GB.put("UI_HELP_D_11", "FxKid2: Cute Walk Run 2. tix99: squeak toy");
+    EN_GB.put("UI_HELP_D_12", "waveplay_old: Short Click.");
+    EN_GB.put("UI_HELP_D_13", "pel2na: Two Kazoo Fanfare.");
+    EN_GB.put("UI_HELP_D_14", "MATTIX: Retro Explosion 5. Mark DiAngelo: Blop");
+    EN_GB.put("UI_HELP_D_15", "man: Swoosh 1. Selector: rocket launch");
+    EN_GB.put("UI_HELP_D_16", "Raclure: miss chime, affirmative chime");
+    EN_GB.put("UI_HELP_D_17", "doorajar: DirtShovel. visual: Industrial Bass 1");
 
   }
 

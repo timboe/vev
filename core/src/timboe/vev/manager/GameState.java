@@ -67,9 +67,9 @@ public class GameState {
   public int playerTotalEnergy;
   public int inWorldParticles;
   public int warpParticles;
-  private float warpSpawnTime;
-  private float newParticlesMean;
-  private float newParticlesWidth;
+  protected float warpSpawnTime;
+  protected float newParticlesMean;
+  protected float newParticlesWidth;
   public int buildingsBuilt;
   public int buildingsDemolished;
   public int particlesDeconstructed;
@@ -79,6 +79,7 @@ public class GameState {
   public int upgradesPurchased;
   public int taps;
   private boolean shownMidGame;
+  public boolean cht;
   //
   public int debug;
   public boolean uiOn;
@@ -124,6 +125,7 @@ public class GameState {
     json.put("entityID", entityID);
     json.put("difficulty", difficulty);
     json.put("gameTime", gameTime);
+    json.put("cht", cht);
     //
     JSONObject particles = new JSONObject();
     for (Map.Entry<Integer, Sprite> entry : particleMap.entrySet()) {
@@ -186,6 +188,7 @@ public class GameState {
     entityID = json.getInt("entityID");
     difficulty = json.getInt("difficulty");
     gameTime = (float) json.getDouble("gameTime");
+    cht = json.getBoolean("cht");
     //
     JSONObject jsonParticles = json.getJSONObject("particleMap");
     Iterator particlesIt = jsonParticles.keys();
