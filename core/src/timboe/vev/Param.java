@@ -126,9 +126,9 @@ public class Param {
   public static final String VERSION = (IS_ANDROID ? "Android Build " : "Desktop Build ") + "v1.0";
 
   public static final int PARTICLES_SMALL = IS_ANDROID ? 500 : 1000;
-  public static final int PARTICLES_MED = IS_ANDROID ? 1000 : 5000;
-  public static final int PARTICLES_LARGE = IS_ANDROID ? 2500 : 20000;
-  public static final int PARTICLES_XL = IS_ANDROID ? 5000 : 50000;
+  public static final int PARTICLES_MED = IS_ANDROID ? 2000 : 5000;
+  public static final int PARTICLES_LARGE = IS_ANDROID ? 5000 : 20000;
+  public static final int PARTICLES_XL = IS_ANDROID ? 10000 : 50000;
 
   public static final float ANIM_TIME = 1 / (20f * SLOWMO); // I.e. 20 frames per second
 

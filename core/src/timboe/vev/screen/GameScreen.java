@@ -22,6 +22,7 @@ import timboe.vev.input.Gesture;
 import timboe.vev.input.Handler;
 import timboe.vev.manager.Camera;
 import timboe.vev.manager.GameState;
+import timboe.vev.manager.Persistence;
 import timboe.vev.manager.Sounds;
 import timboe.vev.manager.StateManager;
 import timboe.vev.manager.UI;
@@ -48,7 +49,7 @@ public class GameScreen implements Screen {
   }
 
   public void setMultiplexerInputs() {
-    gestureDetector.setLongPressSeconds(Param.LONG_PRESS_TIME);
+    gestureDetector.setLongPressSeconds(Persistence.getInstance().longTap);
     multiplexer.clear();
     multiplexer.addProcessor(state.getUIStage());
     multiplexer.addProcessor(handler);

@@ -259,23 +259,23 @@ public class Camera {
       vMod = 0.3f;
     }
 
-    if (Gdx.input.isKeyPressed(Input.Keys.W)) {
+    if (Gdx.input.isKeyPressed(Input.Keys.W) || Gdx.input.isKeyPressed(Input.Keys.UP)) {
       modVelocity(0, +vMod);
     }
-    if (Gdx.input.isKeyPressed(Input.Keys.A)) {
+    if (Gdx.input.isKeyPressed(Input.Keys.A) || Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
       modVelocity(-vMod, 0);
     }
-    if (Gdx.input.isKeyPressed(Input.Keys.S)) {
+    if (Gdx.input.isKeyPressed(Input.Keys.S) || Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
       modVelocity(0, -vMod);
     }
-    if (Gdx.input.isKeyPressed(Input.Keys.D)) {
+    if (Gdx.input.isKeyPressed(Input.Keys.D) || Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
       modVelocity(+vMod, 0);
     }
 
-    if (Gdx.input.isKeyPressed(Input.Keys.Q)) {
+    if (Gdx.input.isKeyPressed(Input.Keys.Q) || Gdx.input.isKeyPressed(Input.Keys.PAGE_DOWN)) {
       modZoom(0.01f * vMod);
     }
-    if (Gdx.input.isKeyPressed(Input.Keys.E)) {
+    if (Gdx.input.isKeyPressed(Input.Keys.E) || Gdx.input.isKeyPressed(Input.Keys.PAGE_UP)) {
       modZoom(-0.01f * vMod);
     }
   }

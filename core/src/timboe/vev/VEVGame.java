@@ -1,6 +1,7 @@
 package timboe.vev;
 
 import com.badlogic.gdx.Game;
+import com.badlogic.gdx.Gdx;
 
 import timboe.vev.enums.FSM;
 import timboe.vev.manager.Camera;
