@@ -164,15 +164,15 @@ public enum Particle {
   public float getCreateChance() {
     switch (this) {
       case kH:
-        return 0.05f;
+        return 0.10f;
       case kW:
       case kZ:
         return 0.15f;
       case kE:
       case kM:
-        return 0.2f;
+        return 0.18f;
       case kQ:
-        return 0.25f;
+        return 0.24f;
       case kBlank:
       default:
         return 0;

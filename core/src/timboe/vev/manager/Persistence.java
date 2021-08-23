@@ -45,6 +45,7 @@ public class Persistence {
   public float musicLevel;
   public float sfxLevel;
   public float longTap;
+  public int autoSave;
   public boolean vibrate;
   public EnumMap<Particle, Integer> particleHues = new EnumMap<Particle, Integer>(Particle.class);
   public Vector<Integer> bestTimes = new Vector<Integer>();
@@ -60,6 +61,7 @@ public class Persistence {
   private void reset() {
     musicLevel = 1f;
     sfxLevel = 1f;
+    autoSave = 5;
     longTap = Param.LONG_PRESS_TIME;
     vibrate = true;
     particleHues.put(kH, 1080);
@@ -117,6 +119,7 @@ public class Persistence {
         JSONObject json = new JSONObject(settings.readString());
         musicLevel = (float) json.getDouble("music");
         sfxLevel = (float) json.getDouble("sfx");
+        autoSave = json.getInt("autoSave");
         longTap = (float) json.getDouble("longTap");
         vibrate = json.getBoolean("vibrate");
         JSONObject hue = json.getJSONObject("hue");
@@ -145,6 +148,7 @@ public class Persistence {
     try {
       jsonSettings.put("music", musicLevel);
       jsonSettings.put("sfx", sfxLevel);
+      jsonSettings.put("autoSave", autoSave);
       jsonSettings.put("longTap", longTap);
       jsonSettings.put("vibrate", vibrate);
       JSONObject hue = new JSONObject();

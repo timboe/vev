@@ -61,6 +61,7 @@ public class GameState {
   public QueueType queueType;
   //
   private float tickTime = 0;
+  public Warp triggerSpawn; // Used to trigger a new wave now
   public float gameTime;
   public int difficulty;
   public int playerEnergy;
@@ -99,6 +100,8 @@ public class GameState {
   private EnumMap<BuildingType, Integer> buildingPrices = new EnumMap<BuildingType, Integer>(BuildingType.class);
   private EnumMap<BuildingType, Integer> buildingQueuePrices = new EnumMap<BuildingType, Integer>(BuildingType.class);
   public Warp toFocusOn;
+  private float saveTimer = 0f;
+  private boolean saveTimerActivated = false;
 
   public JSONObject serialise() throws JSONException {
     JSONObject json = new JSONObject();
@@ -300,6 +303,20 @@ public class GameState {
 
     gameTime += delta;
 
+    if (saveTimerActivated) {
+      Persistence.getInstance().trySaveGame();
+      Persistence.getInstance().flushSaveGame();
+      UI.getInstance().saving.setVisible(false);
+      saveTimerActivated = false;
+    }
+
+    saveTimer += delta;
+    if (Persistence.getInstance().autoSave > 0 && saveTimer >= 60 * Persistence.getInstance().autoSave) {
+      saveTimer = 0f;
+      UI.getInstance().saving.setVisible(true);
+      saveTimerActivated = true;
+    }
+
     // Tile stage, foliage stage are static - does not need to be acted
     spriteStage.act(delta);
     warpStage.act(delta);
@@ -356,7 +373,7 @@ public class GameState {
       return;
     }
     boolean tooFew = (inWorldParticles < 10 && warpParticles > 0 && toFocusOn.holdinPenEmpty());
-    if (!tooFew && tickTime < warpSpawnTime) return;
+    if (!tooFew && tickTime < warpSpawnTime && triggerSpawn == null) return;
     if (tooFew) {
       Gdx.app.log("act", "Spawning due to 'too few'");
     }
@@ -367,7 +384,8 @@ public class GameState {
       newParticlesWidth += Param.WARP_SPAWN_WIDTH_INCREASE;
     }
 
-    tryNewParticles(false, null, 1);
+    tryNewParticles(false, triggerSpawn, 1);
+    triggerSpawn = null;
   }
 
   public void addEnergy(int e) {
@@ -404,7 +422,7 @@ public class GameState {
         if (placeLocation != null) {
           Building b = getSelectedBuilding();
           b.updateDemoPathingList(selectedBuildingStandingOrderParticle, t);
-          t.setHighlightColour(Param.HIGHLIGHT_YELLOW, kNONE);
+          t.setHighlightColour(Param.HIGHLIGHT_BLUE, kNONE);
         }
       }
     }
@@ -923,6 +941,8 @@ public class GameState {
     warpStage.getBatch().setColor(warpStageC);
     particleMap.clear();
     buildingMap.clear();
+    buildingExtrasMap.clear();
+    trucksMap.clear();
     warpMap.clear();
     buildingPrices.clear();
     buildingQueuePrices.clear();
@@ -964,14 +984,14 @@ public class GameState {
     clearPathingCache();
     entityID = 0;
     gameTime = 0;
-    difficulty = 0;
+    //difficulty = 0; Do NOT reset difficulty if re-doing worldgen
     if (Param.WORLD_SEED > 0) {
       R.setSeed(Param.WORLD_SEED);
     }
     updateBuildingPrices();
   }
 
-  private void updateBuildingPrices() {
+  public void updateBuildingPrices() {
     for (BuildingType bt : BuildingType.values()) {
       int number = 0;
       for (Building b : buildingMap.values()) {

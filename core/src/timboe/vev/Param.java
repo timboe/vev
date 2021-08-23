@@ -74,7 +74,7 @@ public class Param {
   public static final float WARP_TRANSPARENCY = 0.5f;
   public static final float WARP_ROTATE_SPEED = 3f;
   public static final float WARP_SHAKE = 5f;
-  public static final float WARP_SPAWN_TIME_INITIAL = (Param.IS_ANDROID ? 10f : 5f); // seconds between spawn
+  public static final float WARP_SPAWN_TIME_INITIAL = (Param.IS_ANDROID ? 10f : 7.5f); // seconds between spawn
   public static final float WARP_SPAWN_TIME_REDUCTION = (Param.IS_ANDROID ? 0.0075f : 0.01f); // time reduced by this every spawn TODO make no higher than .01f
   public static final float WARP_SPAWN_MEAN_INCREASE = (Param.IS_ANDROID ? .125f : .25f); // increase in mean number of spawned
   public static final float WARP_SPAWN_WIDTH_INCREASE = (Param.IS_ANDROID ? .05f : .1f); // increase in width of mean number
@@ -127,8 +127,8 @@ public class Param {
 
   public static final int PARTICLES_SMALL = IS_ANDROID ? 500 : 1000;
   public static final int PARTICLES_MED = IS_ANDROID ? 2000 : 5000;
-  public static final int PARTICLES_LARGE = IS_ANDROID ? 5000 : 20000;
-  public static final int PARTICLES_XL = IS_ANDROID ? 10000 : 50000;
+  public static final int PARTICLES_LARGE = IS_ANDROID ? 5000 : 10000;
+  public static final int PARTICLES_XL = IS_ANDROID ? 10000 : 25000;
 
   public static final float ANIM_TIME = 1 / (20f * SLOWMO); // I.e. 20 frames per second
 
@@ -138,12 +138,13 @@ public class Param {
   public static final Color HIGHLIGHT_GREEN = new Color(0f, 1f, 0f, 1f);
   public static final Color HIGHLIGHT_RED = new Color(1f, 0f, 0f, 1f);
   public static final Color HIGHLIGHT_YELLOW = new Color(1f, 1f, 0f, 1f);
+  public static final Color HIGHLIGHT_BLUE = new Color(0f, 1f, 1f, 1f);
 
   public static final int DISPLAY_X = 1920;
   public static final int DISPLAY_Y = Math.round(DISPLAY_X * (9f / 16f));
   public static final int UI_WIDTH_INTRO = 450;
 
-  public static final int PLAYER_STARTING_ENERGY = 9000;
+  public static final int PLAYER_STARTING_ENERGY = 17400;
 
   public static final int TRUCK_INITIAL_CAPACITY = 15000;
   public static final int TRUCK_LOAD_SPEED = 1250;

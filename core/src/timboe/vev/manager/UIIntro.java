@@ -415,6 +415,20 @@ public class UIIntro {
       titleWindow.left();
     }
 
+    ui.addToWin(titleWindow, ui.getLabel(Lang.get("UI_AUTOSAVE"), ""), ui.SIZE_L, ui.SIZE_S, 4);
+    Slider autosaveSlider = new Slider(0, 15, 1, false, ui.skin, "default-horizontal");
+    autosaveSlider.setValue(Persistence.getInstance().autoSave);
+    autosaveSlider.addListener(new ChangeListener() {
+      @Override
+      public void changed(ChangeEvent event, Actor actor) {
+        Persistence.getInstance().autoSave = (int)((Slider) actor).getValue();
+        Sounds.getInstance().click();
+      }
+    });
+    ui.addToWin(titleWindow, autosaveSlider, ui.SIZE_L, ui.SIZE_S, 6);
+    titleWindow.row();
+    titleWindow.left();
+
     vibBox = new CheckBox("", ui.skin);
     vibBox.setChecked(Gdx.graphics.isFullscreen());
     vibBox.addListener(fsListener);

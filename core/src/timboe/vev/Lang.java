@@ -66,12 +66,14 @@ public class Lang {
     EN_GB.put("progressTimer", "Particle deconstruction or\nbuilding upgrade timer.");
     EN_GB.put("selectAll", "Select all particles.");
     EN_GB.put("level", "Level");
+    EN_GB.put("spawnTt", "Trigger the next wave of particles now.");
 
 
     EN_GB.put("UI_NEW", "NEW GAME");
     EN_GB.put("UI_LOAD", "CONTINUE");
     EN_GB.put("UI_SETTINGS", "SETTINGS");
     EN_GB.put("UI_EXIT", "EXIT");
+    EN_GB.put("UI_SPAWN", "Spawn!");
     EN_GB.put("UI_HOW", "HOW TO PLAY");
     EN_GB.put("UI_ENERGY", "Energy");
     EN_GB.put("UI_PARTICLES", "Particles");
@@ -85,6 +87,7 @@ public class Lang {
     EN_GB.put("UI_XL", "X-LONG");
     EN_GB.put("UI_MUSIC", "MUSIC");
     EN_GB.put("UI_SFX", "SOUND FX");
+    EN_GB.put("UI_AUTOSAVE", "AUTOSAVE");
     EN_GB.put("UI_N_PARTICLES", ": Deconstruct # Particles");
     EN_GB.put("UI_BEST_TIME", ". Best Time: #s");
     EN_GB.put("UI_CANCEL", "CANCEL");
@@ -117,7 +120,7 @@ public class Lang {
     EN_GB.put("UI_CHT", "CHEATS WERE USED ON THIS PLAY THROUGH.");
 
 
-    EN_GB.put("UI_HELP_00", "VEV #. Tim Martin, 2020");
+    EN_GB.put("UI_HELP_00", "VEV #. Tim Martin, 2021");
     EN_GB.put("UI_HELP_01", "Music by Chris Zabriskie (CC v4)");
     EN_GB.put("UI_HELP_02", "Is That You Or Are You You? / Divider / CGI Snake");
     EN_GB.put("UI_HELP_03", "Open Game Art by Buch (CC0 v1)");

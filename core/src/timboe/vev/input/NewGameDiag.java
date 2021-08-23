@@ -35,6 +35,7 @@ public class NewGameDiag extends Dialog {
         default:
           Gdx.app.error("NewGame", "Unknown button " + object);
       }
+      Gdx.app.log("NewGame", "Particles " + World.getInstance().warpParticlesCached + " Diff " + GameState.getInstance().difficulty);
       Sounds.getInstance().OK();
       StateManager.getInstance().transitionToGameScreen();
     } else {

@@ -71,7 +71,7 @@ public enum BuildingType {
   public int getBaseCost() {
     switch (this) {
       case kMINE:
-        return 3000;
+        return 3300;
       case kHZE:
       case kHWM:
       case kWEQ:
@@ -87,7 +87,7 @@ public enum BuildingType {
       case kWEQ:
       case kHWM:
       case kZMQ:
-        return 100;
+        return 50;
       case kMINE:
       default:
         return 0;
@@ -102,7 +102,7 @@ public enum BuildingType {
       case kZMQ:
       case kMINE:
       default:
-        return 1.4f;
+        return 1.3f;
     }
   }
 

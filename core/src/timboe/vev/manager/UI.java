@@ -34,6 +34,7 @@ import timboe.vev.Param;
 import timboe.vev.entity.Building;
 import timboe.vev.entity.Sprite;
 import timboe.vev.entity.Truck;
+import timboe.vev.entity.Warp;
 import timboe.vev.enums.BuildingType;
 import timboe.vev.enums.Particle;
 import timboe.vev.enums.QueueType;
@@ -611,12 +612,30 @@ public class UI {
         displayWarpParticlesLabel = getLabel("", "wParticles");
         addToWin(bw, displayWarpParticlesLabel, SIZE_L + SIZE_M - SIZE_S, SIZE_S, 3);
         bw.row();
+
+        Button spawn = new Button(skin, "default");
+        spawn.add(getLabel(Lang.get("UI_SPAWN"), ""));
+        TT(spawn, "spawnTt");
+        spawn.addListener(buttonHover);
+        spawn.addListener(new ChangeListener() {
+          @Override
+          public void changed(ChangeEvent event, Actor actor) {
+            Sounds.getInstance().OK();
+            GameState.getInstance().triggerSpawn = (Warp) GameState.getInstance().getSelectedBuilding();
+          }
+        });
+        addToWin(bw, spawn, SIZE_L + SIZE_M, SIZE_M, 6);
+
+        bw.row();
+        separator(bw, 6);
+
         for (Particle p : Particle.values()) {
           if (p == Particle.kBlank) continue;
           Button b = getAndAddStandingOrderButton(bt, p);
           addToWin(bw, b, SIZE_L + SIZE_M, SIZE_L, 6);
           bw.row();
         }
+
       } else {
         if (bt != BuildingType.kMINE) {
           addBuildingBlurb(bw, bt);
@@ -678,7 +697,6 @@ public class UI {
       mineSelectImages.add(new Image(Textures.getInstance().getTexture("pyramid_0", false)));
       mineSelectText.add(getLabel("Text", ""));
     }
-
 
     // Settings window
     settingsWindow = getWindow();
@@ -1066,9 +1084,14 @@ public class UI {
   void showMain() {
     table.clear();
     androidWindow.clear();
-    addToWin(androidWindow, selectParticlesButton, SIZE_L, SIZE_L, 1);
+    if (Param.IS_ANDROID) {
+      addToWin(androidWindow, selectParticlesButton, SIZE_L, SIZE_L, 1);
+    }
     addToWin(androidWindow, selectAllButton, SIZE_L+SIZE_M, SIZE_L, 1);
-    addAndroid();
+    table.right(); // Actually nice to have the select all button available at all times
+    table.add(androidWindow).align(Align.top).padRight(SIZE_S);
+    table.right();
+    //
     table.add(mainWindow);
     if (GameState.getInstance().debug > 0) table.debugAll();
     uiMode = UIMode.kNONE;

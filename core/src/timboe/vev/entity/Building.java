@@ -198,6 +198,7 @@ public class Building extends Entity {
         }
       }
     }
+    GameState.getInstance().updateBuildingPrices();
   }
 
   public void addCost(int cost) {

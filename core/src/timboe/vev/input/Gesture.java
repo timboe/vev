@@ -90,6 +90,7 @@ public class Gesture implements GestureDetector.GestureListener {
   @Override
   public boolean pan(float x, float y, float deltaX, float deltaY) {
     if (Gdx.input.isButtonPressed(Input.Buttons.RIGHT) ||
+            Gdx.input.isButtonPressed(Input.Buttons.MIDDLE) ||
             (UI.getInstance().selectParticlesButton != null && !UI.getInstance().selectParticlesButton.isChecked() && Param.IS_ANDROID)) {
       Camera.getInstance().translate(-deltaX, deltaY);
     }
