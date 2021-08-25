@@ -1,6 +1,6 @@
 # VEV
 
-> A kitten-heading, queue-management entropy-em-up strategy and automation game.
+> A kitten-herding, queue-management entropy-em-up strategy and automation game.
 
 [Game Homepage](http://tim-martin.co.uk/2021/08/24/vev.html)
 
