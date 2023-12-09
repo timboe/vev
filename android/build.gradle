@@ -18,11 +18,11 @@ android {
         exclude 'META-INF/robovm/ios/robovm.xml'
     }
     defaultConfig {
-        applicationId "co.uk.timmartin.vev"
+        applicationId "timboe.vev"
         minSdkVersion 14
         targetSdkVersion 34
-        versionCode 1
-        versionName "1.0"
+        versionCode 110
+        versionName "1.1"
     }
     buildTypes {
         release {
