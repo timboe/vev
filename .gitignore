@@ -141,3 +141,9 @@ android/assets/data/VEV_save.dat
 VEV_v1.jar
 
 VEV_v1.zip
+
+gradle/wrapper/gradle-wrapper.jar
+
+DELETE/gradle/wrapper/gradle-wrapper.jar
+
+DELETE/
