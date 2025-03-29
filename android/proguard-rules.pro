@@ -36,3 +36,8 @@
    boolean reportFixture(long);
    float   reportRayFixture(long, float, float, float, float, float);
 }
+
+-keep class com.badlogic.**{
+   **[] $VALUES;
+    *;
+}

@@ -123,7 +123,7 @@ public class Param {
   private static final boolean FAKE_ANDROID = false;
   public static final boolean IS_ANDROID = FAKE_ANDROID || Gdx.app.getType() == Application.ApplicationType.Android;
 
-  public static final String VERSION = (IS_ANDROID ? "Android Build " : "Desktop Build ") + "v1.0";
+  public static final String VERSION = (IS_ANDROID ? "Android Build " : "Desktop Build ") + "v1.5";
 
   public static final int PARTICLES_SMALL = IS_ANDROID ? 500 : 1000;
   public static final int PARTICLES_MED = IS_ANDROID ? 2000 : 5000;
